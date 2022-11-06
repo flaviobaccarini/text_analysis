@@ -145,7 +145,7 @@ def char_count_printer(
 
 def plotting_char_count(train_ds, val_ds, test_ds):
 
-    # PLOTTING WORD-COUNT
+    # PLOTTING CHAR-COUNT
     sns.set(font_scale=1.4)
     complete_ds = pd.concat([train_ds, val_ds, test_ds], ignore_index = True)
 
@@ -162,7 +162,7 @@ def plotting_char_count(train_ds, val_ds, test_ds):
     fig.suptitle('Chars per tweet')
     plt.show()
 
-
+'''
 train, val, test = read_data()
 info_data(train, val, test)
 plot_label_distribution(train, val, test)
@@ -179,3 +179,4 @@ char_count_printer(train_word_char_count_ds,
 plotting_char_count(train_word_char_count_ds,
                     val_word_char_count_ds,
                     test_word_char_count_ds)
+'''
