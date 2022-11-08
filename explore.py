@@ -109,47 +109,25 @@ def plot_label_distribution(train_ds: pd.DataFrame,
     plt.show()
 
 
-def word_count_twitter(train_ds: pd.DataFrame,
-                        val_ds: pd.DataFrame,
-                        test_ds: pd.DataFrame) -> tuple[pd.DataFrame]:
+def word_count_twitter(tweets: pd.Series(str)) -> list[int]:
     '''
     This function counts how many words there are for each tweet in order to compare the difference
     in the number of words between real news and fake news regarding COVID.
 
     Parameters:
     ============
-    train_ds: pandas.DataFrame
-              The train dataframe containing all the initial informations.
-
-    val_ds: pandas.DataFrame
-              The validation dataframe containing all the initial informations.
-    
-    test_ds: pandas.DataFrame
-              The test dataframe containing all the initial informations.
+    tweets: pandas.Series(str)
+              The sequence of the tweets to count the number of words. 
 
     Return:
     ========
-    train_ds_with_word_count: pandas.DataFrame
-                              The train dataframe containing all the initial informations and
-                              the number of words for each single tweet.
-
-    val_ds_with_word_count: pandas.DataFrame
-                              The validation dataframe containing all the initial informations and
-                              the number of words for each single tweet.
-
-    test_ds_with_word_count: pandas.DataFrame
-                              The test dataframe containing all the initial informations and
-                              the number of words for each single tweet.
+    char_count: list[int]
+                The list containing the number of words for each single tweet.
     '''
-    train_ds_with_word_count = train_ds.copy()
-    val_ds_with_word_count = val_ds.copy()
-    test_ds_with_word_count = test_ds.copy()
-
-    train_ds_with_word_count['word_count'] = [len(str(words).split()) for words in train_ds_with_word_count['tweet']]
-    val_ds_with_word_count['word_count'] = [len(str(words).split()) for words in val_ds_with_word_count['tweet']]
-    test_ds_with_word_count['word_count'] = [len(str(words).split()) for words in test_ds_with_word_count['tweet']]
-
-    return train_ds_with_word_count, val_ds_with_word_count, test_ds_with_word_count
+    list_tweets = list(tweets)
+    word_count = [len(str(words).split()) for words in list_tweets]
+   
+    return word_count
 
 def word_count_printer(train_ds_with_word_count: pd.DataFrame,
                        val_ds_with_word_count: pd.DataFrame,
@@ -226,47 +204,24 @@ def plotting_word_count(train_ds_with_word_count: pd.DataFrame,
     fig.suptitle('Words per tweet')
     plt.show()
 
-def char_count_twitter(train_ds: pd.DataFrame,
-                        val_ds: pd.DataFrame,
-                        test_ds: pd.DataFrame) -> tuple[pd.DataFrame]:
+def char_count_twitter(tweets: pd.Series(str)) -> list[int]:
     '''
     This function counts how many characters there are for each tweet in order 
     to compare the difference in the number of characters between real news and fake news.
 
     Parameters:
     ============
-    train_ds: pandas.DataFrame
-              The train dataframe containing all the initial informations.
-
-    val_ds: pandas.DataFrame
-              The validation dataframe containing all the initial informations.
-    
-    test_ds: pandas.DataFrame
-              The test dataframe containing all the initial informations.
+    tweets: pandas.Series(str)
+              The sequence of the tweets to count the number of characters. 
 
     Return:
     ========
-    train_ds_char_count: pandas.DataFrame
-                              The train dataframe containing all the initial informations and
-                              the number of characters for each single tweet.
-
-    val_ds_char_count: pandas.DataFrame
-                              The validation dataframe containing all the initial informations and
-                              the number of characters for each single tweet.
-
-    test_ds_char_count: pandas.DataFrame
-                              The test dataframe containing all the initial informations and
-                              the number of characters for each single tweet.
+    char_count: list[int]
+                The list containing the number of characters for each single tweet.
     '''
-    train_ds_char_count = train_ds.copy()
-    val_ds_char_count = val_ds.copy()
-    test_ds_char_count = test_ds.copy()
-
-    train_ds_char_count['char_count'] = [len(str(x)) for x in train_ds_char_count['tweet'] ]
-    val_ds_char_count['char_count'] = [len(str(x)) for x in val_ds_char_count['tweet'] ]
-    test_ds_char_count['char_count'] = [len(str(x)) for x in test_ds_char_count['tweet'] ]
-
-    return train_ds_char_count, val_ds_char_count, test_ds_char_count
+    list_tweets = list(tweets)
+    char_count = [len(str(chars)) for chars in list_tweets]
+    return char_count
 
 def char_count_printer(train_ds_char_count: pd.DataFrame,
                         val_ds_char_count: pd.DataFrame,
@@ -326,7 +281,9 @@ def plotting_char_count(train_ds_char_count: pd.DataFrame,
     '''  
     # PLOTTING CHAR-COUNT
     sns.set(font_scale=1.4)
-    complete_ds = pd.concat([train_ds, val_ds, test_ds], ignore_index = True)
+    complete_ds = pd.concat([train_ds_char_count,
+                             val_ds_char_count,
+                             test_ds_char_count ], ignore_index = True)
 
     fig,(ax1,ax2)=plt.subplots(1,2,figsize=(10,4))
     
@@ -356,26 +313,25 @@ def explore(input_folder):
     info_data(df_train, df_val, df_test)
     plot_label_distribution(df_train, df_val, df_test)
 
-    df_all_word_count = word_count_twitter(df_train, df_val, df_test)
-    df_train_word_count, df_val_word_count, df_test_word_count = df_all_word_count
-    word_count_printer(df_train_word_count, 
-                        df_val_word_count,
-                        df_test_word_count)
+    for dataframe in (df_train, df_val, df_test):
+        word_count = word_count_twitter(dataframe['tweet'])
+        char_count = char_count_twitter(dataframe['tweet'])
+        dataframe['word_count'] = word_count
+        dataframe['char_count'] = char_count
 
-    plotting_word_count(df_train_word_count, 
-                        df_val_word_count,
-                        df_test_word_count)
+    word_count_printer(df_train, 
+                        df_val,
+                        df_test)
+    plotting_word_count(df_train, 
+                        df_val,
+                        df_test)
 
-    df_all_char_count = char_count_twitter(df_train_word_count, 
-                                            df_val_word_count,
-                                            df_test_word_count)
-    df_train_char_count, df_val_char_count, df_test_char_count = df_all_char_count
-    char_count_printer(df_train_char_count,
-                       df_val_char_count,
-                       df_test_char_count)
-    plotting_char_count(df_train_char_count,
-                       df_val_char_count,
-                       df_test_char_count)                
+    char_count_printer(df_train,
+                       df_val,
+                       df_test)
+    plotting_char_count(df_train,
+                       df_val,
+                       df_test)                
 
 def main():
     config_parse = configparser.ConfigParser()

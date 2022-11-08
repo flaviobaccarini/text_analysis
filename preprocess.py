@@ -3,7 +3,8 @@ import re, string
 import nltk
 from nltk.corpus import stopwords, wordnet
 from nltk.tokenize import word_tokenize
-from nltk.stem import SnowballStemmer, WordNetLemmatizer
+from nltk.stem import WordNetLemmatizer
+#from nltk.stem import SnowballStemmer # for stemming; but now used lemmatization
 from tqdm import tqdm
 import pandas as pd
 import numpy as np
@@ -96,8 +97,8 @@ def get_wordnet_pos(tag):
 def lemmatizer(text):
     wl = get_lemmatizer()
     word_pos_tags = nltk.pos_tag(word_tokenize(text)) # Get position tags
-    words = [wl.lemmatize(tag[0], get_wordnet_pos(tag[1])) for idx, tag in enumerate(word_pos_tags)] # Map the position tag and lemmatize the word/token
-    return " ".join(words)
+    lemma_words = [wl.lemmatize(tag[0], get_wordnet_pos(tag[1])) for idx, tag in enumerate(word_pos_tags)] # Map the position tag and lemmatize the word/token
+    return " ".join(lemma_words)
 
 def finalpreprocess(tweet):
     return lemmatizer(stopword(clean_tweet, tweet))
@@ -130,18 +131,11 @@ class MeanEmbeddingVectorizer(object):
 
 def clean_dataframes_write_csv(input_folder, output_folder):
     df_train, df_val, df_test = read_data(input_folder)
-    df_train['clean_tweet'] = df_train['tweet']
-    df_val['clean_tweet'] = df_val['tweet']
-    df_test['clean_tweet'] = df_test['tweet']
-
-    cleaned_tweet = [finalpreprocess(tweet_to_clean) for tweet_to_clean in tqdm(df_train['clean_tweet'])]
-    df_train['clean_tweet'] = cleaned_tweet
-
-    cleaned_tweet = [finalpreprocess(tweet_to_clean) for tweet_to_clean in tqdm(df_val['clean_tweet'])]
-    df_val['clean_tweet'] = cleaned_tweet
-
-    cleaned_tweet = [finalpreprocess(tweet_to_clean) for tweet_to_clean in tqdm(df_test['clean_tweet'])]
-    df_test['clean_tweet'] = cleaned_tweet
+    
+    for dataframe in (df_train, df_val, df_test):
+        dataframe['clean_tweet'] = dataframe['tweet']
+        cleaned_tweet = [finalpreprocess(tweet_to_clean) for tweet_to_clean in tqdm(dataframe['clean_tweet'])]
+        dataframe['clean_tweet'] = cleaned_tweet
 
     print(df_train['clean_tweet'].head())
     print("="*40)
@@ -152,21 +146,24 @@ def clean_dataframes_write_csv(input_folder, output_folder):
 
 def vectorize_data(data, vocabulary, tf_bool):
 
-    X_tok= [nltk.word_tokenize(i) for i in data['clean_tweet']]  
+    clean_text, label = data
+    X_tok = [nltk.word_tokenize(words) for words in clean_text]  
  
-    model = Word2Vec(vocabulary,min_count=1)   
+    model = Word2Vec(vocabulary, min_count=1)   
     w2v = dict(zip(model.wv.index_to_key, model.wv.vectors)) 
 
     modelw = MeanEmbeddingVectorizer(w2v, tf_bool)
     # converting text to numerical data using Word2Vec
-    X_vectors_w2v, y_vector = modelw.transform(X_tok, data['label'])
-
+    X_vectors_w2v, y_vector = modelw.transform(X_tok, label)
 
     return X_vectors_w2v, y_vector
 
-def get_vocabulary(df_train, df_val):
-    df_train_val = pd.concat([df_train, df_val], ignore_index = True)
-    vocabulary = [nltk.word_tokenize(i) for i in df_train_val['clean_tweet']]
+def get_vocabulary(train_words, validation_words):
+
+    #df_train_val = pd.concat([df_train, df_val], ignore_index = True)
+    vocabulary = list(train_words) + list(validation_words)
+    vocabulary = [nltk.word_tokenize(words) for words in vocabulary]
+
     return vocabulary
 
 
@@ -175,7 +172,7 @@ def main():
     configuration = config_parse.read(sys.argv[1])
     
     input_folder = config_parse.get('INPUT_OUTPUT', 'input_folder')
-    output_folder = config_parse.get('INPUT_OUTPUT', 'output_folder')
+    output_folder = config_parse.get('INPUT_OUTPUT', 'folder_preprocessed_datasets')
 
     clean_dataframes_write_csv(input_folder, output_folder)
 
