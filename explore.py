@@ -17,7 +17,7 @@ from pathlib import Path
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
-from read_write_data import read_data
+from read_write_data import read_data, clean_dataframe, split_dataframe
 import configparser
 import sys
 
@@ -56,6 +56,12 @@ def info_data(train_ds: pd.DataFrame,
 
     print("\nDescription of test dataset\n" + "="*40)
     description_test_ds = test_ds.info()
+
+    three_text_data = train_ds['text'].sample(n = 3)
+    print("\nHere some text data:\n" + "="*40)
+    for text in three_text_data:
+        print(text)
+        print("\n" + "="*40)
 
     
 
@@ -237,13 +243,16 @@ def main():
     configuration = config_parse.read(sys.argv[1])
     
     input_folder = config_parse.get('INPUT_OUTPUT', 'input_folder')
-    df_raw_train, df_raw_val, df_raw_test = read_data(input_folder)
-    correct_dataframes = []
-    for dataframe in (df_raw_train, df_raw_val, df_raw_test):
-        df_new_correct = dataframe[['tweet', 'label']] # CHANGE tweet IF NECESSARY
-        df_new_correct = df_new_correct.rename({'tweet': 'text'}, axis = 'columns') # CHANGE tweet IF NECESSARY
-        correct_dataframes.append(df_new_correct)
-    df_train, df_val, df_test = correct_dataframes
+    fractions =    (float(config_parse.get('PREPROCESS', 'train_fraction')), 
+                    float(config_parse.get('PREPROCESS', 'val_fraction')),
+                    float(config_parse.get('PREPROCESS', 'test_fraction')))
+    dfs_raw = split_dataframe(read_data(input_folder), fractions)
+
+    column_names = (config_parse.get('PREPROCESS', 'column_name_text'), 
+                    config_parse.get('PREPROCESS', 'column_name_label'))
+
+    df_train, df_val, df_test = clean_dataframe(dfs_raw, column_names)
+    
     explore(df_train, df_val, df_test)
 
 if __name__ == '__main__':
