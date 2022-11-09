@@ -21,6 +21,8 @@ from read_write_data import read_data
 import configparser
 import sys
 
+#TODO CERCA DI RENDERE LE FUNZIONI TUTTE UN PO' PIÙ GENERICHE...
+
 def info_data(train_ds: pd.DataFrame,
               val_ds: pd.DataFrame,
               test_ds: pd.DataFrame) -> None:
@@ -54,11 +56,13 @@ def info_data(train_ds: pd.DataFrame,
     print("\nDescription of test dataset\n" + "="*40)
     description_test_ds = test_ds.info()
 
+    '''
     print("\nSome tweets extracted from train dataset\n" + "="*40)
     sampled_ds = train_ds.sample(n = 3, ignore_index = True, random_state = 42)
     print(sampled_ds['tweet'][0] + '\n\n' + 
           sampled_ds['tweet'][1] + '\n\n' +
           sampled_ds['tweet'][2])
+    '''
     
 
 def plot_label_distribution(train_ds: pd.DataFrame,

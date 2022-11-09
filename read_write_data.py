@@ -45,12 +45,12 @@ def read_data(input_folder: str) -> tuple[pd.DataFrame]:
         # i want to eliminate the first word: "constrain" which contain the word "train"
         # also lower all the characters in order to have not a case sensitive problem
         path_dict[phase] = [csv_path for csv_path in csv_paths_stem if phase in "".join(str(csv_path).split("_")[1:]).lower()][0]
-    train_ds = pd.read_csv(datasets_path / path_dict['train'])
-    val_ds = pd.read_csv(datasets_path / path_dict['val'])
-    test_ds = pd.read_csv(datasets_path / path_dict['test'])
+    train_ds = pd.read_csv(datasets_path / path_dict['train'], index_col=False)
+    val_ds = pd.read_csv(datasets_path / path_dict['val'], index_col=False)
+    test_ds = pd.read_csv(datasets_path / path_dict['test'], index_col=False)
     return train_ds, val_ds, test_ds
 
-def write_data(dataframes, output_folder):
+def write_data(dataframes: tuple[pd.DataFrame], output_folder: str) -> None:
     '''
     This function writes the preprocessed data in csv files, divided between 
     train, validation and test, in the output folder passed as parameter.
@@ -60,7 +60,7 @@ def write_data(dataframes, output_folder):
 
     Parameters:
     ===========
-    dataframes: tuple(pandas.DataFrame)
+    dataframes: tuple[pandas.DataFrame] or list[pands.DataFrame]
                 This tuple contains all the preprocessed dataframes (train, validation, test)
                 ready to be stored in a file.
 
@@ -71,9 +71,7 @@ def write_data(dataframes, output_folder):
     datasets_path = Path(output_folder)
     datasets_path.mkdir(parents=True, exist_ok=True)
     df_train, df_val, df_test = dataframes
-    df_train.to_csv(path_or_buf = datasets_path / 'Constraint_English_Train_mod.csv')
-    df_val.to_csv(path_or_buf = datasets_path / 'Constraint_English_Val_mod.csv')
-    df_test.to_csv(path_or_buf = datasets_path / 'english_test_with_labels_mod.csv')
+    df_train.to_csv(path_or_buf = datasets_path / 'constraint_english_train_preprocessed.csv', index=False)
+    df_val.to_csv(path_or_buf = datasets_path / 'constraint_english_val_preprocessed.csv', index=False)
+    df_test.to_csv(path_or_buf = datasets_path / 'english_test_with_labels_preprocessed.csv', index=False)
 
-
-prova = read_data('datasets')
