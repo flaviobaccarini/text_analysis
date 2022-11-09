@@ -21,8 +21,9 @@ from read_write_data import read_data
 import configparser
 import sys
 
-#TODO CERCA DI RENDERE LE FUNZIONI TUTTE UN PO' PIÙ GENERICHE...
+#TODO CERCA DI RENDERE LE FUNZIONI TUTTE UN PO' PIÙ GENERICHE... ---> QUESTO MODULO OK (MAGARI NON PERFETTO MA MEGLIO); CONTROLLA LA FUNZIONE DI READING
 
+#TODO CONTROLLA LA DOCUMENTAZIONE DI TUTTE LE FUNZIONI ORA
 def info_data(train_ds: pd.DataFrame,
               val_ds: pd.DataFrame,
               test_ds: pd.DataFrame) -> None:
@@ -56,18 +57,11 @@ def info_data(train_ds: pd.DataFrame,
     print("\nDescription of test dataset\n" + "="*40)
     description_test_ds = test_ds.info()
 
-    '''
-    print("\nSome tweets extracted from train dataset\n" + "="*40)
-    sampled_ds = train_ds.sample(n = 3, ignore_index = True, random_state = 42)
-    print(sampled_ds['tweet'][0] + '\n\n' + 
-          sampled_ds['tweet'][1] + '\n\n' +
-          sampled_ds['tweet'][2])
-    '''
     
 
-def plot_label_distribution(train_ds: pd.DataFrame,
-                            val_ds: pd.DataFrame,
-                            test_ds: pd.DataFrame) -> None:
+def plot_label_distribution(label_train: pd.Series,
+                            label_val: pd.Series,
+                            label_test: pd.Series,) -> None:
     '''
     This function plots the label distribution for each different dataframe.
     In addition to the plot, it will print also the number of label distribution
@@ -75,40 +69,40 @@ def plot_label_distribution(train_ds: pd.DataFrame,
 
     Parameters:
     ============
-    train_ds: pandas.DataFrame
-              The train dataframe containing all the initial informations.
+    label_train: pandas.Series
+              The labels from the train dataset.
 
-    val_ds: pandas.DataFrame
-              The validation dataframe containing all the initial informations.
+    label_val: pandas.Series
+              The labels from the validation dataset.
     
-    test_ds: pandas.DataFrame
-              The test dataframe containing all the initial informations.
+    label_test: pandas.Series
+              The labels from the test dataset.
     '''
     sns.set(font_scale=1.4)
     fig, ax = plt.subplots()
 
-    value_counts_label = train_ds['label'].value_counts()
+    value_counts_label = label_train.value_counts()
     sns.barplot(x = value_counts_label.index, y = value_counts_label, ax = ax)
     print("\nTrain dataset label distribution:\n{0}".format(value_counts_label))
-    ax.set_xlabel("COVID19 News", labelpad=14)
-    ax.set_ylabel("Count of Real/Fake News", labelpad=14)
-    ax.set_title("Count of Real/Fake News for training set", y=1.02)
+    ax.set_xlabel("Label", labelpad=12)
+    ax.set_ylabel("Count of labels", labelpad=12)
+    ax.set_title("Train dataset label distribution", y=1.02)
 
     fig1, ax1 = plt.subplots()
-    value_counts_label = val_ds['label'].value_counts()
+    value_counts_label = label_val.value_counts()
     sns.barplot(x = value_counts_label.index, y = value_counts_label, ax = ax1)
     print("\nValid dataset label distribution:\n{0}".format(value_counts_label))
-    ax1.set_xlabel("COVID19 News", labelpad=14)
-    ax1.set_ylabel("Count of Real/Fake News", labelpad=14)
-    ax1.set_title("Count of Real/Fake News for valid set", y=1.02)
+    ax1.set_xlabel("Label", labelpad=12)
+    ax1.set_ylabel("Count of labels", labelpad=12)
+    ax1.set_title("Valid dataset label distribution", y=1.02)
 
     fig2, ax2 = plt.subplots()
-    value_counts_label = test_ds['label'].value_counts()
+    value_counts_label = label_test.value_counts()
     sns.barplot(x = value_counts_label.index, y = value_counts_label, ax = ax2)
     print("\nTest dataset label distribution:\n{0}".format(value_counts_label))
-    ax2.set_xlabel("COVID19 News", labelpad=14)
-    ax2.set_ylabel("Count of Real/Fake News", labelpad=14)
-    ax2.set_title("Count of Real/Fake News for test set", y=1.02)
+    ax2.set_xlabel("Label", labelpad=12)
+    ax2.set_ylabel("Count of labels", labelpad=12)
+    ax2.set_title("Test dataset label distribution", y=1.02)
 
     plt.show()
 
@@ -120,7 +114,7 @@ def word_count_twitter(tweets: pd.Series(str)) -> list[int]:
 
     Parameters:
     ============
-    tweets: pandas.Series(str)
+    tweets: pandas.Series(str) or list[str] or tuple[str]
               The sequence of the tweets to count the number of words. 
 
     Return:
@@ -133,80 +127,34 @@ def word_count_twitter(tweets: pd.Series(str)) -> list[int]:
    
     return word_count
 
-def word_count_printer(train_ds_with_word_count: pd.DataFrame,
-                       val_ds_with_word_count: pd.DataFrame,
-                       test_ds_with_word_count: pd.DataFrame) -> None:
+
+def printer_word_chars(all_dicts_avg_labels,
+                              unit_of_measure) -> None:
     '''
     This function prints the average number of words for each dataframe
     comparing the difference between fake news and real news.
 
     Parameters:
     ============
-    train_ds_with_word_count: pandas.DataFrame
-              The train dataframe containing all the initial informations and
-              the number of words for each single tweet.
-
-    val_ds_with_word_count: pandas.DataFrame
-              The validation dataframe containing all the initial informations and
-              the number of words for each single tweet.
     
-    test_ds_with_word_count: pandas.DataFrame
-              The test dataframe containing all the initial informations amd
-              the number of words for each single tweet.
-    '''                   
-    print("Real news length (average words):" 
-          "training {0:.1f}, validation {1:.1f}, test {2:.1f}".format(
-        train_ds_with_word_count[train_ds_with_word_count['label']=='real']['word_count'].mean(),
-        val_ds_with_word_count[val_ds_with_word_count['label']=='real']['word_count'].mean(),
-        test_ds_with_word_count[test_ds_with_word_count['label']=='real']['word_count'].mean()))
-
-    print("Fake news length (average words):" 
-          "training {0:.1f}, validation {1:.1f}, test {2:.1f}".format(
-        train_ds_with_word_count[train_ds_with_word_count['label']=='fake']['word_count'].mean(),
-        val_ds_with_word_count[val_ds_with_word_count['label']=='fake']['word_count'].mean(),
-        test_ds_with_word_count[test_ds_with_word_count['label']=='fake']['word_count'].mean()))
-
-
-def plotting_word_count(train_ds_with_word_count: pd.DataFrame,
-                       val_ds_with_word_count: pd.DataFrame,
-                       test_ds_with_word_count: pd.DataFrame) -> None:
-
     '''
-    This function plots the average number of words for each dataframe
-    comparing the difference between fake news and real news.
+    train_word_char_mean_dict, val_word_char_mean_dict, test_word_char_mean_dict = all_dicts_avg_labels
+    for key in train_word_char_mean_dict:
+        print(f'{key} labels length (average {unit_of_measure}):'
+              f'training {train_word_char_mean_dict[key]:.1f}, validation {val_word_char_mean_dict[key]:.1f}, '
+              f'test {test_word_char_mean_dict[key]:.1f}')
 
-    Parameters:
-    ============
-    train_ds_with_word_count: pandas.DataFrame
-              The train dataframe containing all the initial informations and
-              the number of words for each single tweet.
+#TODO NEED SOME TESTING FOR THE BELOW FUNCTION
+def average_word_or_chars(labels, word_or_char_count):
+    unique_labels = labels.unique()
+    unique_labels_dict = dict.fromkeys(unique_labels, None)
+    df_word_char_count = pd.DataFrame({'label': labels, 'count': word_or_char_count})
 
-    val_ds_with_word_count: pandas.DataFrame
-              The validation dataframe containing all the initial informations and
-              the number of words for each single tweet.
+    for key_lab in unique_labels_dict:
+        unique_labels_dict[key_lab] = df_word_char_count[df_word_char_count['label'] == key_lab]['count'].mean()
     
-    test_ds_with_word_count: pandas.DataFrame
-              The test dataframe containing all the initial informations amd
-              the number of words for each single tweet.
-    '''   
-    # PLOTTING WORD-COUNT
-    sns.set(font_scale=1.4)
-    complete_ds = pd.concat([train_ds_with_word_count,
-                             val_ds_with_word_count,
-                             test_ds_with_word_count], ignore_index = True)
+    return unique_labels_dict
 
-    fig,(ax1,ax2)=plt.subplots(1,2,figsize=(10,4))
-    
-    words=complete_ds[complete_ds['label']=='real']['word_count']
-    ax1.hist(words,color='red', range = (0, 50))
-    ax1.set_title('Real news COVID19')
-    
-    words=complete_ds[complete_ds['label']=='fake']['word_count']
-    ax2.hist(words,color='green', range = (0, 50))
-    ax2.set_title('Fake news COVID19')
-    
-    fig.suptitle('Words per tweet')
-    plt.show()
 
 def char_count_twitter(tweets: pd.Series(str)) -> list[int]:
     '''
@@ -215,7 +163,7 @@ def char_count_twitter(tweets: pd.Series(str)) -> list[int]:
 
     Parameters:
     ============
-    tweets: pandas.Series(str)
+    tweets: pandas.Series(str) or list[str] or tuple[str]
               The sequence of the tweets to count the number of characters. 
 
     Return:
@@ -227,122 +175,76 @@ def char_count_twitter(tweets: pd.Series(str)) -> list[int]:
     char_count = [len(str(chars)) for chars in list_tweets]
     return char_count
 
-def char_count_printer(train_ds_char_count: pd.DataFrame,
-                        val_ds_char_count: pd.DataFrame,
-                        test_ds_char_count: pd.DataFrame) -> None:
-    '''
-    This function prints the average number of characters for each dataframe
-    comparing the difference between fake news and real news.
 
-    Parameters:
-    ============
-    train_ds_char_count: pandas.DataFrame
-              The train dataframe containing all the initial informations and
-              the number of characters for each single tweet.
-
-    val_ds_char_count: pandas.DataFrame
-              The validation dataframe containing all the initial informations and
-              the number of characters for each single tweet.
-    
-    test_ds_char_count: pandas.DataFrame
-              The test dataframe containing all the initial informations amd
-              the number of characters for each single tweet.
-    '''                             
-    print("\nReal news length (average chars):"
-          "training {0:.1f}, validation {1:.1f}, test {2:.1f}".format(
-        train_ds_char_count[train_ds_char_count['label']=='real']['char_count'].mean(),
-        val_ds_char_count[val_ds_char_count['label']=='real']['char_count'].mean(),
-        test_ds_char_count[test_ds_char_count['label']=='real']['char_count'].mean()))
-
-    print("Fake news length (average chars):" 
-          "training {0:.1f}, validation {1:.1f}, test {2:.1f}".format(
-        train_ds_char_count[train_ds_char_count['label']=='fake']['char_count'].mean(),
-        val_ds_char_count[val_ds_char_count['label']=='fake']['char_count'].mean(),
-        test_ds_char_count[test_ds_char_count['label']=='fake']['char_count'].mean()))
-
-
-
-def plotting_char_count(train_ds_char_count: pd.DataFrame,
-                        val_ds_char_count: pd.DataFrame,
-                        test_ds_char_count: pd.DataFrame) -> None:
+def plotting_word_char_count(labels, word_char_count, unit_of_measure) -> None:
     '''
     This function plots the average number of characters for each dataframe
     comparing the difference between fake news and real news.
 
     Parameters:
     ============
-    train_ds_with_word_count: pandas.DataFrame
-              The train dataframe containing all the initial informations and
-              the number of characters for each single tweet.
 
-    val_ds_with_word_count: pandas.DataFrame
-              The validation dataframe containing all the initial informations and
-              the number of characters for each single tweet.
-    
-    test_ds_with_word_count: pandas.DataFrame
-              The test dataframe containing all the initial informations amd
-              the number of characters for each single tweet.
     '''  
-    # PLOTTING CHAR-COUNT
+    word_char_count_df = pd.DataFrame({'label': labels, 'count': word_char_count})
+    if unit_of_measure == 'chars':
+        range = (0, 400)
+        color = 'green'
+    else:
+        range = (0, 50)
+        color = 'red'
+    # PLOTTING
     sns.set(font_scale=1.4)
-    complete_ds = pd.concat([train_ds_char_count,
-                             val_ds_char_count,
-                             test_ds_char_count ], ignore_index = True)
-
-    fig,(ax1,ax2)=plt.subplots(1,2,figsize=(10,4))
     
-    words=complete_ds[complete_ds['label']=='real']['char_count']
-    ax1.hist(words,color='red', range = (0, 400))
-    ax1.set_title('Real news COVID19')
-    
-    words=complete_ds[complete_ds['label']=='fake']['char_count']
-    ax2.hist(words,color='green', range = (0, 400))
-    ax2.set_title('Fake news COVID19')
-    
-    fig.suptitle('Chars per tweet')
+    fig, ax=plt.subplots(1,len(labels.unique()),figsize=(10,4))
+    for index, key in enumerate(labels.unique()):
+        counts = word_char_count_df[word_char_count_df['label'] == key]['count']
+        ax[index].hist(counts, color = color, range = range)
+        ax[index].set_title(f'{key} labels {unit_of_measure} distribution', y = 1.02)
+        ax[index].set_xlabel(f'number of {unit_of_measure}')
+        ax[index].set_ylabel(f'count #{unit_of_measure}')
     plt.show()
 
 
-def explore(input_folder):
+def explore(df_train, df_val, df_test):
     '''
     This function executes all the previous functions in order to 
     visualize, describe, analyze and explore the data.
     Parameters:
     ============
-    input_folder: string
-              The name of the folder where the three csv files with data are contained.
+
     '''
-    df_train, df_val, df_test = read_data(input_folder)
-
     info_data(df_train, df_val, df_test)
-    plot_label_distribution(df_train, df_val, df_test)
-
+    plot_label_distribution(df_train['label'], df_val['label'], df_test['label'])
+    words_mean_list = []
+    chars_mean_list = []
     for dataframe in (df_train, df_val, df_test):
-        word_count = word_count_twitter(dataframe['tweet'])
-        char_count = char_count_twitter(dataframe['tweet'])
+        word_count = word_count_twitter(dataframe['text'])
+        char_count = char_count_twitter(dataframe['text'])
+        words_mean_list.append(average_word_or_chars(dataframe['label'], word_count))
+        chars_mean_list.append(average_word_or_chars(dataframe['label'], char_count))
         dataframe['word_count'] = word_count
         dataframe['char_count'] = char_count
+    printer_word_chars(words_mean_list, 'words')
+    printer_word_chars(chars_mean_list, 'chars')
 
-    word_count_printer(df_train, 
-                        df_val,
-                        df_test)
-    plotting_word_count(df_train, 
-                        df_val,
-                        df_test)
+    df_complete = pd.concat([df_train, df_val, df_test], ignore_index=True)
+    plotting_word_char_count(df_complete['label'], df_complete['word_count'], 'words')
+    plotting_word_char_count(df_complete['label'], df_complete['char_count'], 'chars')
 
-    char_count_printer(df_train,
-                       df_val,
-                       df_test)
-    plotting_char_count(df_train,
-                       df_val,
-                       df_test)                
 
 def main():
     config_parse = configparser.ConfigParser()
     configuration = config_parse.read(sys.argv[1])
     
     input_folder = config_parse.get('INPUT_OUTPUT', 'input_folder')
-    explore(input_folder = input_folder)
+    df_raw_train, df_raw_val, df_raw_test = read_data(input_folder)
+    correct_dataframes = []
+    for dataframe in (df_raw_train, df_raw_val, df_raw_test):
+        df_new_correct = dataframe[['tweet', 'label']] # CHANGE tweet IF NECESSARY
+        df_new_correct = df_new_correct.rename({'tweet': 'text'}, axis = 'columns') # CHANGE tweet IF NECESSARY
+        correct_dataframes.append(df_new_correct)
+    df_train, df_val, df_test = correct_dataframes
+    explore(df_train, df_val, df_test)
 
 if __name__ == '__main__':
     main()

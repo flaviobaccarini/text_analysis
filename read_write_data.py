@@ -8,6 +8,8 @@ from pathlib import Path
 import pandas as pd
 
 
+#TODO: ADD THE POSSIBILITY TO READ ONLY A SINGLE FILE CSV (SO ALL THE DATA ARE STORED IN A SINGLE CSV)
+    
 def read_data(input_folder: str) -> tuple[pd.DataFrame]:
     '''
     This function reads the data in csv files, divided between 
