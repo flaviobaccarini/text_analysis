@@ -44,7 +44,7 @@ def read_data(input_folder: str) -> tuple[pd.DataFrame]:
     
     if len(csv_paths_stem) == 1:
         complete_dataframe = pd.read_csv(datasets_path / csv_paths_stem[0])
-        return (complete_dataframe)
+        return tuple(complete_dataframe)
     elif len(csv_paths_stem) == 2:
         train_dataframe, test_dataframe = read_two_dataframes(datasets_path, csv_paths_stem)
         return train_dataframe, test_dataframe
@@ -97,9 +97,9 @@ def split_dataframe(dataframes_list, fractions):
         df_test = dataframes_list[1]
         return df_train, df_valid, df_test
     else:
-        df_train = dataframes_list.sample(frac = (train_frac + val_frac))
-        df_test = dataframes_list.drop(df_train.index)
-        df_valid = df_train.sample(n = int(val_frac*len(dataframes_list)))
+        df_train = dataframes_list[0].sample(frac = (train_frac + val_frac))
+        df_test = dataframes_list[0].drop(df_train.index)
+        df_valid = df_train.sample(n = int(val_frac*len(dataframes_list[0])))
         df_train = df_train.drop(df_valid.index)
         return df_train, df_valid, df_test
 

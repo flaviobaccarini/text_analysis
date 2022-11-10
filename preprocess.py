@@ -1,4 +1,4 @@
-from read_write_data import read_data, write_data
+from read_write_data import read_data, write_data, split_dataframe, clean_dataframe
 import re, string
 import nltk
 from nltk.corpus import stopwords, wordnet
@@ -97,67 +97,19 @@ def finalpreprocess(tweet):
     return lemmatizer(stopword(clean_tweet, tweet))
 
 
-#building Word2Vec model
-class MeanEmbeddingVectorizer(object):
-    def __init__(self, word2vec, tf_bool):
-        self.word2vec = word2vec
-        # if a text is empty we should return a vector of zeros
-        # with the same dimensionality as all the other vectors
-        self.dim = len(next(iter(word2vec.values())))
-        self.tf_bool = tf_bool
-    def fit(self, X, y):
-            return self
-            
-    def transform(self, X, y):
-            new_X = np.array([
-                np.mean([self.word2vec[w] for w in words if w in self.word2vec]
-                        or [np.zeros(self.dim)], axis=0)
-                for words in X
-            ])
-            new_y = np.array(y.map({'real': 1, 'fake': 0}).astype(int))
-
-            if self.tf_bool is True:
-                new_X = tf.convert_to_tensor(new_X)
-                new_y = tf.convert_to_tensor(new_y)
-
-            return new_X, new_y
-
-def clean_dataframes_write_csv(input_folder, output_folder):
-    df_train, df_val, df_test = read_data(input_folder)
+def clean_dataframes_write_csv(dfs_cleaned, output_folder):
+    df_train, df_val, df_test = dfs_cleaned
     
     for dataframe in (df_train, df_val, df_test):
-        dataframe['clean_tweet'] = dataframe['tweet']
-        cleaned_tweet = [finalpreprocess(tweet_to_clean) for tweet_to_clean in tqdm(dataframe['clean_tweet'])]
-        dataframe['clean_tweet'] = cleaned_tweet
+        dataframe['clean_text'] = dataframe['text']
+        cleaned_text = [finalpreprocess(text_to_clean) for text_to_clean in tqdm(dataframe['clean_text'])]
+        dataframe['clean_text'] = cleaned_text
 
-    print(df_train['clean_tweet'].head())
+    print(df_train['clean_text'].head())
     print("="*40)
-    print(df_val['clean_tweet'].head())
+    print(df_val['clean_text'].head())
 
     write_data((df_train, df_val, df_test), output_folder = output_folder)
-
-
-def vectorize_data(data, vocabulary, tf_bool):
-
-    clean_text, label = data
-    X_tok = [nltk.word_tokenize(words) for words in clean_text]  
- 
-    model = Word2Vec(vocabulary, min_count=1)   
-    w2v = dict(zip(model.wv.index_to_key, model.wv.vectors)) 
-
-    modelw = MeanEmbeddingVectorizer(w2v, tf_bool)
-    # converting text to numerical data using Word2Vec
-    X_vectors_w2v, y_vector = modelw.transform(X_tok, label)
-
-    return X_vectors_w2v, y_vector
-
-def get_vocabulary(train_words, validation_words):
-
-    #df_train_val = pd.concat([df_train, df_val], ignore_index = True)
-    vocabulary = list(train_words) + list(validation_words)
-    vocabulary = [nltk.word_tokenize(words) for words in vocabulary]
-
-    return vocabulary
 
 
 def main():
@@ -167,7 +119,17 @@ def main():
     input_folder = config_parse.get('INPUT_OUTPUT', 'input_folder')
     output_folder = config_parse.get('INPUT_OUTPUT', 'folder_preprocessed_datasets')
 
-    clean_dataframes_write_csv(input_folder, output_folder)
+    fractions =    (float(config_parse.get('PREPROCESS', 'train_fraction')), 
+                    float(config_parse.get('PREPROCESS', 'val_fraction')),
+                    float(config_parse.get('PREPROCESS', 'test_fraction')))
+    dfs_raw = split_dataframe(read_data(input_folder), fractions)
+
+    column_names = (config_parse.get('PREPROCESS', 'column_name_text'), 
+                    config_parse.get('PREPROCESS', 'column_name_label'))
+
+    dfs_cleaned = clean_dataframe(dfs_raw, column_names)
+
+    clean_dataframes_write_csv(dfs_cleaned, output_folder)
 
 if __name__ == '__main__':
     main()
