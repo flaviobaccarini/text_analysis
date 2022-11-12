@@ -6,10 +6,7 @@ and the writing of the processed data after the preproccessing step.
 '''
 from pathlib import Path
 import pandas as pd
-import numpy
 
-#TODO: ADD THE POSSIBILITY TO READ ONLY A SINGLE FILE CSV (SO ALL THE DATA ARE STORED IN A SINGLE CSV)
-    
 def read_data(input_folder: str) -> tuple[pd.DataFrame]:
     '''
     This function reads the data in csv files, divided between 
@@ -29,14 +26,6 @@ def read_data(input_folder: str) -> tuple[pd.DataFrame]:
 
     Returns:
     =========
-    train_ds: pandas.DataFrame
-              The train dataframe.
-
-    val_ds:   pandas.DataFrame
-              The validation dataframe.
-    
-    test_ds:  pandas.DataFrame
-              The test dataframe.
     '''
     datasets_path = Path(input_folder)
     csv_paths = list(datasets_path.glob('**/*.csv'))
@@ -89,20 +78,17 @@ def handle_multiple_occurencies(paths_list, word_to_count):
 
 def split_dataframe(dataframes_list, fractions):
     train_frac, val_frac, test_frac = fractions
-    if len(dataframes_list) == 3:
-        return dataframes_list
-    elif len(dataframes_list) == 2:
+    if len(dataframes_list) == 2:
         df_train = dataframes_list[0].sample(frac = train_frac)
         df_valid = dataframes_list[0].drop(df_train.index)
         df_test = dataframes_list[1]
         return df_train, df_valid, df_test
     else:
-        df_train = dataframes_list[0].sample(frac = (train_frac + val_frac))
-        df_test = dataframes_list[0].drop(df_train.index)
+        df_test = dataframes_list[0].sample(frac = test_frac)
+        df_train = dataframes_list[0].drop(df_test.index)
         df_valid = df_train.sample(n = int(val_frac*len(dataframes_list[0])))
         df_train = df_train.drop(df_valid.index)
         return df_train, df_valid, df_test
-
 
 def clean_dataframe(dfs_raw, column_names):
     df_raw_train, df_raw_val, df_raw_test = dfs_raw
@@ -134,7 +120,7 @@ def write_data(dataframes: tuple[pd.DataFrame], output_folder: str) -> None:
     datasets_path = Path(output_folder)
     datasets_path.mkdir(parents=True, exist_ok=True)
     df_train, df_val, df_test = dataframes
-    df_train.to_csv(path_or_buf = datasets_path / 'constraint_english_train_preprocessed.csv', index=False)
-    df_val.to_csv(path_or_buf = datasets_path / 'constraint_english_val_preprocessed.csv', index=False)
-    df_test.to_csv(path_or_buf = datasets_path / 'english_test_with_labels_preprocessed.csv', index=False)
+    df_train.to_csv(path_or_buf = datasets_path / 'dataset_train_preprocessed.csv', index=False)
+    df_val.to_csv(path_or_buf = datasets_path / 'dataset_val_preprocessed.csv', index=False)
+    df_test.to_csv(path_or_buf = datasets_path / 'dataset_test_preprocessed.csv', index=False)
 

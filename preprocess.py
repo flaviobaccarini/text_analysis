@@ -119,10 +119,13 @@ def main():
     input_folder = config_parse.get('INPUT_OUTPUT', 'input_folder')
     output_folder = config_parse.get('INPUT_OUTPUT', 'folder_preprocessed_datasets')
 
-    fractions =    (float(config_parse.get('PREPROCESS', 'train_fraction')), 
-                    float(config_parse.get('PREPROCESS', 'val_fraction')),
-                    float(config_parse.get('PREPROCESS', 'test_fraction')))
-    dfs_raw = split_dataframe(read_data(input_folder), fractions)
+    dfs_raw = read_data(input_folder)
+    if len(dfs_raw) != 3:
+
+        fractions =    (float(config_parse.get('PREPROCESS', 'train_fraction')), 
+                        float(config_parse.get('PREPROCESS', 'val_fraction')),
+                        float(config_parse.get('PREPROCESS', 'test_fraction')))
+        dfs_raw = split_dataframe(dfs_raw, fractions)
 
     column_names = (config_parse.get('PREPROCESS', 'column_name_text'), 
                     config_parse.get('PREPROCESS', 'column_name_label'))

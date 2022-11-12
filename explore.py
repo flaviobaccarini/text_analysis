@@ -125,7 +125,7 @@ def word_count_twitter(tweets: pd.Series(str)) -> list[int]:
 
     Return:
     ========
-    char_count: list[int]
+    word_count: list[int]
                 The list containing the number of words for each single tweet.
     '''
     list_tweets = list(tweets)

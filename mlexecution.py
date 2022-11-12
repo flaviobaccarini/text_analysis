@@ -26,13 +26,13 @@ def main():
 
     df_train, df_valid, df_test = read_data(input_folder=input_folder)
     embedding_vector_size = int(config_parse.get('PARAMETERS_TRAIN', 'embedding_vector_size'))
-    vocabulary = get_vocabulary(df_train['clean_text'], df_valid['clean_text'])
-    modelw2v = Word2Vec(vocabulary, vector_size=embedding_vector_size, window=5, min_count=1, workers=4)   
+    vocabulary = get_vocabulary((df_train['clean_text'], df_valid['clean_text'], df_test['clean_text']))
+    
+    modelw2v = Word2Vec(vocabulary, vector_size=embedding_vector_size, window=5, min_count=2, workers=4)   
 
     keyed_vectors = modelw2v.wv  # structure holding the result of training
-    weights = keyed_vectors.vectors  # vectors themselves, a 2D numpy array    
-    index_to_key = keyed_vectors.index_to_key  # which row in `weights` corresponds to which word?
-
+    # weights = keyed_vectors.vectors  # vectors themselves, a 2D numpy array    
+    # index_to_key = keyed_vectors.index_to_key  # which row in `weights` corresponds to which word?
     print("The three most common words:")
     for word in keyed_vectors.index_to_key[:3]:
         print(word)
@@ -47,17 +47,21 @@ def main():
     lr_w2v = train_classificator(LogisticRegression(solver = 'liblinear', C=10, penalty = 'l2'), X_train, y_train)
     y_predict, y_prob = prediction(lr_w2v, X_test)
     visualize_results(y_test, y_predict, y_prob)
+    print("Accuracy: {}".format(lr_w2v.score(X_test, y_test)))
 
     print("\nDecision Tree Classifier:")
     dec_tree_w2v = train_classificator(DecisionTreeClassifier(), X_train, y_train)
     y_predict, y_prob = prediction(dec_tree_w2v, X_test)
     visualize_results(y_test, y_predict, y_prob)
+    print("Accuracy: {}".format(dec_tree_w2v.score(X_test, y_test)))
 
+    
     print("\nSupport Vector Machine:")
     svm_w2v = train_classificator(svm.SVC(probability = True), X_train, y_train)
     y_predict, y_prob = prediction(svm_w2v, X_test)
     visualize_results(y_test, y_predict, y_prob)
-
+    print("Accuracy: {}".format(svm_w2v.score(X_test, y_test)))
+    
     
 if __name__ == '__main__':
     main()

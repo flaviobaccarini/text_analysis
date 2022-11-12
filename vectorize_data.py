@@ -1,11 +1,7 @@
-from gensim.models import Word2Vec
 from nltk import word_tokenize
 import nltk
 import numpy as np
-import pandas as pd
 from sklearn import preprocessing
-from tensorflow.keras.layers import Embedding
-from tqdm import tqdm
 
 
 def vectorize_X_y_data(data, model):
@@ -18,20 +14,29 @@ def vectorize_X_y_data(data, model):
     modelw = MeanEmbeddingVectorizer(w2v)
     # converting text to numerical data using Word2Vec
     X_vectors_w2v = modelw.transform(X_tok)
-    
-    le = preprocessing.LabelEncoder()
-    le.fit(labels)
-    y_vector_categorical = le.transform(labels)
+
+    y_vector_categorical = tocat_encode_labels(labels)
 
     return X_vectors_w2v, y_vector_categorical
 
-def get_vocabulary(train_words, validation_words):
 
-    #df_train_val = pd.concat([df_train, df_val], ignore_index = True)
-    vocabulary = list(train_words) + list(validation_words)
+def tocat_encode_labels(labels):
+    le = preprocessing.LabelEncoder()
+    le.fit(labels)
+    y_vector_categorical = le.transform(labels)
+    return y_vector_categorical
+
+def get_vocabulary(list_words):
+    vocabulary = []
+    for words in list_words:
+        vocabulary.append(words)
+    vocabulary = [words for sublist_word in vocabulary for words in sublist_word]
+    
+    #vocabulary = [vocabulary.append(words) for words in list_words]
     vocabulary = [nltk.word_tokenize(words) for words in vocabulary]
 
     return vocabulary
+
 
 
 #building Word2Vec model
