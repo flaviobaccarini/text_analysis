@@ -6,25 +6,24 @@ from sklearn import preprocessing
 
 def vectorize_X_y_data(data, model):
 
-    clean_text, labels = data
+    clean_text = data
     X_tok = [word_tokenize(words) for words in clean_text]  
- 
-    w2v = dict(zip(model.wv.index_to_key, model.wv.vectors)) 
 
+    w2v = dict(zip(model.wv.index_to_key, model.wv.vectors)) 
     modelw = MeanEmbeddingVectorizer(w2v)
     # converting text to numerical data using Word2Vec
     X_vectors_w2v = modelw.transform(X_tok)
 
-    y_vector_categorical = tocat_encode_labels(labels)
-
-    return X_vectors_w2v, y_vector_categorical
+    return X_vectors_w2v
 
 
 def tocat_encode_labels(labels):
     le = preprocessing.LabelEncoder()
     le.fit(labels)
     y_vector_categorical = le.transform(labels)
-    return y_vector_categorical
+    classes = le.classes_
+    return y_vector_categorical, classes
+
 
 def get_vocabulary(list_words):
     vocabulary = []

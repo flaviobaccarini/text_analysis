@@ -22,6 +22,12 @@ def lower_strip(text):
     text_cleaned = re.sub('\s+', ' ', text_cleaned)   # elimina i white spaces lasciati dalla punteggiatura
     return text_cleaned
 
+def remove_numbers(text):
+    text_cleaned = re.sub(r'\d+st|\d+nd|\d+rd|\d+th', ' ', text) # eliminate: 1st, 2nd, 3rd and so on regarding the date
+    text_cleaned = re.sub(r'\d+k', ' ', text_cleaned) # remove something like 1k or 10k etc..
+    text_cleaned = re.sub(r'\d+', ' ', text_cleaned) # remove all the numbers
+    return text_cleaned
+
 def clean_tweet(text):
     text_cleaned = re.sub(r'http\S+', '', text) # remove url
     text_cleaned = re.compile('<.*?>').sub('', text_cleaned) # remove all chars between < >
@@ -29,6 +35,8 @@ def clean_tweet(text):
     #text_cleaned = re.compile('[%s]' % re.escape(string.punctuation)).sub(' ', text_cleaned)  # remove punctuations
     text_cleaned = re.sub(r'\d+st|\d+nd|\d+rd|\d+th', ' ', text_cleaned) # eliminate: 1st, 2nd, 3rd and so on regarding the date
     #text_cleaned = re.sub(r'\d',' ',text_cleaned) #remove the numbers
+    #text_cleaned = remove_numbers(text_cleaned)
+    
     text_cleaned = re.sub(r'[^\w]', ' ', text_cleaned) # will match anything that's not alphanumeric or underscore
     text_cleaned = text_cleaned.replace('"', ' ') 
     text_cleaned = text_cleaned.replace("'", ' ') 
@@ -102,12 +110,21 @@ def clean_dataframes_write_csv(dfs_cleaned, output_folder):
         cleaned_text = [finalpreprocess(text_to_clean) for text_to_clean in tqdm(dataframe['clean_text'])]
         dataframe['clean_text'] = cleaned_text
 
-    print(df_train['clean_text'].head())
-    print("="*40)
-    print(df_val['clean_text'].head())
-
     write_data((df_train, df_val, df_test), output_folder = output_folder)
 
+def visualize_cleaning_data(dfs_cleaned):
+    df_train, df_valid, df_test = dfs_cleaned
+    print(df_train['clean_text'].head())
+    print("="*40)
+    print(df_valid['clean_text'].head())
+    print("="*40)
+
+    print("Some random texts:\n" + "="*40)
+    for index, row in df_train.sample(n = 3).iterrows():
+        print("\nOriginal text:\n" + "="*40) 
+        print(row['text'])
+        print("\nCleaned text:\n" + "="*40)
+        print(row['clean_text'])
 
 def main():
     config_parse = configparser.ConfigParser()
@@ -134,6 +151,8 @@ def main():
     dfs_cleaned = clean_dataframe(dfs_raw, column_names)
 
     clean_dataframes_write_csv(dfs_cleaned, analysis_folder)
+
+    visualize_cleaning_data(dfs_cleaned)
 
 if __name__ == '__main__':
     main()
