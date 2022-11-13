@@ -55,7 +55,6 @@ def main():
     visualize_results(y_test, y_predict, y_prob)
     print("Accuracy: {}".format(dec_tree_w2v.score(X_test, y_test)))
 
-    
     print("\nSupport Vector Machine:")
     svm_w2v = train_classificator(svm.SVC(probability = True), X_train, y_train)
     y_predict, y_prob = prediction(svm_w2v, X_test)

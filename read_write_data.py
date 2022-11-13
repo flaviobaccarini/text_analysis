@@ -7,7 +7,7 @@ and the writing of the processed data after the preproccessing step.
 from pathlib import Path
 import pandas as pd
 
-def read_data(input_folder: str) -> tuple[pd.DataFrame]:
+def read_data(dataset_path, input_folder: str) -> tuple[pd.DataFrame]:
     '''
     This function reads the data in csv files, divided between 
     train, validation and test, from the input folder given as parameter to this function.
@@ -27,18 +27,19 @@ def read_data(input_folder: str) -> tuple[pd.DataFrame]:
     Returns:
     =========
     '''
-    datasets_path = Path(input_folder)
-    csv_paths = list(datasets_path.glob('**/*.csv'))
+    path_dataset = Path(dataset_path)
+    folder_to_read = path_dataset / input_folder
+    csv_paths = list(folder_to_read.glob('**/*.csv'))
     csv_paths_stem = [str(path.stem + path.suffix) for path in csv_paths]
     
     if len(csv_paths_stem) == 1:
-        complete_dataframe = pd.read_csv(datasets_path / csv_paths_stem[0])
+        complete_dataframe = pd.read_csv(folder_to_read / csv_paths_stem[0])
         return tuple(complete_dataframe)
     elif len(csv_paths_stem) == 2:
-        train_dataframe, test_dataframe = read_two_dataframes(datasets_path, csv_paths_stem)
+        train_dataframe, test_dataframe = read_two_dataframes(folder_to_read, csv_paths_stem)
         return train_dataframe, test_dataframe
     else:
-        train_dataframe, valid_dataframe, test_dataframe = read_three_dataframes(datasets_path, csv_paths_stem)
+        train_dataframe, valid_dataframe, test_dataframe = read_three_dataframes(folder_to_read, csv_paths_stem)
         return train_dataframe, valid_dataframe, test_dataframe
 
 
@@ -117,10 +118,11 @@ def write_data(dataframes: tuple[pd.DataFrame], output_folder: str) -> None:
                   The output folder path or the output folder name if the folder
                   is inside this current folder.
     '''
-    datasets_path = Path(output_folder)
+    datasets_path = Path('preprocessed_datasets')
+    datasets_path = datasets_path / output_folder
     datasets_path.mkdir(parents=True, exist_ok=True)
     df_train, df_val, df_test = dataframes
-    df_train.to_csv(path_or_buf = datasets_path / 'dataset_train_preprocessed.csv', index=False)
-    df_val.to_csv(path_or_buf = datasets_path / 'dataset_val_preprocessed.csv', index=False)
-    df_test.to_csv(path_or_buf = datasets_path / 'dataset_test_preprocessed.csv', index=False)
+    df_train.to_csv(path_or_buf = datasets_path / f'{output_folder}_train_preprocessed.csv', index=False)
+    df_val.to_csv(path_or_buf = datasets_path / f'{output_folder}_val_preprocessed.csv', index=False)
+    df_test.to_csv(path_or_buf = datasets_path / f'{output_folder}_test_preprocessed.csv', index=False)
 

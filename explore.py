@@ -242,11 +242,15 @@ def main():
     config_parse = configparser.ConfigParser()
     configuration = config_parse.read(sys.argv[1])
     
-    input_folder = config_parse.get('INPUT_OUTPUT', 'input_folder')
-    fractions =    (float(config_parse.get('PREPROCESS', 'train_fraction')), 
+    analysis_folder = config_parse.get('INPUT_OUTPUT', 'analysis')
+    dataset_folder = 'datasets'
+    
+    dfs_raw = read_data(dataset_folder, analysis_folder)
+    if len(dfs_raw) !=  3:
+        fractions = (float(config_parse.get('PREPROCESS', 'train_fraction')), 
                     float(config_parse.get('PREPROCESS', 'val_fraction')),
                     float(config_parse.get('PREPROCESS', 'test_fraction')))
-    dfs_raw = split_dataframe(read_data(input_folder), fractions)
+        dfs_raw = split_dataframe(dfs_raw, fractions)
 
     column_names = (config_parse.get('PREPROCESS', 'column_name_text'), 
                     config_parse.get('PREPROCESS', 'column_name_label'))

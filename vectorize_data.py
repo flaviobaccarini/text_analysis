@@ -38,7 +38,6 @@ def get_vocabulary(list_words):
     return vocabulary
 
 
-
 #building Word2Vec model
 class MeanEmbeddingVectorizer(object):
     def __init__(self, word2vec):

@@ -1,19 +1,16 @@
 from read_write_data import read_data, write_data, split_dataframe, clean_dataframe
-import re, string
+import re
 import nltk
 from nltk.corpus import stopwords, wordnet
 from nltk.tokenize import word_tokenize
 from nltk.stem import WordNetLemmatizer
 #from nltk.stem import SnowballStemmer # for stemming; but now used lemmatization
 from tqdm import tqdm
-import pandas as pd
-import numpy as np
-import tensorflow as tf
+from pathlib import Path
 #nltk.download('omw-1.4')
 #nltk.download('wordnet')
 #nltk.download('stopwords')
 # Tools for vectorizing input data
-from gensim.models import Word2Vec
 import sys
 import configparser
 
@@ -116,10 +113,14 @@ def main():
     config_parse = configparser.ConfigParser()
     configuration = config_parse.read(sys.argv[1])
     
-    input_folder = config_parse.get('INPUT_OUTPUT', 'input_folder')
-    output_folder = config_parse.get('INPUT_OUTPUT', 'folder_preprocessed_datasets')
+    #input_folder = config_parse.get('INPUT_OUTPUT', 'input_folder')
+    #output_folder = config_parse.get('INPUT_OUTPUT', 'folder_preprocessed_datasets')
 
-    dfs_raw = read_data(input_folder)
+    analysis_folder = config_parse.get('INPUT_OUTPUT', 'analysis')
+
+    dataset_folder = 'datasets'
+
+    dfs_raw = read_data(dataset_folder, analysis_folder)
     if len(dfs_raw) != 3:
 
         fractions =    (float(config_parse.get('PREPROCESS', 'train_fraction')), 
@@ -132,66 +133,7 @@ def main():
 
     dfs_cleaned = clean_dataframe(dfs_raw, column_names)
 
-    clean_dataframes_write_csv(dfs_cleaned, output_folder)
+    clean_dataframes_write_csv(dfs_cleaned, analysis_folder)
 
 if __name__ == '__main__':
     main()
-
-'''
-#clean_dataframes_write_csv()
-df_train, df_val, df_test = read_data(name_folder = 'datasets_modified')
-#Word2Vec
-# Word2Vec runs on tokenized sentences
-
-X_train_tok= [nltk.word_tokenize(i) for i in df_train['clean_tweet']]  
-X_val_tok= [nltk.word_tokenize(i) for i in df_val['clean_tweet']]
-
-df_train_val = pd.concat([df_train, df_val], ignore_index = True)
-df_train_val['clean_text_tok']=[nltk.word_tokenize(i) for i in df_train_val['clean_tweet']]
-model = Word2Vec(df_train_val['clean_text_tok'],min_count=1)     
-w2v = dict(zip(model.wv.index_to_key, model.wv.vectors)) 
-
-modelw = MeanEmbeddingVectorizer(w2v)
-# converting text to numerical data using Word2Vec
-X_train_vectors_w2v = modelw.transform(X_train_tok)
-X_val_vectors_w2v = modelw.transform(X_val_tok)
-
-y_train = df_train['label'].map({'real': 1, 'fake': 0}).astype(int)
-y_test = df_val['label'].map({'real': 1, 'fake': 0}).astype(int)
-
-
-#DA QUI FINISCE LA PARTE DI PREPROCCESING
-#TODO FARE UN MAIN IN CUI AL SUO INTERNO INSERISCI TUTTO IL PREPROCESSING
-
-lr_w2v=LogisticRegression(solver = 'liblinear', C=10, penalty = 'l2')
-lr_w2v.fit(X_train_vectors_w2v, y_train)  #model
-
-#Predict y value for test dataset
-y_predict = lr_w2v.predict(X_val_vectors_w2v)
-y_prob = lr_w2v.predict_proba(X_val_vectors_w2v)[:,1]
-
-print(classification_report(y_test,y_predict))
-print('Confusion Matrix:',confusion_matrix(y_test, y_predict))
- 
-fpr, tpr, thresholds = roc_curve(y_test, y_prob)
-roc_auc = auc(fpr, tpr)
-print('AUC:', roc_auc)
-
-#FITTING THE CLASSIFICATION MODEL using Naive Bayes(tf-idf)
-nb = MultinomialNB()
-
-scaler = MinMaxScaler((0, np.max(X_train_vectors_w2v)))
-X_train = scaler.fit_transform(X_train_vectors_w2v)
-X_test = scaler.transform(X_val_vectors_w2v)
-
-nb.fit(X_train, y_train)  
-#Predict y value for test dataset
-y_predict = nb.predict(X_test)
-y_prob = nb.predict_proba(X_test)[:,1]
-print(classification_report(y_test, y_predict))
-print('Confusion Matrix:',confusion_matrix(y_test, y_predict))
- 
-fpr, tpr, thresholds = roc_curve(y_test, y_prob)
-roc_auc = auc(fpr, tpr)
-print('AUC:', roc_auc)
-'''
