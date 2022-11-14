@@ -243,18 +243,19 @@ def main():
     configuration = config_parse.read(sys.argv[1])
     
     analysis_folder = config_parse.get('INPUT_OUTPUT', 'analysis')
+    seed = int(config_parse.get('PREPROCESS', 'seed'))
     dataset_folder = Path('datasets') / analysis_folder
     
     dfs_raw = read_data(dataset_folder)
 
-    
     if len(dfs_raw) !=  3:
         fractions = (float(config_parse.get('PREPROCESS', 'train_fraction')), 
                     float(config_parse.get('PREPROCESS', 'test_fraction')))
-        dfs_raw = split_dataframe(dfs_raw, fractions)
+        dfs_raw = split_dataframe(dfs_raw, fractions, seed)
 
     column_names = (config_parse.get('PREPROCESS', 'column_name_text'), 
                     config_parse.get('PREPROCESS', 'column_name_label'))
+
 
     df_train, df_val, df_test = clean_dataframe(dfs_raw, column_names)
 

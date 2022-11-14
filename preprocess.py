@@ -114,8 +114,8 @@ def clean_dataframes_write_csv(dfs_cleaned, output_folder, analysis_name):
         dataframe['clean_text'] = cleaned_text
         dataframe.drop(indices_to_remove, axis = 0, inplace = True)
         dataframe.reset_index(inplace = True)
+        dataframe.drop('index', axis = 'columns')
 
-    print(df_train.head())
     write_data((df_train, df_val, df_test), output_folder = output_folder, analysis = analysis_name)
 
 def print_cleaned_data(dfs_cleaned):
@@ -160,7 +160,7 @@ def main():
 
     clean_dataframes_write_csv(dfs_cleaned, output_folder, analysis_name)
 
-    #print_cleaned_data(dfs_cleaned)
+    print_cleaned_data(dfs_cleaned)
 
 if __name__ == '__main__':
     main()

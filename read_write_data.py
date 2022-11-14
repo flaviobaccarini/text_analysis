@@ -81,11 +81,11 @@ def handle_multiple_occurencies(paths_list, word_to_count):
 def split_dataframe(dataframes_list, fractions, seed):
     train_frac, test_frac = fractions
     if len(dataframes_list) == 2:
-        split_two_dataframes(dataframes_list, train_frac, seed)
+        df_train, df_valid, df_test = split_two_dataframes(dataframes_list, train_frac, seed)
     else:
         df_train, df_valid, df_test = split_single_dataframe(dataframes_list,
                                                              (train_frac, test_frac), seed)
-                                                             
+
     df_train = df_train.reset_index()
     df_valid = df_valid.reset_index()
     df_test = df_test.reset_index()
@@ -101,7 +101,8 @@ def split_single_dataframe(single_dataframe, fractions, seed):
     return df_train, df_valid, df_test
 
 def split_two_dataframes(dataframes, train_frac, seed):
-    df_train = dataframes[0].sample(frac = train_frac, random_state = seed)
+    n_frac = int( (len(dataframes[0]) + len(dataframes[1])) * train_frac)
+    df_train = dataframes[0].sample(n = n_frac, random_state = seed)
     df_valid = dataframes[0].drop(df_train.index)
     df_test = dataframes[1]
     return df_train, df_valid, df_test
@@ -112,8 +113,9 @@ def clean_dataframe(dfs_raw, column_names):
     correct_dataframes = []
 
     for dataframe in (df_raw_train, df_raw_val, df_raw_test):
-        df_new_correct = dataframe[[column_names[0], column_names[1]]] # COLUMN NUMBER 0: TEXT, COLUMN NUMBER 1: LABEL
-        df_new_correct = df_new_correct.rename({column_names[0]: 'text', column_names[1]: 'label'}, axis = 'columns')
+        df_new_correct = dataframe.loc[:, list(column_names)] # COLUMN NUMBER 0: TEXT, COLUMN NUMBER 1: LABEL
+        dict_new_names = {column_names[0]: 'text', column_names[1]: 'label'}
+        df_new_correct = df_new_correct.rename(dict_new_names, axis = 'columns')
         correct_dataframes.append(df_new_correct)
     
     return correct_dataframes
