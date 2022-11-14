@@ -55,35 +55,36 @@ def train_classificator(clf, X_train, y_train):
     clf.fit(X_train, y_train)
     return clf
 
+def calculate_max_len(text):
+    word_count = [len(str(words).split()) for words in text]
+    maxlen = int(np.mean(word_count) + 3*np.std(word_count))
+    return maxlen
+
+
 
 def train_neural_network(data,
                         embedding_vector_size,
                         batch_size,
                         epochs,
                         learning_rate,
-                        checkpoint_path,
-                        analysis):
+                        checkpoint_path):
 
     df_train, df_valid, df_test = data
 
-    # PREPARE THE TOKENIZER FOR THE DATA                    
-    word_count = [len(str(words).split()) for words in df_train['clean_text']]
-    maxlen = int(np.mean(word_count) + 3*np.std(word_count))
+    # TOKENIZE THE TEXT
+    maxlen = calculate_max_len(df_train['clean_text'])
 
-    max_num_words = int(len(get_vocabulary((df_train['clean_text'],
-                                    df_valid['clean_text'],
-                                    df_test['clean_text']))) * 1.5)
+    max_num_words = int(len(get_vocabulary(data)) * 1.5)
     tokenizer = tensorflow_tokenizer(max_num_words = max_num_words, 
-                                    text = df_train['clean_text'])
-
+                                    text = data[0]['clean_text'])
     vocab_size = len(tokenizer.word_index) + 1  # Adding 1 because of reserved 0 index
 
     # PREPARE THE DATA
     X_train = from_text_to_X_vector(df_train['clean_text'], tokenizer, maxlen)
     X_valid = from_text_to_X_vector(df_valid['clean_text'], tokenizer, maxlen)
 
-    y_train = tocat_encode_labels(df_train['label'])
-    y_valid = tocat_encode_labels(df_valid['label'])
+    y_train, _ = tocat_encode_labels(df_train['label'])
+    y_valid, _ = tocat_encode_labels(df_valid['label'])
 
     # BUILD THE MODEL
     model = build_model(vocab_size = vocab_size,
@@ -94,12 +95,9 @@ def train_neural_network(data,
                 metrics=['accuracy'])
 
     # CHECKPOINT CALLBACK
-    checkpoint_folder = Path(checkpoint_path)
-    checkpoint_folder = checkpoint_folder / analysis
-    checkpoint_folder.mkdir(parents=True, exist_ok=True)
-    checkpoint_filepath = checkpoint_folder / 'best_model.hdf5'
+    checkpoint_model_path = checkpoint_path / 'best_model.hdf5' 
     model_checkpoint_callback = ModelCheckpoint(
-    filepath=checkpoint_filepath,
+    filepath=checkpoint_model_path,
     save_weights_only=True,
     monitor='val_accuracy',
     mode='max',
@@ -122,38 +120,29 @@ def train_neural_network(data,
     # convert the history.history dict to a pandas DataFrame:     
     hist_df = pd.DataFrame(history.history) 
     # save to csv: 
-    hist_csv_file = checkpoint_folder / 'history.csv'
+    hist_csv_file = checkpoint_path / 'history.csv'
 
     hist_df.to_csv(hist_csv_file, index = False)
     
 
 def train_logistic_regressor(data,
-                            embedding_vector_size,
-                            min_count,
-                            random_state,
-                            checkpoint_path,
-                            analysis):
+                            modelw2v,
+                            file_path
+                            ):
     df_train, df_valid, df_test = data
-    vocabulary = get_vocabulary((df_train['clean_text'], df_valid['clean_text'], df_test['clean_text']))
-    modelw2v = Word2Vec(vocabulary, vector_size=embedding_vector_size, window=5,
-                         min_count=min_count, workers=1, seed = random_state)   
 
     # PREPARE THE DATA
     df_train_val = pd.concat([df_train, df_valid], ignore_index = True)
-    X_train, y_train = vectorize_X_y_data((df_train_val['clean_text'], df_train_val['label']), modelw2v)
-    X_test, y_test = vectorize_X_y_data((df_test['clean_text'], df_test['label']), modelw2v)
+    X_train = vectorize_X_y_data(df_train_val['clean_text'], modelw2v)
+    y_train, _ = tocat_encode_labels(df_train_val['label'])
 
     # TRAIN
     print("Train logistic regressor...")
-    lr_w2v = LogisticRegression(solver = 'liblinear', C=10, penalty = 'l2', max_iter=50)
+    lr_w2v = LogisticRegression(solver = 'liblinear', C=10, penalty = 'l2', max_iter=20)
     lr_w2v = train_classificator(lr_w2v, X_train, y_train)
     print("Logistic Regression: training done")
 
     # SAVING MODEL
-    checkpoint_path = Path(checkpoint_path)
-    checkpoint_path = checkpoint_path / analysis
-    checkpoint_path.mkdir(parents=True, exist_ok=True)
-    file_path = checkpoint_path / 'logistic_regression.sav'
     with open(file_path, 'wb') as file:
         pickle.dump(lr_w2v, file)
 
@@ -172,14 +161,26 @@ def main():
     batch_size = int(config_parse.get('PARAMETERS_TRAIN', 'batch_size'))
     min_count_words_w2v = int(config_parse.get('PARAMETERS_TRAIN', 'min_count_words_w2v'))
     random_state = int(config_parse.get('PREPROCESS', 'seed'))
+    checkpoint_path = Path('checkpoint') / analysis_folder
     
-    train_logistic_regressor(data, embedding_vector_size, min_count = min_count_words_w2v,
-                            checkpoint_path='checkpoint', analysis = analysis_folder, random_state=random_state)
- 
+    vocabulary = get_vocabulary((data[0]['clean_text'], data[1]['clean_text']))
+    modelw2v = Word2Vec(vocabulary, vector_size=embedding_vector_size, window=5,
+                         min_count=min_count_words_w2v, workers=1, seed = random_state)   
+    
+    checkpoint_path.mkdir(parents = True, exist_ok = True)
+    file_path_model_w2v = checkpoint_path / 'word2vec.model'
+    modelw2v.save(str(file_path_model_w2v))
 
+    file_path_model_lr = checkpoint_path / 'logistic_regression.sav'
+
+    train_logistic_regressor(data, modelw2v, file_path_model_lr)
+    
+    
+    # NEURAL NETWORK TRAIN:         
     train_neural_network(data, embedding_vector_size, batch_size = batch_size,
                         epochs = epochs, learning_rate = learning_rate,
-                        checkpoint_path = 'checkpoint', analysis = analysis_folder)
-    
+                        checkpoint_path = checkpoint_path)
+                        
+
 if __name__ == '__main__':
     main()

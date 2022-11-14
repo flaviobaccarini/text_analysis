@@ -13,7 +13,8 @@ def prediction(model, X_test, neural_network = False):
         y_prob = model.predict_proba(X_test)[:,1]
     return y_predict, y_prob
 
-def visualize_results(y_test, y_predict, y_prob, labels, title, history = None):
+def visualize_results(y_test, y_predict, y_prob, labels, title, history = None,
+                      folder_path = None):
     print(classification_report(y_test,y_predict))
     cm = confusion_matrix(y_test, y_predict)
     print('Confusion Matrix:', cm)
@@ -23,9 +24,11 @@ def visualize_results(y_test, y_predict, y_prob, labels, title, history = None):
     print('AUC:', roc_auc)
 
     if history is not None:
-        plot_history(history)
+        history_plot_path = folder_path / 'history.svg'
+        plot_history(history, filepath=history_plot_path)
 
-    make_confusion_matrix(cm, labels, title = title)
+    cm_plot_path = folder_path / (title + '.svg')
+    make_confusion_matrix(cm, labels, title = title, filepath=cm_plot_path)
     
 
 

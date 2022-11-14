@@ -10,7 +10,8 @@ def make_confusion_matrix(cf,
                           percent=True,
                           figsize=None,
                           cmap='Blues',
-                          title=None):
+                          title=None,
+                          filepath=None):
     '''
     This function will make a pretty plot of an sklearn Confusion Matrix cm using a Seaborn heatmap visualization.
     Arguments
@@ -23,6 +24,7 @@ def make_confusion_matrix(cf,
                    See http://matplotlib.org/examples/color/colormaps_reference.html
                    
     title:         Title for the heatmap. Default is None.
+    filepath:      File path where to save the figure. Default is None.
     '''
 
 
@@ -54,26 +56,30 @@ def make_confusion_matrix(cf,
 
 
     # MAKE THE HEATMAP VISUALIZATION
-    ax= plt.subplot()
+    fig, ax= plt.subplots(1, 1, figsize = figsize)
     sns.heatmap(cf, annot=box_labels, fmt='', ax=ax, cmap = cmap);  #annot=True to annotate cells, ftm='g' to disable scientific notation
 
     # labels, title and ticks
+    title_plot = title + " confusion matrix"
     ax.set_xlabel('Predicted labels')
     ax.set_ylabel('True labels')
     ax.xaxis.set_ticklabels(group_names)
     ax.yaxis.set_ticklabels(group_names)
-    ax.set_title(title)
+    ax.set_title(title_plot)
     plt.show()
 
+    if filepath is not None:
+        fig.savefig(filepath)
 
 
-def plot_history(history):
+
+def plot_history(history, filepath=None):
     sns.set(font_scale=1.4)
 
-    acc = history.history['accuracy']
-    val_acc = history.history['val_accuracy']
-    loss = history.history['loss']
-    val_loss = history.history['val_loss']
+    acc = history['accuracy']
+    val_acc = history['val_accuracy']
+    loss = history['loss']
+    val_loss = history['val_loss']
     x = range(1, len(acc) + 1)
 
     fig, (ax1, ax2) = plt.subplots(1,2, figsize=(12, 10))
@@ -84,7 +90,10 @@ def plot_history(history):
 
     ax2.plot(x, loss, 'b', label='Training loss')
     ax2.plot(x, val_loss, 'r', label='Validation loss')
-    ax2.title('Training and validation loss')
+    ax2.set_title('Training and validation loss')
     ax2.legend()
     
     plt.show()
+
+    if filepath is not None:
+        fig.savefig(filepath)
