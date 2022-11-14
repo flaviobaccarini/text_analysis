@@ -7,7 +7,7 @@ and the writing of the processed data after the preproccessing step.
 from pathlib import Path
 import pandas as pd
 
-def read_data(dataset_path, input_folder: str) -> tuple[pd.DataFrame]:
+def read_data(input_folder: str) -> tuple[pd.DataFrame]:
     '''
     This function reads the data in csv files, divided between 
     train, validation and test, from the input folder given as parameter to this function.
@@ -27,19 +27,20 @@ def read_data(dataset_path, input_folder: str) -> tuple[pd.DataFrame]:
     Returns:
     =========
     '''
-    path_dataset = Path(dataset_path)
-    folder_to_read = path_dataset / input_folder
-    csv_paths = list(folder_to_read.glob('**/*.csv'))
+    if type(input_folder) == str:
+        input_folder = Path(input_folder) 
+
+    csv_paths = list(input_folder.glob('**/*.csv'))
     csv_paths_stem = [str(path.stem + path.suffix) for path in csv_paths]
     
     if len(csv_paths_stem) == 1:
-        complete_dataframe = pd.read_csv(folder_to_read / csv_paths_stem[0])
-        return tuple(complete_dataframe)
+        complete_dataframe = pd.read_csv(input_folder / csv_paths_stem[0], index_col=False)
+        return complete_dataframe
     elif len(csv_paths_stem) == 2:
-        train_dataframe, test_dataframe = read_two_dataframes(folder_to_read, csv_paths_stem)
+        train_dataframe, test_dataframe = read_two_dataframes(input_folder, csv_paths_stem)
         return train_dataframe, test_dataframe
     else:
-        train_dataframe, valid_dataframe, test_dataframe = read_three_dataframes(folder_to_read, csv_paths_stem)
+        train_dataframe, valid_dataframe, test_dataframe = read_three_dataframes(input_folder, csv_paths_stem)
         return train_dataframe, valid_dataframe, test_dataframe
 
 
@@ -77,30 +78,47 @@ def handle_multiple_occurencies(paths_list, word_to_count):
 
     return max(paths_dict, key = paths_dict.get)
 
-def split_dataframe(dataframes_list, fractions):
-    train_frac, val_frac, test_frac = fractions
+def split_dataframe(dataframes_list, fractions, seed):
+    train_frac, test_frac = fractions
     if len(dataframes_list) == 2:
-        df_train = dataframes_list[0].sample(frac = train_frac)
-        df_valid = dataframes_list[0].drop(df_train.index)
-        df_test = dataframes_list[1]
-        return df_train, df_valid, df_test
+        split_two_dataframes(dataframes_list, train_frac, seed)
     else:
-        df_test = dataframes_list[0].sample(frac = test_frac)
-        df_train = dataframes_list[0].drop(df_test.index)
-        df_valid = df_train.sample(n = int(val_frac*len(dataframes_list[0])))
-        df_train = df_train.drop(df_valid.index)
-        return df_train, df_valid, df_test
+        df_train, df_valid, df_test = split_single_dataframe(dataframes_list,
+                                                             (train_frac, test_frac), seed)
+                                                             
+    df_train = df_train.reset_index()
+    df_valid = df_valid.reset_index()
+    df_test = df_test.reset_index()
+    return df_train, df_valid, df_test
+
+
+def split_single_dataframe(single_dataframe, fractions, seed):
+    train_frac, test_frac = fractions
+    df_test = single_dataframe.sample(frac = test_frac, random_state = seed)
+    df_train_val = single_dataframe.drop(df_test.index)
+    df_train = df_train_val.sample(n = int(train_frac*len(single_dataframe)), random_state = seed)
+    df_valid = df_train_val.drop(df_train.index)
+    return df_train, df_valid, df_test
+
+def split_two_dataframes(dataframes, train_frac, seed):
+    df_train = dataframes[0].sample(frac = train_frac, random_state = seed)
+    df_valid = dataframes[0].drop(df_train.index)
+    df_test = dataframes[1]
+    return df_train, df_valid, df_test
+
 
 def clean_dataframe(dfs_raw, column_names):
     df_raw_train, df_raw_val, df_raw_test = dfs_raw
     correct_dataframes = []
+
     for dataframe in (df_raw_train, df_raw_val, df_raw_test):
         df_new_correct = dataframe[[column_names[0], column_names[1]]] # COLUMN NUMBER 0: TEXT, COLUMN NUMBER 1: LABEL
-        df_new_correct = df_new_correct.rename({column_names[0]: 'text'}, axis = 'columns')
+        df_new_correct = df_new_correct.rename({column_names[0]: 'text', column_names[1]: 'label'}, axis = 'columns')
         correct_dataframes.append(df_new_correct)
+    
     return correct_dataframes
 
-def write_data(dataframes: tuple[pd.DataFrame], output_folder: str) -> None:
+def write_data(dataframes: tuple[pd.DataFrame], output_folder: str, analysis: str) -> None:
     '''
     This function writes the preprocessed data in csv files, divided between 
     train, validation and test, in the output folder passed as parameter.
@@ -118,11 +136,12 @@ def write_data(dataframes: tuple[pd.DataFrame], output_folder: str) -> None:
                   The output folder path or the output folder name if the folder
                   is inside this current folder.
     '''
-    datasets_path = Path('preprocessed_datasets')
-    datasets_path = datasets_path / output_folder
-    datasets_path.mkdir(parents=True, exist_ok=True)
+
+    if type(output_folder) == str:
+        output_folder = Path(output_folder)
+    
     df_train, df_val, df_test = dataframes
-    df_train.to_csv(path_or_buf = datasets_path / f'{output_folder}_train_preprocessed.csv', index=False)
-    df_val.to_csv(path_or_buf = datasets_path / f'{output_folder}_val_preprocessed.csv', index=False)
-    df_test.to_csv(path_or_buf = datasets_path / f'{output_folder}_test_preprocessed.csv', index=False)
+    df_train.to_csv(path_or_buf = output_folder / f'{analysis}_train_preprocessed.csv', index=False)
+    df_val.to_csv(path_or_buf = output_folder / f'{analysis}_val_preprocessed.csv', index=False)
+    df_test.to_csv(path_or_buf = output_folder / f'{analysis}_test_preprocessed.csv', index=False)
 

@@ -1,4 +1,3 @@
-
 from sklearn.metrics import classification_report, f1_score, accuracy_score, confusion_matrix
 from sklearn.metrics import roc_curve, auc, roc_auc_score
 from plotting_result import make_confusion_matrix, plot_history

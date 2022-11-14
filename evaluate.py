@@ -60,9 +60,9 @@ def main():
     configuration = config_parse.read(sys.argv[1])
     
     analysis_folder = config_parse.get('INPUT_OUTPUT', 'analysis')
-    dataset_folder = 'preprocessed_datasets'
+    dataset_folder = Path('preprocessed_datasets') / analysis_folder
 
-    data = read_data(dataset_folder, analysis_folder)
+    data = read_data(dataset_folder)
     _, _, df_test = data
 
     plot_path = Path('plots') / analysis_folder
@@ -89,7 +89,7 @@ def main():
     print("Logistic regressor model, accuracy: {:5.2f}%".format(100 * acc))
     
 
-    
+
     # NEURAL NETWORK FROM HERE
     checkpoint_path_weights_nn = checkpoint_path / 'best_model.hdf5'
     

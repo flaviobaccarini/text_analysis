@@ -101,18 +101,24 @@ def lemmatizer(text):
 def finalpreprocess(tweet):
     return lemmatizer(stopword(clean_tweet, tweet))
 
+import pandas as pd
 
-def clean_dataframes_write_csv(dfs_cleaned, output_folder):
+
+def clean_dataframes_write_csv(dfs_cleaned, output_folder, analysis_name):
     df_train, df_val, df_test = dfs_cleaned
-    
+
     for dataframe in (df_train, df_val, df_test):
         dataframe['clean_text'] = dataframe['text']
         cleaned_text = [finalpreprocess(text_to_clean) for text_to_clean in tqdm(dataframe['clean_text'])]
+        indices_to_remove = [index for index, text in enumerate(cleaned_text) if text == '']
         dataframe['clean_text'] = cleaned_text
+        dataframe.drop(indices_to_remove, axis = 0, inplace = True)
+        dataframe.reset_index(inplace = True)
 
-    write_data((df_train, df_val, df_test), output_folder = output_folder)
+    print(df_train.head())
+    write_data((df_train, df_val, df_test), output_folder = output_folder, analysis = analysis_name)
 
-def visualize_cleaning_data(dfs_cleaned):
+def print_cleaned_data(dfs_cleaned):
     df_train, df_valid, df_test = dfs_cleaned
     print(df_train['clean_text'].head())
     print("="*40)
@@ -133,26 +139,28 @@ def main():
     #input_folder = config_parse.get('INPUT_OUTPUT', 'input_folder')
     #output_folder = config_parse.get('INPUT_OUTPUT', 'folder_preprocessed_datasets')
 
-    analysis_folder = config_parse.get('INPUT_OUTPUT', 'analysis')
+    analysis_name = config_parse.get('INPUT_OUTPUT', 'analysis')
+    seed = int(config_parse.get('PREPROCESS', 'seed'))
+    dataset_folder = Path('datasets') / analysis_name
 
-    dataset_folder = 'datasets'
-
-    dfs_raw = read_data(dataset_folder, analysis_folder)
+    dfs_raw = read_data(dataset_folder)
     if len(dfs_raw) != 3:
 
-        fractions =    (float(config_parse.get('PREPROCESS', 'train_fraction')), 
-                        float(config_parse.get('PREPROCESS', 'val_fraction')),
+        fractions =    (float(config_parse.get('PREPROCESS', 'train_fraction')),
                         float(config_parse.get('PREPROCESS', 'test_fraction')))
-        dfs_raw = split_dataframe(dfs_raw, fractions)
+        dfs_raw = split_dataframe(dfs_raw, fractions, seed)
 
     column_names = (config_parse.get('PREPROCESS', 'column_name_text'), 
                     config_parse.get('PREPROCESS', 'column_name_label'))
 
     dfs_cleaned = clean_dataframe(dfs_raw, column_names)
 
-    clean_dataframes_write_csv(dfs_cleaned, analysis_folder)
+    output_folder = Path('preprocessed_datasets') / analysis_name
+    output_folder.mkdir(parents=True, exist_ok=True)
 
-    visualize_cleaning_data(dfs_cleaned)
+    clean_dataframes_write_csv(dfs_cleaned, output_folder, analysis_name)
+
+    #print_cleaned_data(dfs_cleaned)
 
 if __name__ == '__main__':
     main()

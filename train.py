@@ -49,8 +49,6 @@ def from_text_to_X_vector(text, tokenizer, maxlen):
     X = pad_sequences(X, padding='post', maxlen=maxlen)
     return X
 
-
-
 def train_classificator(clf, X_train, y_train):
     clf.fit(X_train, y_train)
     return clf
@@ -152,9 +150,9 @@ def main():
     configuration = config_parse.read(sys.argv[1])
     
     analysis_folder = config_parse.get('INPUT_OUTPUT', 'analysis')
-    dataset_folder = 'preprocessed_datasets'
+    dataset_folder = Path('preprocessed_datasets') / analysis_folder
 
-    data = read_data(dataset_folder, analysis_folder)
+    data = read_data(dataset_folder)
     embedding_vector_size = int(config_parse.get('PARAMETERS_TRAIN', 'embedding_vector_size'))
     epochs = int(config_parse.get('PARAMETERS_TRAIN', 'epochs'))
     learning_rate = float(config_parse.get('PARAMETERS_TRAIN', 'learning_rate'))
