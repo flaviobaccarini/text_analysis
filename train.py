@@ -1,12 +1,11 @@
-from read_write_data import read_data
-from vectorize_data import get_vocabulary, tocat_encode_labels, vectorize_X_y_data
+from binary_classifier.read_write_data import read_data
+from binary_classifier.vectorize_data import get_vocabulary, tocat_encode_labels, vectorize_X_data_lr
+from binary_classifier.vectorize_data import tensorflow_tokenizer, vectorize_X_data_tf, calculate_max_len
 import configparser
 import sys
 
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, LSTM, Dropout, Bidirectional, Embedding
-from tensorflow.keras.preprocessing.sequence import pad_sequences
-from tensorflow.keras.preprocessing.text import Tokenizer
 from tensorflow.keras.callbacks import ModelCheckpoint, EarlyStopping
 import tensorflow as tf
 
@@ -38,26 +37,9 @@ def build_model(vocab_size, embedding_dim, maxlen):
     return model
 
 
-def tensorflow_tokenizer(max_num_words, text):
-    tokenizer = Tokenizer(num_words=max_num_words)
-    tokenizer.fit_on_texts(text)
-    return tokenizer
-
-def from_text_to_X_vector(text, tokenizer, maxlen):
-    X = np.array(text)
-    X = tokenizer.texts_to_sequences(X)
-    X = pad_sequences(X, padding='post', maxlen=maxlen)
-    return X
-
 def train_classificator(clf, X_train, y_train):
     clf.fit(X_train, y_train)
     return clf
-
-def calculate_max_len(text):
-    word_count = [len(str(words).split()) for words in text]
-    maxlen = int(np.mean(word_count) + 3*np.std(word_count))
-    return maxlen
-
 
 
 def train_neural_network(data,
@@ -78,8 +60,8 @@ def train_neural_network(data,
     vocab_size = len(tokenizer.word_index) + 1  # Adding 1 because of reserved 0 index
 
     # PREPARE THE DATA
-    X_train = from_text_to_X_vector(df_train['clean_text'], tokenizer, maxlen)
-    X_valid = from_text_to_X_vector(df_valid['clean_text'], tokenizer, maxlen)
+    X_train = vectorize_X_data_tf(df_train['clean_text'], tokenizer, maxlen)
+    X_valid = vectorize_X_data_tf(df_valid['clean_text'], tokenizer, maxlen)
 
     y_train, _ = tocat_encode_labels(df_train['label'])
     y_valid, _ = tocat_encode_labels(df_valid['label'])
@@ -131,7 +113,7 @@ def train_logistic_regressor(data,
 
     # PREPARE THE DATA
     df_train_val = pd.concat([df_train, df_valid], ignore_index = True)
-    X_train = vectorize_X_y_data(df_train_val['clean_text'], modelw2v)
+    X_train = vectorize_X_data_lr(df_train_val['clean_text'], modelw2v)
     y_train, _ = tocat_encode_labels(df_train_val['label'])
 
     # TRAIN

@@ -2,12 +2,12 @@ import pickle
 import configparser
 import sys
 from pathlib import Path
-from vectorize_data import get_vocabulary, vectorize_X_y_data, tocat_encode_labels
-from read_write_data import read_data
-from train import build_model, tensorflow_tokenizer, from_text_to_X_vector, calculate_max_len
+from binary_classifier.vectorize_data import get_vocabulary, vectorize_X_data_lr, tocat_encode_labels
+from binary_classifier.read_write_data import read_data
+from train import build_model, tensorflow_tokenizer, vectorize_X_data_tf, calculate_max_len
 from gensim.models import Word2Vec
 import numpy as np
-from prediction_results import prediction, visualize_results
+from binary_classifier.prediction_results import prediction, visualize_results
 import pandas as pd
 
 
@@ -79,7 +79,7 @@ def main():
         lr_w2v = pickle.load(file)
 
     
-    X_test  = vectorize_X_y_data(df_test['clean_text'], modelw2v)
+    X_test  = vectorize_X_data_lr(df_test['clean_text'], modelw2v)
     y_test, classes  = tocat_encode_labels(df_test['label'])
 
     y_predict, y_prob, acc = evaluate_logistic_regression(X_test, y_test, modelw2v, lr_w2v)
@@ -102,7 +102,7 @@ def main():
 
     vocab_size = len(tokenizer.word_index) + 1  # Adding 1 because of reserved 0 index
 
-    X_test = from_text_to_X_vector(df_test['clean_text'], tokenizer, maxlen)
+    X_test = vectorize_X_data_tf(df_test['clean_text'], tokenizer, maxlen)
 
     y_predict, y_prob, acc = evaluate_neural_network(X_test, y_test, embedding_vector_size, vocab_size,
                             maxlen, checkpoint_path_weights_nn)

@@ -17,11 +17,9 @@ from pathlib import Path
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
-from read_write_data import read_data, clean_dataframe, split_dataframe
+from binary_classifier.read_write_data import read_data, clean_dataframe, split_dataframe
 import configparser
 import sys
-
-#TODO CERCA DI RENDERE LE FUNZIONI TUTTE UN PO' PIÙ GENERICHE... ---> QUESTO MODULO OK (MAGARI NON PERFETTO MA MEGLIO); CONTROLLA LA FUNZIONE DI READING
 
 #TODO CONTROLLA LA DOCUMENTAZIONE DI TUTTE LE FUNZIONI ORA
 def info_data(train_ds: pd.DataFrame,
@@ -130,7 +128,8 @@ def word_count_twitter(tweets: pd.Series(str)) -> list[int]:
     '''
     list_tweets = list(tweets)
     word_count = [len(str(words).split()) for words in list_tweets]
-   
+    if word_count == []: # CAPIRE SE VALE LA PENA TENERE O NO
+        word_count = [0]
     return word_count
 
 
@@ -150,12 +149,18 @@ def printer_word_chars(all_dicts_avg_labels,
               f'training {train_word_char_mean_dict[key]:.1f}, validation {val_word_char_mean_dict[key]:.1f}, '
               f'test {test_word_char_mean_dict[key]:.1f}')
 
-#TODO NEED SOME TESTING FOR THE BELOW FUNCTION
 def average_word_or_chars(labels, word_or_char_count):
-    unique_labels = labels.unique()
+    if list(labels) == []:   # CAPIRE SE VALE LA PENA TENERE O NO
+        print('Label list is EMPTY')
+        return {}
+    if list(word_or_char_count) == []:   # CAPIRE SE VALE LA PENA TENERE O NO
+        print('Count list is EMPTY')
+        return {}
+    labels_series = pd.Series(labels)
+    unique_labels = labels_series.unique()
     unique_labels_dict = dict.fromkeys(unique_labels, None)
-    df_word_char_count = pd.DataFrame({'label': labels, 'count': word_or_char_count})
-
+    df_word_char_count = pd.DataFrame({'label': labels_series, 'count': word_or_char_count})
+    
     for key_lab in unique_labels_dict:
         unique_labels_dict[key_lab] = df_word_char_count[df_word_char_count['label'] == key_lab]['count'].mean()
     
@@ -179,6 +184,8 @@ def char_count_twitter(tweets: pd.Series(str)) -> list[int]:
     '''
     list_tweets = list(tweets)
     char_count = [len(str(chars)) for chars in list_tweets]
+    if char_count == []: # CAPIRE SE VALE LA PENA TENERE O NO
+        char_count = [0]
     return char_count
 
 

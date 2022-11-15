@@ -1,4 +1,4 @@
-from read_write_data import read_data, write_data, split_dataframe, clean_dataframe
+from binary_classifier.read_write_data import read_data, write_data, split_dataframe, clean_dataframe
 import re
 import nltk
 from nltk.corpus import stopwords, wordnet
