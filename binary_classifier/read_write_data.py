@@ -35,7 +35,7 @@ def read_data(input_folder: str) -> tuple[pd.DataFrame]:
     
     if len(csv_paths_stem) == 1:
         complete_dataframe = pd.read_csv(input_folder / csv_paths_stem[0], index_col=False)
-        return complete_dataframe
+        return (complete_dataframe)
     elif len(csv_paths_stem) == 2:
         train_dataframe, test_dataframe = read_two_dataframes(input_folder, csv_paths_stem)
         return train_dataframe, test_dataframe
@@ -60,15 +60,22 @@ def read_three_dataframes(datasets_path, csv_paths_stem):
 
 def read_two_dataframes(datasets_path, csv_paths_stem):
     path_dict = {'train': None, 'test': None}
-    for phase in path_dict:
+    
+    path_dict['train'] = [csv_path for csv_path in csv_paths_stem if 'train' in str(csv_path).lower()]
+    if len(path_dict['train']) > 1:
+            path_dict['train'] = handle_multiple_occurencies(path_dict['train'], 'train')
+    else:
+            path_dict['train'] = path_dict['train'][0]
+    test_valid_name = [csv_path for csv_path in csv_paths_stem if not path_dict['train'] in str(csv_path).lower()][0]
+    '''for phase in path_dict:
         path_dict[phase] = [csv_path for csv_path in csv_paths_stem if phase in str(csv_path).lower()]
         if len(path_dict[phase]) > 1:
             path_dict[phase] = handle_multiple_occurencies(path_dict[phase], phase)
         else:
             path_dict[phase] = path_dict[phase][0]
-
+    '''
     train_ds = pd.read_csv(datasets_path / path_dict['train'], index_col=False)
-    test_ds = pd.read_csv(datasets_path / path_dict['test'], index_col=False)
+    test_ds = pd.read_csv(datasets_path / test_valid_name, index_col=False)
     return train_ds, test_ds
 
 def handle_multiple_occurencies(paths_list, word_to_count):
@@ -107,7 +114,7 @@ def split_two_dataframes(dataframes, train_frac, seed):
     df_test = dataframes[1]
     return df_train, df_valid, df_test
 
-
+#TODO: sposta questa funzione in preprocess e aggiungici una parte per eliminare eventuali righe vuote
 def clean_dataframe(dfs_raw, column_names):
     df_raw_train, df_raw_val, df_raw_test = dfs_raw
     correct_dataframes = []
