@@ -1,4 +1,4 @@
-from binary_classifier.read_write_data import read_data, write_data, split_dataframe, clean_dataframe
+from binary_classifier.read_write_data import read_data, write_data, split_dataframe
 import re
 import nltk
 from nltk.corpus import stopwords, wordnet
@@ -10,11 +10,13 @@ from pathlib import Path
 #nltk.download('omw-1.4')
 #nltk.download('wordnet')
 #nltk.download('stopwords')
-# Tools for vectorizing input data
+
 import sys
 import configparser
 import pandas as pd
 
+
+# np.where(df.applymap(lambda x: x == '')) per vedere dove ho empty string
 
 #TODO: sposta questa funzione in preprocess e aggiungici una parte per eliminare eventuali righe vuote
 def clean_dataframe(dfs_raw, column_names):
@@ -23,8 +25,10 @@ def clean_dataframe(dfs_raw, column_names):
 
     for dataframe in (df_raw_train, df_raw_val, df_raw_test):
         df_new_correct = dataframe.loc[:, list(column_names)] # COLUMN NUMBER 0: TEXT, COLUMN NUMBER 1: LABEL
-        dict_new_names = {column_names[0]: 'text', column_names[1]: 'label'}
-        df_new_correct = df_new_correct.rename(dict_new_names, axis = 'columns')
+        df_new_correct.columns = ['text', 'label']
+        indices_to_remove = df_new_correct[df_new_correct['text'] == ''].index
+        df_new_correct.drop(index = indices_to_remove, inplace = True)
+        df_new_correct.dropna(axis = 0, how = 'any', inplace = True)
         correct_dataframes.append(df_new_correct)
     
     return correct_dataframes
@@ -33,35 +37,8 @@ def clean_dataframe(dfs_raw, column_names):
 def lower_strip(text):
     text_cleaned = text.lower() # lowercase
     text_cleaned = text_cleaned.strip()  # strip (elimina gli spazi prima e dopo)
-    text_cleaned = re.sub('\s+', ' ', text_cleaned)   # elimina i white spaces lasciati dalla punteggiatura
+    text_cleaned = re.sub('\s+', ' ', text_cleaned)   # elimina i white spaces 
     return text_cleaned
-
-def remove_numbers(text):
-    text_cleaned = re.sub(r'\d+st|\d+nd|\d+rd|\d+th', ' ', text) # eliminate: 1st, 2nd, 3rd and so on regarding the date
-    text_cleaned = re.sub(r'\d+k', ' ', text_cleaned) # remove something like 1k or 10k etc..
-    text_cleaned = re.sub(r'\d+', ' ', text_cleaned) # remove all the numbers
-    return text_cleanedpyth
-
-def clean_tweet(text):
-    text_cleaned = re.sub(r'http\S+', '', text) # remove url
-    text_cleaned = re.compile('<.*?>').sub('', text_cleaned) # remove all chars between < >
-    text_cleaned = remove_emojis(text_cleaned)
-    #text_cleaned = re.compile('[%s]' % re.escape(string.punctuation)).sub(' ', text_cleaned)  # remove punctuations
-    text_cleaned = re.sub(r'\d+st|\d+nd|\d+rd|\d+th', ' ', text_cleaned) # eliminate: 1st, 2nd, 3rd and so on regarding the date
-    #text_cleaned = re.sub(r'\d',' ',text_cleaned) #remove the numbers
-    #text_cleaned = remove_numbers(text_cleaned)
-    
-    text_cleaned = re.sub(r'[^\w]', ' ', text_cleaned) # will match anything that's not alphanumeric or underscore
-    text_cleaned = text_cleaned.replace('"', ' ') 
-    text_cleaned = text_cleaned.replace("'", ' ') 
-    text_cleaned = lower_strip(text_cleaned) # lowercase and remove the whitespaces
-    return text_cleaned
-
-# STOPWORD REMOVAL
-def stopword(clean_tweet, text):
-    text_cleaned = clean_tweet(text)
-    words = [word for word in text_cleaned.split() if word not in stopwords.words('english')]
-    return ' '.join(words)
 
 def remove_emojis(text):
     emoj = re.compile("["
@@ -83,14 +60,37 @@ def remove_emojis(text):
         u"\u231a"
         u"\ufe0f"  # dingbats
         u"\u3030"
+        u"\u0023"
+        u"\u002a"
+        u"\u0030-\u0039"
                       "]+", re.UNICODE)
     return re.sub(emoj, '', text)
 
-def get_lemmatizer():
-    #LEMMATIZATION
-    # Initialize the lemmatizer
-    wl = WordNetLemmatizer()
-    return wl
+
+def remove_urls_tags(text):
+    text_cleaned = re.sub(r'http\S+', '', text) # remove url
+    text_cleaned = re.compile('<.*?>').sub('', text_cleaned) # remove all chars between < >
+    return text_cleaned
+
+def remove_quotmarks_underscore(text):
+    text_cleaned = text.replace('"', ' ')
+    text_cleaned = text_cleaned.replace("'", ' ') 
+    text_cleaned = re.sub('_+', ' ', text_cleaned)
+    return text_cleaned
+
+def clean_tweet(text):
+    text_cleaned = remove_urls_tags(text)
+    text_cleaned = remove_emojis(text_cleaned)
+    text_cleaned = re.sub(r'\d+st|\d+nd|\d+rd|\d+th', '', text_cleaned) # eliminate: 1st, 2nd, 3rd and so on regarding the date
+    text_cleaned = re.sub(r'[^\w]', ' ', text_cleaned) # will match anything that's not alphanumeric or underscore -> punctuation
+    text_cleaned = remove_quotmarks_underscore(text_cleaned)
+    text_cleaned = lower_strip(text_cleaned) # lowercase and remove the whitespaces
+    return text_cleaned
+
+# STOPWORD REMOVAL
+def stopword(text):
+    words = [word for word in text.split() if word not in stopwords.words('english')]
+    return ' '.join(words)
 
 # This is a helper function to map NTLK position tags
 def get_wordnet_pos(tag):
@@ -107,13 +107,13 @@ def get_wordnet_pos(tag):
 
 # Tokenize the sentence
 def lemmatizer(text):
-    wl = get_lemmatizer()
+    wl = WordNetLemmatizer()
     word_pos_tags = nltk.pos_tag(word_tokenize(text)) # Get position tags
     lemma_words = [wl.lemmatize(tag[0], get_wordnet_pos(tag[1])) for idx, tag in enumerate(word_pos_tags)] # Map the position tag and lemmatize the word/token
     return " ".join(lemma_words)
 
 def finalpreprocess(tweet):
-    return lemmatizer(stopword(clean_tweet, tweet))
+    return lemmatizer(stopword(clean_tweet(tweet)))
 
 
 def clean_dataframes_write_csv(dfs_cleaned, output_folder, analysis_name):

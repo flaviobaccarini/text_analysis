@@ -211,6 +211,34 @@ def test_read_three_df():
     for csv_path in csv_path_stem:
         (new_test_folder / csv_path).unlink()
 
+    new_test_folder.rmdir()
+
+
+def test_read_3df_multiple_word():
+    '''
+    This function tests the correct reading of the data, if the data 
+    are already split in three dataframes.
+    In particular, this test function prove the correct reading of the data
+    also if in the analysis name there is a 'train' (example: constrain contain train).
+    The example is made with 'constrain' and 'train' word, but it should be ok also for
+    'val', 'test'.
+    In order to do so we will create a "fake" folder and we will place 
+    some fake text data inside this folder.
+    '''
+ 
+    new_test_folder = Path('test_folder')
+    new_test_folder.mkdir(parents = True, exist_ok = True)
+
+    df_fakes = [] 
+    for phase in  ('train', 'valid', 'test'): 
+            fake_data = ({'phase': [phase for _ in range(100)], 
+                         'tweet': [ ''.join(random.choices(string.ascii_uppercase + string.digits, k = 10)) for _ in range(100)], 
+                         'id': [int(index) for index in range(100)], 
+                         'label': [random.choice(['real', 'fake']) for _ in range(100)]}) 
+            fake_data_dataframe = pd.DataFrame(fake_data)
+            df_fakes.append(fake_data_dataframe) 
+
+    df_fake_train, df_fake_val, df_fake_test = df_fakes
 
     # try if in the analysis name there is a "train" word
     csv_path_stem = ['constrain_train_dataset.csv',
@@ -239,6 +267,7 @@ def test_read_three_df():
         (new_test_folder / csv_path).unlink()
 
     new_test_folder.rmdir()
+
 
 @given(valid_test_phase = st.sampled_from(('val', 'test', 'random_name_phase')))
 def test_read_twodf(valid_test_phase):
@@ -277,7 +306,7 @@ def test_read_twodf(valid_test_phase):
     
     dfs_fake = read_two_dataframes(new_test_folder, csv_path_stem)
 
-    assert(len(dfs_fake) == 2) # contains 3 different dfs
+    assert(len(dfs_fake) == 2) # contains 2 different dfs
 
     # test if the dataset are correctly read
     df_train, df_valid = dfs_fake
@@ -504,10 +533,6 @@ def test_split_df_two_df_error():
     train_frac = 0.7
     fractions = (train_frac,)
 
-    # two possible reasons for this behaviour: 1) the train fraction is too big
-    #                                          2) the test dataset is too populated 
-    # in this case the second option is the problem: the fist dataset (which contained train and validation data)
-    # contained the same number of values as the second dataset (which is the test dataset) 
     with unittest.TestCase.assertRaises(unittest.TestCase, expected_exception = ValueError):
         df_split = split_dataframe(df_fakes, fractions, seed = 42)
 

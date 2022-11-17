@@ -82,7 +82,7 @@ def handle_multiple_occurencies(paths_list, word_to_count):
 
 def split_dataframe(dataframes_list, fractions, seed):
     if len(dataframes_list) == 2:
-        train_frac, = fractions
+        train_frac, *_ = fractions
         df_train, df_valid, df_test = split_two_dataframes(dataframes_list, train_frac, seed)
     else:
         train_frac, test_frac = fractions
@@ -118,18 +118,6 @@ def split_two_dataframes(dataframes, train_frac, seed):
     df_test = dataframes[1]
     return df_train, df_valid, df_test
 
-#TODO: sposta questa funzione in preprocess e aggiungici una parte per eliminare eventuali righe vuote
-def clean_dataframe(dfs_raw, column_names):
-    df_raw_train, df_raw_val, df_raw_test = dfs_raw
-    correct_dataframes = []
-
-    for dataframe in (df_raw_train, df_raw_val, df_raw_test):
-        df_new_correct = dataframe.loc[:, list(column_names)] # COLUMN NUMBER 0: TEXT, COLUMN NUMBER 1: LABEL
-        dict_new_names = {column_names[0]: 'text', column_names[1]: 'label'}
-        df_new_correct = df_new_correct.rename(dict_new_names, axis = 'columns')
-        correct_dataframes.append(df_new_correct)
-    
-    return correct_dataframes
 
 def write_data(dataframes: tuple[pd.DataFrame], output_folder: str, analysis: str) -> None:
     '''

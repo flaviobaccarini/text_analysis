@@ -17,7 +17,8 @@ from pathlib import Path
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
-from binary_classifier.read_write_data import read_data, clean_dataframe, split_dataframe
+from binary_classifier.read_write_data import read_data, split_dataframe
+from preprocess import clean_dataframe
 import configparser
 import sys
 
