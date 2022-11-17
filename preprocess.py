@@ -13,7 +13,21 @@ from pathlib import Path
 # Tools for vectorizing input data
 import sys
 import configparser
+import pandas as pd
 
+
+#TODO: sposta questa funzione in preprocess e aggiungici una parte per eliminare eventuali righe vuote
+def clean_dataframe(dfs_raw, column_names):
+    df_raw_train, df_raw_val, df_raw_test = dfs_raw
+    correct_dataframes = []
+
+    for dataframe in (df_raw_train, df_raw_val, df_raw_test):
+        df_new_correct = dataframe.loc[:, list(column_names)] # COLUMN NUMBER 0: TEXT, COLUMN NUMBER 1: LABEL
+        dict_new_names = {column_names[0]: 'text', column_names[1]: 'label'}
+        df_new_correct = df_new_correct.rename(dict_new_names, axis = 'columns')
+        correct_dataframes.append(df_new_correct)
+    
+    return correct_dataframes
 
 #convert to lowercase, strip and remove punctuations
 def lower_strip(text):
@@ -26,7 +40,7 @@ def remove_numbers(text):
     text_cleaned = re.sub(r'\d+st|\d+nd|\d+rd|\d+th', ' ', text) # eliminate: 1st, 2nd, 3rd and so on regarding the date
     text_cleaned = re.sub(r'\d+k', ' ', text_cleaned) # remove something like 1k or 10k etc..
     text_cleaned = re.sub(r'\d+', ' ', text_cleaned) # remove all the numbers
-    return text_cleaned
+    return text_cleanedpyth
 
 def clean_tweet(text):
     text_cleaned = re.sub(r'http\S+', '', text) # remove url
@@ -100,8 +114,6 @@ def lemmatizer(text):
 
 def finalpreprocess(tweet):
     return lemmatizer(stopword(clean_tweet, tweet))
-
-import pandas as pd
 
 
 def clean_dataframes_write_csv(dfs_cleaned, output_folder, analysis_name):

@@ -35,7 +35,7 @@ def read_data(input_folder: str) -> tuple[pd.DataFrame]:
     
     if len(csv_paths_stem) == 1:
         complete_dataframe = pd.read_csv(input_folder / csv_paths_stem[0], index_col=False)
-        return (complete_dataframe)
+        return complete_dataframe,
     elif len(csv_paths_stem) == 2:
         train_dataframe, test_dataframe = read_two_dataframes(input_folder, csv_paths_stem)
         return train_dataframe, test_dataframe
@@ -66,14 +66,9 @@ def read_two_dataframes(datasets_path, csv_paths_stem):
             path_dict['train'] = handle_multiple_occurencies(path_dict['train'], 'train')
     else:
             path_dict['train'] = path_dict['train'][0]
+
     test_valid_name = [csv_path for csv_path in csv_paths_stem if not path_dict['train'] in str(csv_path).lower()][0]
-    '''for phase in path_dict:
-        path_dict[phase] = [csv_path for csv_path in csv_paths_stem if phase in str(csv_path).lower()]
-        if len(path_dict[phase]) > 1:
-            path_dict[phase] = handle_multiple_occurencies(path_dict[phase], phase)
-        else:
-            path_dict[phase] = path_dict[phase][0]
-    '''
+
     train_ds = pd.read_csv(datasets_path / path_dict['train'], index_col=False)
     test_ds = pd.read_csv(datasets_path / test_valid_name, index_col=False)
     return train_ds, test_ds
@@ -81,34 +76,43 @@ def read_two_dataframes(datasets_path, csv_paths_stem):
 def handle_multiple_occurencies(paths_list, word_to_count):
     paths_dict = dict.fromkeys(paths_list, None)
     for index, key in enumerate(paths_dict):
-        paths_dict[key] = paths_list[index].count(word_to_count)
+        paths_dict[key] = paths_list[index].lower().count(word_to_count)
 
     return max(paths_dict, key = paths_dict.get)
 
 def split_dataframe(dataframes_list, fractions, seed):
-    train_frac, test_frac = fractions
     if len(dataframes_list) == 2:
+        train_frac, = fractions
         df_train, df_valid, df_test = split_two_dataframes(dataframes_list, train_frac, seed)
     else:
+        train_frac, test_frac = fractions
         df_train, df_valid, df_test = split_single_dataframe(dataframes_list,
                                                              (train_frac, test_frac), seed)
 
-    df_train = df_train.reset_index()
-    df_valid = df_valid.reset_index()
-    df_test = df_test.reset_index()
+    df_train = df_train.reset_index(drop = True)
+    df_valid = df_valid.reset_index(drop = True)
+    df_test = df_test.reset_index(drop = True)
+
     return df_train, df_valid, df_test
 
 
-def split_single_dataframe(single_dataframe, fractions, seed):
+def split_single_dataframe(dataframes_list, fractions, seed):
+    single_dataframe, = dataframes_list
     train_frac, test_frac = fractions
     df_test = single_dataframe.sample(frac = test_frac, random_state = seed)
     df_train_val = single_dataframe.drop(df_test.index)
-    df_train = df_train_val.sample(n = int(train_frac*len(single_dataframe)), random_state = seed)
+    df_train = df_train_val.sample(n = round(train_frac*len(single_dataframe)), random_state = seed)
     df_valid = df_train_val.drop(df_train.index)
     return df_train, df_valid, df_test
 
 def split_two_dataframes(dataframes, train_frac, seed):
-    n_frac = int( (len(dataframes[0]) + len(dataframes[1])) * train_frac)
+    n_frac = round( (len(dataframes[0]) + len(dataframes[1])) * train_frac)
+    if n_frac >= len(dataframes[0]):
+        raise ValueError("The train fraction is too big for this dataset\n"+
+                         f'{n_frac} = number of train values with this train fraction\n' + 
+                         f'{len(dataframes[0])} = number of values inside the train/val dataset\n' +
+                         f'{len(dataframes[1])} = number of values inside the test dataset\n' +
+                         "Please change either the train fraction or the test dataset.")
     df_train = dataframes[0].sample(n = n_frac, random_state = seed)
     df_valid = dataframes[0].drop(df_train.index)
     df_test = dataframes[1]
