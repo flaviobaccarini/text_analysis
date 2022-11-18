@@ -18,7 +18,6 @@ import pandas as pd
 
 # np.where(df.applymap(lambda x: x == '')) per vedere dove ho empty string
 
-#TODO: sposta questa funzione in preprocess e aggiungici una parte per eliminare eventuali righe vuote
 def clean_dataframe(dfs_raw, column_names):
     df_raw_train, df_raw_val, df_raw_test = dfs_raw
     correct_dataframes = []
@@ -60,10 +59,7 @@ def remove_emojis(text):
         u"\u231a"
         u"\ufe0f"  # dingbats
         u"\u3030"
-        u"\u0023"
-        u"\u002a"
-        u"\u0030-\u0039"
-                      "]+", re.UNICODE)
+                              "]+", re.UNICODE)
     return re.sub(emoj, '', text)
 
 
@@ -72,18 +68,34 @@ def remove_urls_tags(text):
     text_cleaned = re.compile('<.*?>').sub('', text_cleaned) # remove all chars between < >
     return text_cleaned
 
+
+#TODO: PROBABILMENTE QUESTA FUNZIONE È DI TROPPO
+# PERCHÈ I CARATTERI NON ALFANUMERICI (compresi underscore)
+# SONO GIÀ RIMOSSI DA UN'ALTRA FUNZIONE (remove_noalphanum_singlechar)
 def remove_quotmarks_underscore(text):
     text_cleaned = text.replace('"', ' ')
     text_cleaned = text_cleaned.replace("'", ' ') 
     text_cleaned = re.sub('_+', ' ', text_cleaned)
     return text_cleaned
 
-def clean_tweet(text):
+def remove_noalphanum(text):
+    # will match anything that's not alphanumeric or underscore -> punctuation:
+    #text_cleaned = re.sub(r'[^\w]', ' ', text) 
+
+    #will match anything that's not alphanumeric (also underscore!)
+    text_cleaned = re.sub(r'[^a-zA-Z0-9]', ' ', text)
+
+    # TODO: DECIDERE SE TENERE O NO
+    # perchè le stopword come I, s, e simili esistono già e vengono eliminate da stopword
+    # will match single characters: for example the s letters after the apostrophes
+    #text_cleaned = re.sub(' \w{1} ', ' ', text_cleaned)
+    return text_cleaned
+
+def clean_text(text):
     text_cleaned = remove_urls_tags(text)
     text_cleaned = remove_emojis(text_cleaned)
-    text_cleaned = re.sub(r'\d+st|\d+nd|\d+rd|\d+th', '', text_cleaned) # eliminate: 1st, 2nd, 3rd and so on regarding the date
-    text_cleaned = re.sub(r'[^\w]', ' ', text_cleaned) # will match anything that's not alphanumeric or underscore -> punctuation
-    text_cleaned = remove_quotmarks_underscore(text_cleaned)
+    #text_cleaned = re.sub(r'\d+st|\d+nd|\d+rd|\d+th', '', text_cleaned) # eliminate: 1st, 2nd, 3rd and so on regarding the date
+    text_cleaned = remove_noalphanum(text_cleaned)
     text_cleaned = lower_strip(text_cleaned) # lowercase and remove the whitespaces
     return text_cleaned
 
@@ -113,7 +125,7 @@ def lemmatizer(text):
     return " ".join(lemma_words)
 
 def finalpreprocess(tweet):
-    return lemmatizer(stopword(clean_tweet(tweet)))
+    return lemmatizer(stopword(clean_text(tweet)))
 
 
 def clean_dataframes_write_csv(dfs_cleaned, output_folder, analysis_name):
@@ -125,8 +137,7 @@ def clean_dataframes_write_csv(dfs_cleaned, output_folder, analysis_name):
         indices_to_remove = [index for index, text in enumerate(cleaned_text) if text == '']
         dataframe['clean_text'] = cleaned_text
         dataframe.drop(indices_to_remove, axis = 0, inplace = True)
-        dataframe.reset_index(inplace = True)
-        dataframe.drop('index', axis = 'columns')
+        dataframe.reset_index(inplace = True, drop = True)
 
     write_data((df_train, df_val, df_test), output_folder = output_folder, analysis = analysis_name)
 
