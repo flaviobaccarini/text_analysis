@@ -4,13 +4,13 @@ import nltk
 from nltk.corpus import stopwords, wordnet
 from nltk.tokenize import word_tokenize
 from nltk.stem import WordNetLemmatizer
-#from nltk.stem import SnowballStemmer # for stemming; but now used lemmatization
 from tqdm import tqdm
 from pathlib import Path
 #nltk.download('omw-1.4')
 #nltk.download('wordnet')
 #nltk.download('stopwords')
 
+from collections import defaultdict
 import sys
 import configparser
 import pandas as pd
@@ -18,6 +18,22 @@ import pandas as pd
 
 # np.where(df.applymap(lambda x: x == '')) per vedere dove ho empty string
 
+
+def drop_empty_rows(df):
+    df_no_empty_rows = df.copy()
+    indices_to_remove = df_no_empty_rows[df_no_empty_rows['text'] == ''].index
+    df_no_empty_rows.drop(index = indices_to_remove, inplace = True)
+    df_no_empty_rows.dropna(axis = 0, how = 'any', inplace = True)
+    return df_no_empty_rows
+
+def rename_columns(df, columns):
+    df_new_column_names = df.copy()
+    df_new_column_names = df.loc[:, list(columns)] # COLUMN NUMBER 0: TEXT, COLUMN NUMBER 1: LABEL
+    df_new_column_names.columns = ['text', 'label']
+    return df_new_column_names
+
+
+'''
 def clean_dataframe(dfs_raw, column_names):
     df_raw_train, df_raw_val, df_raw_test = dfs_raw
     correct_dataframes = []
@@ -31,12 +47,13 @@ def clean_dataframe(dfs_raw, column_names):
         correct_dataframes.append(df_new_correct)
     
     return correct_dataframes
+'''
 
 #convert to lowercase, strip and remove punctuations
 def lower_strip(text):
     text_cleaned = text.lower() # lowercase
     text_cleaned = text_cleaned.strip()  # strip (elimina gli spazi prima e dopo)
-    text_cleaned = re.sub('\s+', ' ', text_cleaned)   # elimina i white spaces 
+    text_cleaned = re.sub(r'\s+', ' ', text_cleaned)   # elimina i white spaces 
     return text_cleaned
 
 def remove_emojis(text):
@@ -88,7 +105,7 @@ def remove_noalphanum(text):
     # TODO: DECIDERE SE TENERE O NO
     # perchè le stopword come I, s, e simili esistono già e vengono eliminate da stopword
     # will match single characters: for example the s letters after the apostrophes
-    #text_cleaned = re.sub(' \w{1} ', ' ', text_cleaned)
+    text_cleaned = re.sub(r' \w{1} |^\w{1} |$\w{1}', ' ', text_cleaned)
     return text_cleaned
 
 def clean_text(text):
@@ -104,8 +121,19 @@ def stopword(text):
     words = [word for word in text.split() if word not in stopwords.words('english')]
     return ' '.join(words)
 
+
+
 # This is a helper function to map NTLK position tags
 def get_wordnet_pos(tag):
+    # DEFAULT: NOUN
+    # J : ADJECTIVE
+    # V : VERB
+    # R : ADVERB
+    tags_dict = defaultdict(lambda: wordnet.NOUN, 
+        {'J': wordnet.ADJ, 'V': wordnet.VERB,
+         'R': wordnet.ADV})
+    return tags_dict[tag[0]]
+    '''
     if tag.startswith('J'):
         return wordnet.ADJ
     elif tag.startswith('V'):
@@ -116,7 +144,7 @@ def get_wordnet_pos(tag):
         return wordnet.ADV
     else:
         return wordnet.NOUN
-
+    '''
 # Tokenize the sentence
 def lemmatizer(text):
     wl = WordNetLemmatizer()
@@ -124,22 +152,21 @@ def lemmatizer(text):
     lemma_words = [wl.lemmatize(tag[0], get_wordnet_pos(tag[1])) for idx, tag in enumerate(word_pos_tags)] # Map the position tag and lemmatize the word/token
     return " ".join(lemma_words)
 
-def finalpreprocess(tweet):
-    return lemmatizer(stopword(clean_text(tweet)))
+def finalpreprocess(text):
+    return lemmatizer(stopword(clean_text(text)))
 
 
-def clean_dataframes_write_csv(dfs_cleaned, output_folder, analysis_name):
-    df_train, df_val, df_test = dfs_cleaned
+def procces_dfs(dfs):
+    df_train, df_val, df_test = dfs
 
     for dataframe in (df_train, df_val, df_test):
         dataframe['clean_text'] = dataframe['text']
         cleaned_text = [finalpreprocess(text_to_clean) for text_to_clean in tqdm(dataframe['clean_text'])]
-        indices_to_remove = [index for index, text in enumerate(cleaned_text) if text == '']
         dataframe['clean_text'] = cleaned_text
-        dataframe.drop(indices_to_remove, axis = 0, inplace = True)
-        dataframe.reset_index(inplace = True, drop = True)
+        dataframe = drop_empty_rows(dataframe)
 
-    write_data((df_train, df_val, df_test), output_folder = output_folder, analysis = analysis_name)
+    return df_train, df_val, df_test
+   
 
 def print_cleaned_data(dfs_cleaned):
     df_train, df_valid, df_test = dfs_cleaned
@@ -176,14 +203,20 @@ def main():
     column_names = (config_parse.get('PREPROCESS', 'column_name_text'), 
                     config_parse.get('PREPROCESS', 'column_name_label'))
 
-    dfs_cleaned = clean_dataframe(dfs_raw, column_names)
+    #dfs_no_empty_rows = clean_dataframe(dfs_raw, column_names)
+
+    dfs_no_empty_rows = []
+    for df in dfs_raw:
+        df_new_columns = rename_columns(df, column_names)
+        dfs_no_empty_rows.append(drop_empty_rows(df_new_columns))
 
     output_folder = Path('preprocessed_datasets') / analysis_name
     output_folder.mkdir(parents=True, exist_ok=True)
 
-    clean_dataframes_write_csv(dfs_cleaned, output_folder, analysis_name)
+    dfs_prepreocessed = procces_dfs(dfs_no_empty_rows)
 
-    print_cleaned_data(dfs_cleaned)
+    write_data(dfs_prepreocessed, output_folder = output_folder, analysis = analysis_name)
+    print_cleaned_data(dfs_prepreocessed)
 
 if __name__ == '__main__':
     main()

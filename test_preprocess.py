@@ -1,16 +1,18 @@
 import numpy as np
 import pandas as pd
-from pathlib import Path
-import string    
+import nltk
+from nltk.tokenize import word_tokenize
+
 import random # define the random module  
 from hypothesis import strategies as st
 from hypothesis import given
-from preprocess import clean_dataframe, lower_strip
-from preprocess import remove_urls_tags, remove_emojis, remove_quotmarks_underscore
-from preprocess import remove_noalphanum, stopword, clean_text
+from preprocess import lower_strip, finalpreprocess
+from preprocess import remove_urls_tags, remove_emojis, get_wordnet_pos
+from preprocess import remove_noalphanum, stopword, clean_text, lemmatizer
 
 
-
+# queste prime due test function sarebbero da eliminare in quanto la funzione 
+# clean_dataframe è stata splitatta in due funzioni: rename_columns e drop_empty_rows
 @given(column_names = st.lists(st.text(min_size = 1, max_size = 10), min_size = 2, max_size = 2),
 all_sentences = st.lists(st.lists(st.text(min_size=0, max_size=20), min_size = 0, max_size = 100),
                          min_size = 3, max_size = 3))
@@ -266,15 +268,26 @@ def test_rm_singlechar():
     In particular, this test functions tests that all the single
     characters are removed from the text (the 's' after the apostrophe for example.)
     '''
-    test_example = "Hello, it's me"
-    test_no_single_char = remove_noalphanum(test_example)
+    text_example = ["Hello, it's me",
+                    "I've done something",
+                    "The U S government"]
+    
+    texts_no_singlechar = []
+    # THIS EXAMPLE IS DONE BECAUSE IF IN THE TEXT THERE IS U.S.
+    # WITHOUT PUNCTUATION WE FIND U S
+    text_example[2] = stopword(text_example[2].lower())
 
-    test_example1 = "I've done something"
-    test_twochars = remove_noalphanum(test_example1)
+    for text in text_example:
+        texts_no_singlechar.append(remove_noalphanum(text))
 
-    assert(test_no_single_char == 'Hello  it me')
-    assert(test_twochars == "I ve done something")
+    assert(texts_no_singlechar[0] == 'Hello  it me')
+    assert(texts_no_singlechar[1] == " ve done something")
 
+    print(texts_no_singlechar)
+    # FROM U S the stopword can eliminate only the S
+    assert(text_example[2] == 'u government')
+    # BUT NOW WE CAN ELIMINATE ALSO THE u WORD:
+    assert(texts_no_singlechar[2] == ' government')
 
 def test_clean_text():
     '''
@@ -327,3 +340,110 @@ def test_stopword():
     assert(sentences_stop_word[1] == 'pen')
     assert(sentences_stop_word[2] == 'hello world')
     assert(sentences_stop_word[3] == 'random sentence see works')
+
+
+def test_lemmatizer():
+    '''
+    Test function to test the correct working for the lemmatizer function.
+    The lemmatizer function take a text (string) as input and lemmatize the text.
+    The output is the lemmatized text.
+    '''
+    texts_to_lemmatize = ["The striped bats are hanging on their feet for best",
+                          "All the players are playing.",
+                          "Cats and dogs usually are not best friends.",
+                          "Accordingly to the weather forecast, tomorrow it's going to rain",
+                          "the text at this preprocess point would be all lower and without punctuations",
+                        ]
+    texts_lemmatized = []
+
+    # let's see how all the process works: 
+    # 1) we start from a lower text with no punctuation 
+    # 2) we apply the stopword
+    # 3) we lemmatize the text 
+    texts_to_lemmatize[4] = stopword(texts_to_lemmatize[4])
+
+    for text in texts_to_lemmatize:
+        lemmatized_text = lemmatizer(text)
+        texts_lemmatized.append(lemmatized_text)
+
+    
+    assert(texts_lemmatized[0] == 'The striped bat be hang on their foot for best')
+    assert(texts_lemmatized[1] == 'All the player be play .')
+    assert(texts_lemmatized[2] == 'Cats and dog usually be not best friend .')
+    assert(texts_lemmatized[3] == "Accordingly to the weather forecast , tomorrow it 's go to rain")
+    assert(texts_lemmatized[4] == 'text preprocess point would lower without punctuation')
+
+def test_get_wordnet_pos():
+    '''
+    Test function to test how the get_wordnet_pos function works.
+    The idea is to match all the words from the sentences with the wordnet tags,
+    in order to lemmatize the words after this process.
+    '''
+    text_to_test = ['This is a try',
+                    "it is incredibly beautiful",
+                    "i run outside if the weather is really good"]
+    tags = [nltk.pos_tag(word_tokenize(text)) for text in text_to_test]
+
+    wordnet_pos_tags = []
+    n = 1
+    for tag in tags:
+        only_tag = [x[n] for x in tag]
+        wordnet_pos = [get_wordnet_pos(tag) for tag in only_tag]
+        wordnet_pos_tags.append(wordnet_pos)
+  
+    assert(wordnet_pos_tags[0] == ['n', 'v', 'n', 'n']) # NOUN, VERB, NOUN, NOUN
+    assert(wordnet_pos_tags[1] == ['n', 'v', 'r', 'a']) # NOUN, VERB, ADVERB, ADJECTIVE
+    assert(wordnet_pos_tags[2] == ['n', 'v', 'n', 'n', 'n', 'n', 'v', 'r', 'a'])
+    
+
+
+def test_final_preprocess():
+    '''
+    Test function to test how the finalpreprocess function works.
+    Final preprocess is the function that applies all the functions
+    for cleaning the text. 
+    The output of this function should be only some meaningful words
+    for the sentence to analyze.
+    '''
+
+    text_example = ['Some random text to use',
+                    'This year 2022 is fantastic',
+                    "I don't know what to do!",
+                    "this is a try with a tag: #TAG",
+                    '"Hello this is my website: https://wikipedia.org!"',
+                    "<TEXT> here there is some text <TEXT>",
+                    "This is my favorite astronaut \U0001F9D1!",
+                    "The parents are watching the TV",
+                    "How are you?",
+                    "The U.S. government said something about COVID-19.",
+                    "@User_10 what are you doing?"]
+
+    text_processed = []
+
+    for text in text_example:
+        text_processed.append(finalpreprocess(text))
+
+    assert(text_processed[0] == 'random text use')
+    assert(text_processed[1] == 'year 2022 fantastic')
+    assert(text_processed[2] == 'know')
+    assert(text_processed[3] == 'try tag tag')
+    assert(text_processed[4] == 'hello website')
+    assert(text_processed[5] == 'text')
+    assert(text_processed[6] == 'favorite astronaut')
+    assert(text_processed[7] == 'parent watch tv')
+    assert(text_processed[8] == '')
+    assert(text_processed[9] == 'government say something covid 19')
+    assert(text_processed[10] == 'user 10')
+
+
+def test_rename_columns():
+    '''
+    '''
+
+def test_drop_empty():
+    '''
+    '''
+
+def test_final_cleaning():
+    '''
+    '''
