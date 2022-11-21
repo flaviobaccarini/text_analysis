@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 import nltk
 from nltk.tokenize import word_tokenize
+import string
 
 import random # define the random module  
 from hypothesis import strategies as st
@@ -9,74 +10,7 @@ from hypothesis import given
 from preprocess import lower_strip, finalpreprocess
 from preprocess import remove_urls_tags, remove_emojis, get_wordnet_pos
 from preprocess import remove_noalphanum, stopword, clean_text, lemmatizer
-
-
-# queste prime due test function sarebbero da eliminare in quanto la funzione 
-# clean_dataframe è stata splitatta in due funzioni: rename_columns e drop_empty_rows
-@given(column_names = st.lists(st.text(min_size = 1, max_size = 10), min_size = 2, max_size = 2),
-all_sentences = st.lists(st.lists(st.text(min_size=0, max_size=20), min_size = 0, max_size = 100),
-                         min_size = 3, max_size = 3))
-def test_clean_df_colname(column_names, all_sentences):
-    #TODO: QUESTA FUNZIONE SI PUÒ SNELLIRE VOLENDO TOGLIENDO LE all_sentences COME ARGOMENTO...
-    '''
-    Test function to prove the correctly rename of the columns in the new dataset.
-    The initial dataset contained at least two columns with the name given in column_names.
-    These two columns contained: 1) text 2) labels.
-    The final dataset contain only two columns with name "text" and "label" that correspond
-    to the text and the label.
-    '''
-
-    df_fakes = []
-    unique_labels = ['real', 'fake']
-
-    for sentence in (all_sentences):
-        labels = [unique_labels[random.randrange(len(unique_labels))] for _ in range(len(sentence))]
-        fake_data =({column_names[0]: sentence, column_names[1]: labels})
-        fake_data_dataframe = pd.DataFrame(fake_data)
-        df_fakes.append(fake_data_dataframe)
-
-    dfs_cleaned = clean_dataframe(df_fakes, column_names)
-
-    assert(len(dfs_cleaned) == 3) # check that there are three dataframes
-    for df_clean in dfs_cleaned:
-        assert(df_clean.columns.values.tolist() == ['text', 'label']) # check name of colums are correct
-        if len(df_clean) != 0: # check if in the label column there are actually the labels
-            assert(list(df_clean['label']).count('real') > 0 or list(df_clean['label']).count('fake') > 0 )
-
-
-
-@given(column_names = st.lists(st.text(min_size = 1, max_size = 10), min_size = 2, max_size = 2),
-all_sentences = st.lists(st.lists(st.text(min_size=0, max_size=20), min_size = 0, max_size = 100),
-                         min_size = 3, max_size = 3))
-def test_clean_empty_df(column_names, all_sentences):
-    #TODO: QUESTA FUNZIONE SI PUÒ SNELLIRE VOLENDO TOGLIENDO LE column_names COME ARGOMENTO...
-    '''
-    Test function to prove the correctly cleaning of the dataframe.
-    The initial dataset can be composed of empty cells, or cells with no text inside (only '').
-    This kind of data are not so meaningful, so the idea behind this function is to remove these rows.
-    The final dataset contain only rows with text.
-    '''
-    df_fakes = []
-    unique_labels = ['real', 'fake',]
-
-    for sentence in (all_sentences):
-        labels = [unique_labels[random.randrange(len(unique_labels))] for _ in range(len(sentence))]
-        fake_data =({column_names[0]: sentence, column_names[1]: labels})
-        fake_data_dataframe = pd.DataFrame(fake_data)
-        df_fakes.append(fake_data_dataframe)
-
-    dfs_cleaned = clean_dataframe(df_fakes, column_names)
-
-    assert(len(dfs_cleaned) == 3) # check that there are three dataframes
-    for df_clean in dfs_cleaned:
-        assert(len(np.where(pd.isnull(df_clean))[0]) == 0) # no empty cells for text
-        assert(len(np.where(pd.isnull(df_clean))[1]) == 0) # no empty cells for label
-        assert( len(np.where(df_clean.applymap(lambda x: x == ''))[0]) == 0) # no cells '' for text
-        assert( len(np.where(df_clean.applymap(lambda x: x == ''))[1]) == 0) # no cells '' for label
-
-        if len(df_clean )> 0:
-            text_count = map(len, df_clean['text'])
-            assert(min(text_count) >= 1)
+from preprocess import rename_columns, drop_empty_rows
 
 def test_lower():
     '''
@@ -194,45 +128,6 @@ def test_remove_emojis():
     assert(text_with_no_emojis[6] == 'This is SOS: ')
     assert(text_with_no_emojis[7] == 'This is red circle: ')
 
-#TODO: PROBABILMENTE LE DUE FUNZIONI SCRITTE QUI SOTTO SONO DI TROPPO
-
-'''
-def test_remove_quotation_marks():
-    '''
-#    This test function tests the correct working of the remove_quotmarks_underscore function.
-#    In particular, this test functions tests that the quotation marks or the apostrophes are eliminated from the sentences
-#    with leaving one space between words. In this way, if we have something like "I've done something...", 
-#    it remains just "I ve done something..." and with the lemmatizer and the stopwords it's possible to remove both
-#    "I" and "ve".
-'''
-    text_example1 = "Hello world, it's me"
-    text_no_quot_mark1 = remove_quotmarks_underscore(text_example1)
-
-    text_example2 = '"Hello world" he said'
-    text_no_quot_mark2 = remove_quotmarks_underscore(text_example2)
-
-    assert(text_no_quot_mark1 == 'Hello world, it s me')
-    assert(text_no_quot_mark2 == ' Hello world  he said')
-
-'''
-
-'''
-def test_rm_underscore():
-'''
-#    This test function tests the correct working of the remove_quotmarks_underscore function.
-#    In particular, this test functions tests that underscores are eliminated from the sentences
-#    with leaving one spaces between words.
-'''
-    text_example1 = "__Hello world__"
-    text_no_underscore1 = remove_quotmarks_underscore(text_example1)
-
-    text_example2 = 'Hello_world'
-    text_no_underscore2 = remove_quotmarks_underscore(text_example2)
-
-    assert(text_no_underscore1 == ' Hello world ')
-    assert(text_no_underscore2 == 'Hello world')
-'''
-
 def test_rm_noalphanumeric():
     '''
     This test function tests the correct working of the 
@@ -306,13 +201,11 @@ def test_clean_text():
         cleaned_text = clean_text(text)
         texts_cleaned.append(cleaned_text)
 
-    print(texts_cleaned[4])
     assert(texts_cleaned[0] == 'hello my name is flavio')
     assert(texts_cleaned[1] == 'wikpedia site')
     assert(texts_cleaned[2] == 'project for binary classification')
-    assert(texts_cleaned[3] == 'that s my car a very nice one')
+    assert(texts_cleaned[3] == 'that my car very nice one')
     assert(texts_cleaned[4] == 'user 12 hello my name is user 12')
-
 
 def test_stopword():
     '''
@@ -435,15 +328,66 @@ def test_final_preprocess():
     assert(text_processed[9] == 'government say something covid 19')
     assert(text_processed[10] == 'user 10')
 
+@given(column_names = st.lists(st.text(max_size=10), min_size=2, max_size=2, unique = True)) 
+def test_rename_columns(column_names):
+    '''
+    Test function to test the working of the rename_columns function.
+    The rename_columns function takes as input the dataframe that the user wants
+    to change the column names and the text's and labels' column names. 
+    The order of the column names given as input to the function is important:
+    so the list (or tuple) must be always composed by the first string that corresponds
+    to the text's column name and the second string, which corresponds to the label's column name.
+    The output is a new dataframe composed by just two columns with the names: "text", "label".
+    '''
 
-def test_rename_columns():
-    '''
-    '''
+    unique_labels = ['real', 'fake']
 
-def test_drop_empty():
-    '''
-    '''
+    sentences = [' '.join(random.choices(string.ascii_letters + 
+                             string.digits, k=10)) for _ in range(100)]
+    labels = [unique_labels[random.randrange(len(unique_labels))] for _ in range(100)]
 
-def test_final_cleaning():
+    other_text = [' '.join(random.choices(string.ascii_letters + 
+                             string.digits, k=10)) for _ in range(100)]
+
+    df_fake = pd.DataFrame({column_names[0]: sentences, column_names[1]: labels, 'other': other_text })
+    
+    df_correct_col_names = rename_columns(df_fake, column_names)
+
+    assert(len(df_correct_col_names.columns.values.tolist()) == 2) # only two columns
+    assert(df_correct_col_names.columns.values.tolist() == ['text', 'label']) # check name of colums are correct
+    if len(df_correct_col_names) != 0: # check if in the label column there are actually the labels
+        assert(list(df_correct_col_names['label']).count('real') > 0 or list(df_correct_col_names['label']).count('fake') > 0 )
+
+    # THE ORDER OF THE COLUMNS IN THE DATAFRAME IS NOT IMPORTANT
+    # THE IMPORTANT IS THE ORDER OF THE COLUMN NAMES IN THE rename_columns FUNCTION
+    df_fake_inverted_order = pd.DataFrame({column_names[1]: labels, column_names[0]: sentences})
+    df_inverted_order_colnames = rename_columns(df_fake_inverted_order, column_names)
+    assert(df_inverted_order_colnames.columns.values.tolist() == ['text', 'label']) # check name of colums are correct
+    if len(df_inverted_order_colnames) != 0: # check if in the label column there are actually the labels
+        assert(list(df_inverted_order_colnames['label']).count('real') > 0 or list(df_inverted_order_colnames['label']).count('fake') > 0 )
+
+
+@given(all_sentences = st.lists(st.text(min_size=0, max_size=20), min_size = 0, max_size = 20))
+def test_drop_empty(all_sentences):
     '''
+    Test function to prove the correctly dropping of the empty rows in the dataframe.
+    The initial dataset can be composed of empty cells, or cells with no text inside (only '').
+    This kind of data are not so meaningful, so this function cares to remove these rows.
+    The final dataset contain only rows with text.
     '''
+    unique_labels = ['real', 'fake',]
+    labels = [unique_labels[random.randrange(len(unique_labels))] for _ in range(len(all_sentences))]
+
+    df_fake = pd.DataFrame({'text': all_sentences, 'label': labels})
+
+    df_no_empty_rows = drop_empty_rows(df_fake)
+
+    assert(len(np.where(pd.isnull(df_no_empty_rows))[0]) == 0) # no empty cells for text
+    assert(len(np.where(pd.isnull(df_no_empty_rows))[1]) == 0) # no empty cells for label
+    assert( len(np.where(df_no_empty_rows.applymap(lambda x: x == ''))[0]) == 0) # no cells '' for text
+    assert( len(np.where(df_no_empty_rows.applymap(lambda x: x == ''))[1]) == 0) # no cells '' for label
+
+    if len(df_no_empty_rows )> 0:
+        text_count = map(len, df_no_empty_rows['text'])
+        assert(min(text_count) >= 1)
+

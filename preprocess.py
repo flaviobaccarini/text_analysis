@@ -29,25 +29,10 @@ def drop_empty_rows(df):
 def rename_columns(df, columns):
     df_new_column_names = df.copy()
     df_new_column_names = df.loc[:, list(columns)] # COLUMN NUMBER 0: TEXT, COLUMN NUMBER 1: LABEL
-    df_new_column_names.columns = ['text', 'label']
+    df_new_column_names.rename(columns = {columns[0]: 'text', columns[1]: 'label'}, inplace=True)
+    #df_new_column_names.columns = ['text', 'label']
     return df_new_column_names
 
-
-'''
-def clean_dataframe(dfs_raw, column_names):
-    df_raw_train, df_raw_val, df_raw_test = dfs_raw
-    correct_dataframes = []
-
-    for dataframe in (df_raw_train, df_raw_val, df_raw_test):
-        df_new_correct = dataframe.loc[:, list(column_names)] # COLUMN NUMBER 0: TEXT, COLUMN NUMBER 1: LABEL
-        df_new_correct.columns = ['text', 'label']
-        indices_to_remove = df_new_correct[df_new_correct['text'] == ''].index
-        df_new_correct.drop(index = indices_to_remove, inplace = True)
-        df_new_correct.dropna(axis = 0, how = 'any', inplace = True)
-        correct_dataframes.append(df_new_correct)
-    
-    return correct_dataframes
-'''
 
 #convert to lowercase, strip and remove punctuations
 def lower_strip(text):
@@ -56,6 +41,7 @@ def lower_strip(text):
     text_cleaned = re.sub(r'\s+', ' ', text_cleaned)   # elimina i white spaces 
     return text_cleaned
 
+#TODO: QUESTA FUNZIONE DI RIMOZIONE DI EMOJI FORSE È DI TROPPO.. ELIMINANDO TUTTO CIÒ CHE NON È ALFANUMERICOD DOVREBBE BASTARE
 def remove_emojis(text):
     emoj = re.compile("["
         u"\U0001F600-\U0001F64F"  # emoticons
@@ -86,19 +72,7 @@ def remove_urls_tags(text):
     return text_cleaned
 
 
-#TODO: PROBABILMENTE QUESTA FUNZIONE È DI TROPPO
-# PERCHÈ I CARATTERI NON ALFANUMERICI (compresi underscore)
-# SONO GIÀ RIMOSSI DA UN'ALTRA FUNZIONE (remove_noalphanum_singlechar)
-def remove_quotmarks_underscore(text):
-    text_cleaned = text.replace('"', ' ')
-    text_cleaned = text_cleaned.replace("'", ' ') 
-    text_cleaned = re.sub('_+', ' ', text_cleaned)
-    return text_cleaned
-
 def remove_noalphanum(text):
-    # will match anything that's not alphanumeric or underscore -> punctuation:
-    #text_cleaned = re.sub(r'[^\w]', ' ', text) 
-
     #will match anything that's not alphanumeric (also underscore!)
     text_cleaned = re.sub(r'[^a-zA-Z0-9]', ' ', text)
 
@@ -121,8 +95,6 @@ def stopword(text):
     words = [word for word in text.split() if word not in stopwords.words('english')]
     return ' '.join(words)
 
-
-
 # This is a helper function to map NTLK position tags
 def get_wordnet_pos(tag):
     # DEFAULT: NOUN
@@ -133,18 +105,7 @@ def get_wordnet_pos(tag):
         {'J': wordnet.ADJ, 'V': wordnet.VERB,
          'R': wordnet.ADV})
     return tags_dict[tag[0]]
-    '''
-    if tag.startswith('J'):
-        return wordnet.ADJ
-    elif tag.startswith('V'):
-        return wordnet.VERB
-    elif tag.startswith('N'):
-        return wordnet.NOUN
-    elif tag.startswith('R'):
-        return wordnet.ADV
-    else:
-        return wordnet.NOUN
-    '''
+
 # Tokenize the sentence
 def lemmatizer(text):
     wl = WordNetLemmatizer()
@@ -155,7 +116,7 @@ def lemmatizer(text):
 def finalpreprocess(text):
     return lemmatizer(stopword(clean_text(text)))
 
-
+'''
 def procces_dfs(dfs):
     df_train, df_val, df_test = dfs
 
@@ -166,7 +127,7 @@ def procces_dfs(dfs):
         dataframe = drop_empty_rows(dataframe)
 
     return df_train, df_val, df_test
-   
+'''   
 
 def print_cleaned_data(dfs_cleaned):
     df_train, df_valid, df_test = dfs_cleaned
@@ -203,20 +164,26 @@ def main():
     column_names = (config_parse.get('PREPROCESS', 'column_name_text'), 
                     config_parse.get('PREPROCESS', 'column_name_label'))
 
-    #dfs_no_empty_rows = clean_dataframe(dfs_raw, column_names)
 
-    dfs_no_empty_rows = []
+    dfs_processed = []
     for df in dfs_raw:
-        df_new_columns = rename_columns(df, column_names)
-        dfs_no_empty_rows.append(drop_empty_rows(df_new_columns))
+        df_cleaned = rename_columns(df, column_names)
+        df_cleaned = drop_empty_rows(df_cleaned)
+
+        df_cleaned['clean_text'] = df_cleaned['text']
+        cleaned_text = [finalpreprocess(text_to_clean) for text_to_clean in tqdm(df_cleaned['clean_text'])]
+        df_cleaned['clean_text'] = cleaned_text
+
+        df_cleaned = drop_empty_rows(df_cleaned)
+        dfs_processed.append(df_cleaned)
+
 
     output_folder = Path('preprocessed_datasets') / analysis_name
     output_folder.mkdir(parents=True, exist_ok=True)
 
-    dfs_prepreocessed = procces_dfs(dfs_no_empty_rows)
 
-    write_data(dfs_prepreocessed, output_folder = output_folder, analysis = analysis_name)
-    print_cleaned_data(dfs_prepreocessed)
+    write_data(dfs_processed, output_folder = output_folder, analysis = analysis_name)
+    print_cleaned_data(dfs_processed)
 
 if __name__ == '__main__':
     main()
