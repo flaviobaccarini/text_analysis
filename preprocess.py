@@ -15,15 +15,20 @@ import sys
 import configparser
 import pandas as pd
 
-
 # np.where(df.applymap(lambda x: x == '')) per vedere dove ho empty string
 
 
 def drop_empty_rows(df):
     df_no_empty_rows = df.copy()
-    indices_to_remove = df_no_empty_rows[df_no_empty_rows['text'] == ''].index
-    df_no_empty_rows.drop(index = indices_to_remove, inplace = True)
+    
+    #for col in columns:
+    #    df_no_empty_rows = df_no_empty_rows[df_no_empty_rows[col].str.strip().astype(bool)]
+    filter = df != ""
+    df_no_empty_rows = df[filter]
+    #indices_to_remove = df_no_empty_rows[df_no_empty_rows['text'] == ''].index
+    #df_no_empty_rows.drop(index = indices_to_remove, inplace = True)
     df_no_empty_rows.dropna(axis = 0, how = 'any', inplace = True)
+
     return df_no_empty_rows
 
 def rename_columns(df, columns):
@@ -79,7 +84,7 @@ def remove_noalphanum(text):
     # TODO: DECIDERE SE TENERE O NO
     # perchè le stopword come I, s, e simili esistono già e vengono eliminate da stopword
     # will match single characters: for example the s letters after the apostrophes
-    text_cleaned = re.sub(r' \w{1} |^\w{1} |$\w{1}', ' ', text_cleaned)
+#    text_cleaned = re.sub(r' \w{1} |^\w{1} | $\w{1}', ' ', text_cleaned)
     return text_cleaned
 
 def clean_text(text):
@@ -173,10 +178,9 @@ def main():
         df_cleaned['clean_text'] = df_cleaned['text']
         cleaned_text = [finalpreprocess(text_to_clean) for text_to_clean in tqdm(df_cleaned['clean_text'])]
         df_cleaned['clean_text'] = cleaned_text
-
         df_cleaned = drop_empty_rows(df_cleaned)
         dfs_processed.append(df_cleaned)
-
+    
 
     output_folder = Path('preprocessed_datasets') / analysis_name
     output_folder.mkdir(parents=True, exist_ok=True)

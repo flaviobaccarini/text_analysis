@@ -4,11 +4,12 @@ import sys
 from pathlib import Path
 from binary_classifier.vectorize_data import get_vocabulary, vectorize_X_data_lr, tocat_encode_labels
 from binary_classifier.read_write_data import read_data
-from train import build_model, tensorflow_tokenizer, vectorize_X_data_tf, calculate_max_len
+from train import build_model, init_vector_layer, vectorize_X_data_tf, calculate_max_len
 from gensim.models import Word2Vec
-import numpy as np
 from binary_classifier.prediction_results import prediction, visualize_results
 import pandas as pd
+import numpy as np
+import tensorflow as tf
 
 
 def evaluate_logistic_regression(X_test,
@@ -93,16 +94,18 @@ def main():
     # NEURAL NETWORK FROM HERE
     checkpoint_path_weights_nn = checkpoint_path / 'best_model.hdf5'
     
+    # TOKENIZE THE TEXT
     maxlen = calculate_max_len(data[0]['clean_text'])
+    vocabulary = get_vocabulary((data[0]['clean_text'], data[1]['clean_text']))
+    vocabulary = np.unique(vocabulary)
 
-    max_num_words = int(len(get_vocabulary((data[0]['clean_text'],
-                                            data[1]['clean_text'],
-                                            data[2]['clean_text']))) * 1.5)
-    tokenizer = tensorflow_tokenizer(max_num_words = max_num_words, text = data[0]['clean_text'])
+    vectorize_layer = init_vector_layer(maxlen, vocabulary)
 
-    vocab_size = len(tokenizer.word_index) + 1  # Adding 1 because of reserved 0 index
+    vocab_size = len(vectorize_layer.get_vocabulary()) + 1
 
-    X_test = vectorize_X_data_tf(df_test['clean_text'], tokenizer, maxlen)
+    X_test = [vectorize_X_data_tf(text, vectorize_layer) for text in data[2]['clean_text']]
+    X_test = tf.stack(X_test, axis=0) 
+
 
     y_predict, y_prob, acc = evaluate_neural_network(X_test, y_test, embedding_vector_size, vocab_size,
                             maxlen, checkpoint_path_weights_nn)

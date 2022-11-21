@@ -1,36 +1,37 @@
 from binary_classifier.read_write_data import read_data
 from binary_classifier.vectorize_data import get_vocabulary, tocat_encode_labels, vectorize_X_data_lr
-from binary_classifier.vectorize_data import tensorflow_tokenizer, vectorize_X_data_tf, calculate_max_len
+from binary_classifier.vectorize_data import init_vector_layer, vectorize_X_data_tf, calculate_max_len
+
 import configparser
 import sys
 
 from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense, LSTM, Dropout, Bidirectional, Embedding
+from tensorflow.keras.layers import Dense, LSTM, Dropout, Bidirectional, Embedding, BatchNormalization
 from tensorflow.keras.callbacks import ModelCheckpoint, EarlyStopping
 import tensorflow as tf
 
-#for model-building
-import numpy as np
-import matplotlib.pyplot as plt
-
 from pathlib import Path
 import pandas as pd
+import numpy as np
 
 from gensim.models import Word2Vec
 from sklearn.linear_model import LogisticRegression
 import pickle
 
-from prediction_results import prediction, visualize_results
+from tqdm import tqdm
 
 def build_model(vocab_size, embedding_dim, maxlen):
     model = Sequential()
     model.add(Embedding(input_dim=vocab_size, 
                         output_dim=embedding_dim, 
                         input_length=maxlen))
-    model.add(Bidirectional(LSTM(32, recurrent_dropout=0)))
-    model.add(Dropout(0.3))
-    model.add(Dense(16))
-    model.add(Dropout(0.3))
+    model.add(Bidirectional(LSTM(64, recurrent_dropout=0)))
+    model.add(BatchNormalization())
+    model.add(Dropout(0.5))
+    model.add(Dense(32))
+    model.add(Dropout(0.25))
+    model.add(Dense(10))
+    model.add(Dropout(0.2))
     model.add(Dense(1, activation='sigmoid'))
     model.summary()
 
@@ -53,23 +54,25 @@ def train_neural_network(data,
 
     # TOKENIZE THE TEXT
     maxlen = calculate_max_len(df_train['clean_text'])
+    vocabulary = get_vocabulary((df_train['clean_text'], df_valid['clean_text']))
+    vocabulary = np.unique(vocabulary)
 
-    max_num_words = int(len(get_vocabulary(data)) * 1.5)
-    tokenizer = tensorflow_tokenizer(max_num_words = max_num_words, 
-                                    text = data[0]['clean_text'])
-    vocab_size = len(tokenizer.word_index) + 1  # Adding 1 because of reserved 0 index
+    vectorize_layer = init_vector_layer(maxlen, vocabulary)
 
-    # PREPARE THE DATA
-    X_train = vectorize_X_data_tf(df_train['clean_text'], tokenizer, maxlen)
-    X_valid = vectorize_X_data_tf(df_valid['clean_text'], tokenizer, maxlen)
+    X_train = [vectorize_X_data_tf(text, vectorize_layer) for text in tqdm(df_train['clean_text'])]
+    X_valid = [vectorize_X_data_tf(text, vectorize_layer) for text in tqdm(df_valid['clean_text'])]
+    X_train = tf.stack(X_train, axis=0) 
+    X_valid = tf.stack(X_valid, axis=0)
+
+    vocab_size = len(vectorize_layer.get_vocabulary()) + 1
 
     y_train, _ = tocat_encode_labels(df_train['label'])
     y_valid, _ = tocat_encode_labels(df_valid['label'])
 
-    # BUILD THE MODEL
     model = build_model(vocab_size = vocab_size,
                         embedding_dim = embedding_vector_size,
                         maxlen = maxlen)
+
     model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=learning_rate),
                 loss='binary_crossentropy',
                 metrics=['accuracy'])
@@ -142,11 +145,11 @@ def main():
     min_count_words_w2v = int(config_parse.get('PARAMETERS_TRAIN', 'min_count_words_w2v'))
     random_state = int(config_parse.get('PREPROCESS', 'seed'))
     checkpoint_path = Path('checkpoint') / analysis_folder
-    
+
     vocabulary = get_vocabulary((data[0]['clean_text'], data[1]['clean_text']))
     modelw2v = Word2Vec(vocabulary, vector_size=embedding_vector_size, window=5,
                          min_count=min_count_words_w2v, workers=1, seed = random_state)   
-    
+
     checkpoint_path.mkdir(parents = True, exist_ok = True)
     file_path_model_w2v = checkpoint_path / 'word2vec.model'
     modelw2v.save(str(file_path_model_w2v))

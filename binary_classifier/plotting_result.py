@@ -30,6 +30,7 @@ def make_confusion_matrix(cf,
 
     # CODE TO GENERATE TEXT INSIDE EACH SQUARE
     blanks = ['' for i in range(cf.size)]
+    sns.set(font_scale=1.2)
 
     if group_names and len(group_names)==cf.size:
         group_labels = ["{}\n".format(value) for value in group_names]

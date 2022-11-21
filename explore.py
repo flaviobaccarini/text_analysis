@@ -18,7 +18,7 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 from binary_classifier.read_write_data import read_data, split_dataframe
-from preprocess import clean_dataframe
+from preprocess import rename_columns, drop_empty_rows
 import configparser
 import sys
 
@@ -265,9 +265,11 @@ def main():
     column_names = (config_parse.get('PREPROCESS', 'column_name_text'), 
                     config_parse.get('PREPROCESS', 'column_name_label'))
 
-
-    df_train, df_val, df_test = clean_dataframe(dfs_raw, column_names)
-
+    df_new = []
+    for df in dfs_raw:
+        df_new.append(drop_empty_rows(rename_columns(df, column_names)))
+    
+    df_train, df_val, df_test = df_new
     explore(df_train, df_val, df_test)
     
 if __name__ == '__main__':
