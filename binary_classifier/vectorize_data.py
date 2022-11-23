@@ -65,7 +65,7 @@ class MeanEmbeddingVectorizer(object):
 
 def calculate_max_len(text):
     word_count = [len(str(words).split()) for words in text]
-    maxlen = int(np.mean(word_count) + 2*np.std(word_count))
+    maxlen = np.round(np.mean(word_count) + 2*np.std(word_count))
     return maxlen
 
 def init_vector_layer(maxlen, vocabulary):
