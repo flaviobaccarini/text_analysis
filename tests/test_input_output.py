@@ -15,6 +15,10 @@ from hypothesis import strategies as st
 from hypothesis import given
 import unittest
 
+# TODO: CREARE UNA FUNZIONE PER LA GENERAZIONE DI FAKE DATA 
+# COSÌ CHE OGNI FUNZIONE NON DEBBA GENERARE SEMPRE NUOVI DATI
+# MA BASTA CHE CHIAMI LA FUNZIONE CHE LO FA
+
 def test_read_data():
     '''
     This function tests the correct reading of the data.

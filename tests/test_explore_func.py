@@ -2,7 +2,7 @@
 This test script is written in order to test the exploring function in the explore module.
 '''
 
-from explore import average_word_or_chars, word_count_twitter, char_count_twitter
+from binary_classifier.preanalysis import average_word_or_chars, word_count_twitter, char_count_twitter
 from hypothesis import strategies as st
 from hypothesis import given
 import pandas as pd
@@ -153,7 +153,7 @@ def test_average_word_func_one_two_lab():
     df = pd.DataFrame({'label': labels_sorted, 'counts': all_counts})
     df = df.sample(frac=1).reset_index(drop=True)
     labels = list(df['label'])
-    all_counts = (df['counts'])
+    all_counts = df['counts']
 
 
     avg_from_funct = average_word_or_chars(labels, all_counts)

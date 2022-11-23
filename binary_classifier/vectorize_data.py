@@ -17,7 +17,8 @@ def vectorize_X_data_lr(data, model):
 
     return X_vectors_w2v
 
-
+# TODO: DECIDERE SE TENERE QUESTA FUNZIONE QUI SOTTO
+# OPPURE METTERE QUESTE RIGHE NELLE MAIN FUNCTIONS
 def tocat_encode_labels(labels):
     le = preprocessing.LabelEncoder()
     le.fit(labels)
@@ -26,14 +27,17 @@ def tocat_encode_labels(labels):
     return y_vector_categorical, classes
 
 
-def get_vocabulary(list_words):
-    vocabulary = []
-    for words in list_words:
-        vocabulary.append(words)
-    vocabulary = [words for sublist_word in vocabulary for words in sublist_word]
+def get_vocabulary(list_words, unique = False):
+    #vocabulary = []
+    #for words in list_words:
+    #    vocabulary.append(words)
+    #vocabulary = [words for sublist_word in vocabulary for words in sublist_word]
     
-    vocabulary = [nltk.word_tokenize(words) for words in vocabulary]
+    vocabulary = [nltk.word_tokenize(words) for words in list_words]
     vocabulary = [word for list in vocabulary for word in list]
+
+    if unique is True:
+        vocabulary = np.unique(vocabulary)
 
     return vocabulary
 

@@ -96,8 +96,8 @@ def main():
     
     # TOKENIZE THE TEXT
     maxlen = calculate_max_len(data[0]['clean_text'])
-    vocabulary = get_vocabulary((data[0]['clean_text'], data[1]['clean_text']))
-    vocabulary = np.unique(vocabulary)
+    text_for_vocabulary = list(data[0]['clean_text']) + list(data[1]['clean_text'])
+    vocabulary = get_vocabulary(text_for_vocabulary, unique = True)
 
     vectorize_layer = init_vector_layer(maxlen, vocabulary)
 

@@ -3,7 +3,6 @@ from sklearn.metrics import roc_curve, auc, roc_auc_score
 from binary_classifier.plotting_result import make_confusion_matrix, plot_history
 
 
-
 def prediction(model, X_test, neural_network = False):
     y_predict = model.predict(X_test)
     if neural_network is True:
