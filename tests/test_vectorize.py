@@ -228,7 +228,7 @@ def test_shape_mean_emb_vect():
 
     mean_emb_vect = MeanEmbeddingVectorizer(w2v)
     X_vectors_w2v = mean_emb_vect.transform(X_tok)
-    assert(np.shape(X_vectors_w2v) == (2, embedding_vector_size)) # two sentences 
+    assert(np.shape(X_vectors_w2v) == (len(text_to_transform), embedding_vector_size)) # two sentences 
 
 
 def test_value_mean_emb_vect():
@@ -267,9 +267,9 @@ def test_value_mean_emb_vect():
     mean_emb_vect = MeanEmbeddingVectorizer(w2v)
     X_vectors_w2v = mean_emb_vect.transform(X_tok)
 
-    assert( (X_vectors_w2v[0] == w2v['hello']).all() )
+    assert( np.isclose(X_vectors_w2v[0], w2v['hello']).all() )
     assert( (X_vectors_w2v[1] == np.zeros(shape=(1, embedding_vector_size))).all() )
-    assert( (X_vectors_w2v[2] == np.mean([w2v['hello'], w2v['world'], w2v['my'],
+    assert( np.isclose(X_vectors_w2v[2], np.mean([w2v['hello'], w2v['world'], w2v['my'],
                                         w2v['name'], w2v['is'], w2v['Tom']], axis = 0)).all() )
 
 
@@ -315,14 +315,22 @@ def test_value_meanembvec_count_words():
 
     zero_array = np.zeros(shape=(embedding_vector_size))
 
-    assert( (X_vectors_w2v[0] == w2v['hello']).all() )
+    assert( np.isclose(X_vectors_w2v[0], w2v['hello']).all() )
     assert( (X_vectors_w2v[1] == zero_array).all() )
-    assert( (X_vectors_w2v[2] == np.mean([w2v['hello'], w2v['is'],
+    assert( np.isclose(X_vectors_w2v[2], np.mean([w2v['hello'], w2v['is'],
                                          w2v['Tom']], axis = 0)).all() )
     assert( (X_vectors_w2v[3] == zero_array).all() )
 
 
 def test_vect_X_lr():
+    '''
+    Test function to test the correct values for the vectorize_X_data_lr function.
+
+    vectorize_X_data_lr takes as input the text the user wants to vectorize, which 
+    is a list of strings and a model of Word2Vec already trained.
+
+    The output is the vectorized text.
+    '''
     random_text_voc = ['hello world', 'hello my name is Tom',
                     'Tom loves catching fishes', 'random word in a random string',
                     'hello what a beautiful day',
@@ -334,26 +342,65 @@ def test_vect_X_lr():
 
     modelw2v = Word2Vec(vocabulary, vector_size=embedding_vector_size, window=5,
                          min_count=min_count_words, workers=1, seed = random_state)   
-    text_to_transform = ['hello',
+    text_to_vectorize= ['hello',
                          'Flavio',
                          'hello world my name is Tom',
                          "I'm Flavio, I catch fishes"]
     
     
-    X_vector = vectorize_X_data_lr(text_to_transform, modelw2v)
+    X_vector = vectorize_X_data_lr(text_to_vectorize, modelw2v)
     w2v = dict(zip(modelw2v.wv.index_to_key, modelw2v.wv.vectors)) 
     zero_array = np.zeros(shape=(embedding_vector_size))
 
-    assert( X_vector.shape == (len(text_to_transform), embedding_vector_size))
 
-    assert( (X_vector[0] == w2v['hello']).all() )
-    assert( (X_vector[1] == zero_array).all() )
-    assert( (X_vector[2] == np.mean([w2v['hello'],  w2v['my'],
+    mean_third_phrase = np.mean([w2v['hello'],  w2v['my'],
                                 w2v['world'], w2v['name'],    
-                                w2v['is'],w2v['Tom']], axis = 0)).all() )
-    assert( (X_vector[3] == w2v['fishes']).all() )
+                                w2v['is'],w2v['Tom']], axis = 0)
+
+    assert( np.isclose(X_vector[0], w2v['hello']).all() )
+    assert( (X_vector[1] ==  zero_array).all() )
+    assert( np.isclose(X_vector[2], mean_third_phrase).all() )
+    assert( np.isclose(X_vector[3], w2v['fishes']).all() )
+
+
+test_vect_X_lr()
+@given(embedding_vector_size = st.integers(min_value = 1, max_value = 40),
+       text_to_vectorize = st.lists(st.sampled_from(''.join(string.ascii_letters)), min_size = 1, max_size = 40))
+def test_shape_vect_X_lr(embedding_vector_size, text_to_vectorize):
+    '''
+    Test function to test the correct shape of the outout
+    for the vectorize_X_data_lr function.
+
+    vectorize_X_data_lr takes as input the text the user wants to vectorize, which 
+    is a list of strings and a model of Word2Vec already trained.
+
+    The output is the vectorized text with a precise shape, that
+    is given by (number of strings in the inital list, embedding vector size).
+    '''
+
+    random_text_voc = ['hello world', 'hello my name is Tom',
+                    'Tom loves catching fishes', 'random word in a random string',
+                    'hello what a beautiful day',
+                    'the sky is blue']
+    vocabulary = get_vocabulary(random_text_voc)
+    min_count_words = 1
+    random_state = 42
+
+    modelw2v = Word2Vec(vocabulary, vector_size=embedding_vector_size, window=5,
+                         min_count=min_count_words, workers=1, seed = random_state)   
+    
+    X_vector = vectorize_X_data_lr(text_to_vectorize, modelw2v)
+    
+    assert( X_vector.shape == (len(text_to_vectorize), embedding_vector_size))
+
 
 def test_vector_layer():
+    '''
+    Test function to test the working of the init_vector_layer function.
+    In this test function the layer vocabulary is the one
+    given by the user is tested.
+    Then the vector layer has the correct type (TextVectoriation layer). 
+    '''
     random_text_voc = ['hello world', 'hello my name is Tom',
                     'Tom loves catching fishes', 'random word in a random string',
                     'hello what a beautiful day',
@@ -372,4 +419,99 @@ def test_vector_layer():
     assert(len(uniq_voc) + 2 == voc_size) # +2 because of special tokes
     assert(type(vector_layer) == tf.keras.layers.TextVectorization)
 
-test_vector_layer()
+
+@given(maxlen = st.integers(min_value = 1, max_value = 40),
+       text_to_vectorize = st.lists(st.sampled_from(''.join(string.ascii_letters)), min_size = 1, max_size = 40))
+def test_shape_vectorize_X_tf(maxlen, text_to_vectorize):
+    '''
+    Test function to test the correct shape of the outout
+    for the vectorize_X_data_tf function.
+
+    vectorize_X_data_tf takes as input the text the user wants to vectorize, which 
+    is a string and the tensorflow vectorization layer.
+
+    The output is the vectorized text with a precise shape, that
+    is given by (maxlen,).
+    Eventually some padding/truncation operations are
+    performed by the layer to have arrays with the same shape.
+    '''
+    random_text_voc = ['hello world', 'hello my name is Tom',
+                    'Tom loves catching fishes', 'random word in a random string',
+                    'hello what a beautiful day',
+                    'the sky is blue']
+    vocabulary = get_vocabulary(random_text_voc)
+    uniq_voc = flatten_unique_voc(vocabulary)
+
+    vector_layer = init_vector_layer(maxlen, uniq_voc)
+
+    vector = tf.stack([vectorize_X_data_tf(text, vector_layer) for text in text_to_vectorize])
+
+    assert(vector.shape == (len(text_to_vectorize), maxlen))
+
+
+def test_value_vectorize_X_tf():
+    '''
+    Test function to test the correct values of the outout
+    for the vectorize_X_data_tf function.
+
+    vectorize_X_data_tf takes as input the text the user wants to vectorize, which 
+    is a string and the tensorflow vectorization layer.
+
+    The output is the vectorized text. 
+
+    If there is a match between the words to vectorize and the words
+    stored in the vocabulary, the word is represented by the index number
+    of the same word in the vocabulary.
+
+    If the word in the text to vectorize is not present in the vocabulary,
+    the vectorization layer represents this word with "1".
+
+    At the end of the sentences there could be some zeros to pad the sequences.
+    '''
+    random_text_voc = ['hello world', 'hello my name is Tom',
+                    'Tom loves catching fishes', 'random word in a random string',
+                    'hello what a beautiful day',
+                    'the sky is blue']
+    vocabulary = get_vocabulary(random_text_voc)
+    uniq_voc = flatten_unique_voc(vocabulary)
+    maxlen = calculate_max_len(random_text_voc)
+
+    vector_layer = init_vector_layer(maxlen, uniq_voc)
+
+    text_to_vectorize = ['hello',
+                        'my name is Flavio',
+                        '33 trentini']
+
+    vector = tf.stack([vectorize_X_data_tf(text, vector_layer) for text in text_to_vectorize])
+
+    assert(vector.dtype == tf.int32) # the type is int 32 bit
+
+    # now check the value assigned to each word
+    complete_voc = vector_layer.get_vocabulary()
+
+    # we expect the number of 'hello' in vector (vector[0][0])
+    # is equal to the index of the 'hello' word in the vocabulary from the layer 
+    assert(vector[0][0] == complete_voc.index('hello'))
+    # we expect that vector[0] is equal to = index('hello'),0,0,0,0,0,0
+    # this is the padding operation
+    hello_in_indices = np.array(complete_voc.index('hello'))
+    hello_in_indices = hello_in_indices.reshape((1,))
+    zero_array = np.zeros(dtype = int, shape = (maxlen - hello_in_indices.size,))
+    hello_in_indices = np.concatenate((hello_in_indices, zero_array), axis =0)
+    assert((np.array(vector[0]) == hello_in_indices).all())
+
+    indices_vector_two = np.array([complete_voc.index('my'),
+               complete_voc.index('name'),
+               complete_voc.index('is'),
+               1]) # the one is because the 'Flavio' word (which is not inside the vocabulary)
+    zero_array = np.zeros(dtype = int, shape = (maxlen - indices_vector_two.size))
+    indices_vector_two = np.concatenate((indices_vector_two, zero_array), axis = 0)
+
+    assert((np.array(vector[1]) == indices_vector_two).all())
+
+    # '33' 'trentini' are not words present in the vocabulary -> 1 to represent them
+    indices_vector_three = np.array([1, 1]) 
+    zero_array = np.zeros(dtype = int, shape = (maxlen - indices_vector_three.size,))
+    indices_vector_three = np.concatenate((indices_vector_three, zero_array), axis = 0)
+
+    assert((np.array(vector[2]) == indices_vector_three).all())

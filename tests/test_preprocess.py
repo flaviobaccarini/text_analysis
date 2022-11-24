@@ -7,10 +7,10 @@ import string
 import random # define the random module  
 from hypothesis import strategies as st
 from hypothesis import given
-from preprocess import lower_strip, finalpreprocess
-from preprocess import remove_urls_tags, remove_emojis, get_wordnet_pos
-from preprocess import remove_noalphanum, stopword, clean_text, lemmatizer
-from preprocess import rename_columns, drop_empty_rows
+from binary_classifier.cleantext import lower_strip, finalpreprocess
+from binary_classifier.cleantext  import remove_urls_tags, remove_emojis, get_wordnet_pos
+from binary_classifier.cleantext  import remove_noalphanum, stopword, clean_text, lemmatizer
+from binary_classifier.cleantext  import rename_columns, drop_empty_rows
 
 def test_lower():
     '''

@@ -2,40 +2,20 @@ from binary_classifier.read_write_data import read_data
 from binary_classifier.vectorize_data import get_vocabulary, tocat_encode_labels, vectorize_X_data_lr
 from binary_classifier.vectorize_data import init_vector_layer, vectorize_X_data_tf, calculate_max_len
 from binary_classifier.vectorize_data import flatten_unique_voc
-from binary_classifier.train_models import train_neural_network, write_history
+from binary_classifier.train_models import train_neural_network, write_history, build_model
 from binary_classifier.train_models import train_logistic_regressor
 import configparser
 import sys
 
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense, LSTM, Dropout, Bidirectional, Embedding, BatchNormalization
 import tensorflow as tf
 
 from pathlib import Path
 import pandas as pd
-import numpy as np
 
 from gensim.models import Word2Vec
 
 from tqdm import tqdm
 
-
-def build_model(vocab_size, embedding_dim, maxlen):
-    model = Sequential()
-    model.add(Embedding(input_dim=vocab_size, 
-                        output_dim=embedding_dim, 
-                        input_length=maxlen))
-    model.add(Bidirectional(LSTM(64, recurrent_dropout=0)))
-    model.add(BatchNormalization())
-    model.add(Dropout(0.5))
-    model.add(Dense(32))
-    model.add(Dropout(0.25))
-    model.add(Dense(10))
-    model.add(Dropout(0.2))
-    model.add(Dense(1, activation='sigmoid'))
-    model.summary()
-
-    return model
 
 def main():
 
@@ -101,8 +81,9 @@ def main():
     vocab_size = len(vectorize_layer.get_vocabulary()) + 1
 
     model = build_model(vocab_size = vocab_size,
-                            embedding_dim = embedding_vector_size,
-                            maxlen = maxlen)
+                        embedding_dim = embedding_vector_size,
+                        maxlen = maxlen,
+                        neurons = [64, 32, 16, 1])
 
     history = train_neural_network(X_train = X_train, y_train = y_train,
                                    X_valid = X_valid, y_valid = y_valid,

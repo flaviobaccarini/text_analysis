@@ -198,28 +198,3 @@ def test_average_word_func_multiple_lab(number_of_tot_labels, labels):
     for label, average in zip(unique_labels, averages):
         assert(avg_from_funct[label] == average)
  
-'''
-def test_average_func_zero_label():
-    #This function test the correct working of the average function for if zero labels are given.
-    label = []
-    counts = []
-    nolabel_mean = average_word_or_chars(label, counts)
-    assert({} == nolabel_mean)
-
-    # now try with counts, but no labels
-    counts = [random.randrange(0, 100) for _ in range(100)]
-    nolabel_mean = average_word_or_chars(label, counts)
-
-    assert({} == nolabel_mean)
-
-
-def test_average_func_zero_count():
-    unique_labels = ['real', 'fake']
-    #counts = [random.randrange(0, 100) for _ in range(100)]
-    counts = []
-    labels = [unique_labels[random.randrange(len(unique_labels))] for _ in range(100)]
-
-    nocount_mean = average_word_or_chars(labels, counts)
-
-    assert({} == nocount_mean)
-'''

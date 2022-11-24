@@ -1,5 +1,7 @@
-from tensorflow.keras.callbacks import ModelCheckpoint, EarlyStopping
 import tensorflow as tf
+from tensorflow.keras.callbacks import ModelCheckpoint, EarlyStopping
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense, LSTM, Dropout, Bidirectional, Embedding, BatchNormalization
 
 import pandas as pd
 
@@ -67,3 +69,19 @@ def train_logistic_regressor(X_train, y_train,
     with open(file_path, 'wb') as file:
         pickle.dump(lr_w2v, file)
 
+# TODO: CREARE UNA FUNZIONE IN train_models PER L'EMBEDDING
+def build_model(vocab_size, embedding_dim, maxlen, neurons):
+    model = Sequential()
+    model.add(Embedding(input_dim=vocab_size, 
+                        output_dim=embedding_dim, 
+                        input_length=maxlen))
+    model.add(Bidirectional(LSTM(neurons[0], recurrent_dropout=0)))
+    model.add(BatchNormalization())
+    model.add(Dropout(0.5))
+    for nr_neuron in neurons[1:]:
+        model.add(Dense(nr_neuron))
+        model.add(Dropout(0.25))
+    model.add(Dense(neurons[-1], activation='sigmoid'))
+    model.summary()
+
+    return model
