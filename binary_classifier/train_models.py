@@ -7,7 +7,6 @@ from sklearn.linear_model import LogisticRegression
 import pickle
 
 
-
 def train_neural_network(X_train, y_train,
                         X_valid, y_valid,
                         model,

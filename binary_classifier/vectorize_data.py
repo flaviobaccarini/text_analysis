@@ -27,20 +27,20 @@ def tocat_encode_labels(labels):
     return y_vector_categorical, classes
 
 
-def get_vocabulary(list_words, unique = False):
-    #vocabulary = []
-    #for words in list_words:
-    #    vocabulary.append(words)
-    #vocabulary = [words for sublist_word in vocabulary for words in sublist_word]
-    
-    vocabulary = [nltk.word_tokenize(words) for words in list_words]
-    vocabulary = [word for list in vocabulary for word in list]
+def get_vocabulary(list_words):
 
-    if unique is True:
-        vocabulary = np.unique(vocabulary)
+    vocabulary = [nltk.word_tokenize(words) for words in list_words]
 
     return vocabulary
 
+def flatten_unique_voc(vocabulary_lists):
+
+    vocabulary_flatten = [word for sentence in vocabulary_lists 
+                            for word in sentence]
+    voc_unique = np.unique(vocabulary_flatten)
+
+    return voc_unique
+    
 
 #building Word2Vec model
 class MeanEmbeddingVectorizer(object):
@@ -50,23 +50,23 @@ class MeanEmbeddingVectorizer(object):
         # with the same dimensionality as all the other vectors
         self.dim = len(next(iter(word2vec.values())))
     def fit(self, X, y):
-            return self
+        return self
             
     def transform(self, X):
-            new_X = np.array([
+        new_X = np.array([
                 np.mean([self.word2vec[w] for w in words if w in self.word2vec]
                         or [np.zeros(self.dim)], axis=0)
                 for words in X
-            ])
+        ])
             
 
-            return new_X
+        return new_X
 
 
 def calculate_max_len(text):
     word_count = [len(str(words).split()) for words in text]
     maxlen = np.round(np.mean(word_count) + 2*np.std(word_count))
-    return maxlen
+    return int(maxlen)
 
 def init_vector_layer(maxlen, vocabulary):
     vectorize_layer = TextVectorization(

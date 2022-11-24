@@ -1,6 +1,7 @@
 from binary_classifier.read_write_data import read_data
 from binary_classifier.vectorize_data import get_vocabulary, tocat_encode_labels, vectorize_X_data_lr
 from binary_classifier.vectorize_data import init_vector_layer, vectorize_X_data_tf, calculate_max_len
+from binary_classifier.vectorize_data import flatten_unique_voc
 from binary_classifier.train_models import train_neural_network, write_history
 from binary_classifier.train_models import train_logistic_regressor
 import configparser
@@ -61,6 +62,7 @@ def main():
 
     all_train_words = list(df_train['clean_text']) + list(df_valid['clean_text'])
     vocabulary = get_vocabulary(all_train_words)
+
     modelw2v = Word2Vec(vocabulary, vector_size=embedding_vector_size, window=5,
                          min_count=min_count_words_w2v, workers=1, seed = random_state)   
 
@@ -84,7 +86,7 @@ def main():
 
     # TOKENIZE THE TEXT
     maxlen = calculate_max_len(df_train['clean_text'])
-    unique_vocabulary = np.unique(vocabulary)
+    unique_vocabulary = flatten_unique_voc(vocabulary)
 
     vectorize_layer = init_vector_layer(maxlen, unique_vocabulary)
 
