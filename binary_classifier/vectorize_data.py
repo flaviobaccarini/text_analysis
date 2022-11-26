@@ -17,8 +17,7 @@ def vectorize_X_data_lr(data, model):
 
     return X_vectors_w2v
 
-# TODO: DECIDERE SE TENERE QUESTA FUNZIONE QUI SOTTO
-# OPPURE METTERE QUESTE RIGHE NELLE MAIN FUNCTIONS
+
 def tocat_encode_labels(labels):
     le = preprocessing.LabelEncoder()
     le.fit(labels)

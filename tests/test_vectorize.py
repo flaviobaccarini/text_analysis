@@ -363,7 +363,6 @@ def test_vect_X_lr():
     assert( np.isclose(X_vector[3], w2v['fishes']).all() )
 
 
-test_vect_X_lr()
 @given(embedding_vector_size = st.integers(min_value = 1, max_value = 40),
        text_to_vectorize = st.lists(st.sampled_from(''.join(string.ascii_letters)), min_size = 1, max_size = 40))
 def test_shape_vect_X_lr(embedding_vector_size, text_to_vectorize):

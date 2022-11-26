@@ -187,6 +187,7 @@ def char_count_twitter(tweets: pd.Series(str)) -> list[int]:
         char_count = [0]
     return char_count
 
+import numpy as np
 
 def plotting_word_char_count(labels, word_char_count, unit_of_measure) -> None:
     '''
@@ -199,10 +200,8 @@ def plotting_word_char_count(labels, word_char_count, unit_of_measure) -> None:
     '''  
     word_char_count_df = pd.DataFrame({'label': labels, 'count': word_char_count})
     if unit_of_measure == 'chars':
-    #    range = (0, 400)
         color = 'green'
     else:
-    #    range = (0, 50)
         color = 'red'
     # PLOTTING
     sns.set(font_scale=1.4)
@@ -210,8 +209,7 @@ def plotting_word_char_count(labels, word_char_count, unit_of_measure) -> None:
     fig, ax=plt.subplots(1,len(labels.unique()),figsize=(10,4))
     for index, key in enumerate(labels.unique()):
         counts = word_char_count_df[word_char_count_df['label'] == key]['count']
-        max_counts = max(counts)
-        ax[index].hist(counts, color = color, range = (0, int(max_counts*1.2)))
+        ax[index].hist(counts, color = color, range = (0, np.median(counts)*1.5))
         ax[index].set_title(f'{key} labels {unit_of_measure} distribution', y = 1.02)
         ax[index].set_xlabel(f'number of {unit_of_measure}')
         ax[index].set_ylabel(f'count #{unit_of_measure}')

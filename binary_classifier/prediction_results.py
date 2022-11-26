@@ -13,7 +13,9 @@ def prediction(model, X_test, neural_network = False):
         y_prob = model.predict_proba(X_test)[:,1]
     return y_predict, y_prob
 
-def visualize_results(y_test, y_predict, y_prob, labels, title, history = None,
+def visualize_results(y_test, y_predict, y_prob,
+                      labels, title, 
+                      history = None,
                       folder_path = None):
     print(classification_report(y_test,y_predict))
     cm = confusion_matrix(y_test, y_predict)

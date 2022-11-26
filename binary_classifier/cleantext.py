@@ -83,7 +83,7 @@ def remove_noalphanum(text):
 
 def clean_text(text):
     text_cleaned = remove_urls_tags(text)
-    text_cleaned = remove_emojis(text_cleaned)
+    #text_cleaned = remove_emojis(text_cleaned)
     #text_cleaned = re.sub(r'\d+st|\d+nd|\d+rd|\d+th', '', text_cleaned) # eliminate: 1st, 2nd, 3rd and so on regarding the date
     text_cleaned = remove_noalphanum(text_cleaned)
     text_cleaned = lower_strip(text_cleaned) # lowercase and remove the whitespaces
