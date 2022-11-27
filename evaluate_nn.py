@@ -41,8 +41,7 @@ def main():
 
     vocab_size = len(vectorize_layer.get_vocabulary()) + 1
 
-    X_test = [vectorize_X_data_tf(text, vectorize_layer) for text in tqdm(df_test['clean_text'])]
-    X_test = tf.stack(X_test, axis=0) 
+    X_test = vectorize_X_data_tf(df_test['clean_text'], vectorize_layer)
     y_test, classes  = tocat_encode_labels(df_test['label'])
 
     model = build_model(vocab_size = vocab_size,
