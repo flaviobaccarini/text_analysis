@@ -40,6 +40,7 @@ def lower_strip(text):
     text_cleaned = re.sub(r'\s+', ' ', text_cleaned)   # elimina i white spaces 
     return text_cleaned
 
+'''
 #TODO: QUESTA FUNZIONE DI RIMOZIONE DI EMOJI FORSE È DI TROPPO.. ELIMINANDO TUTTO CIÒ CHE NON È ALFANUMERICOD DOVREBBE BASTARE
 def remove_emojis(text):
     emoj = re.compile("["
@@ -63,7 +64,7 @@ def remove_emojis(text):
         u"\u3030"
                               "]+", re.UNICODE)
     return re.sub(emoj, '', text)
-
+'''
 
 def remove_urls_tags(text):
     text_cleaned = re.sub(r'http\S+', '', text) # remove url

@@ -5,7 +5,7 @@ from pathlib import Path
 from binary_classifier.vectorize_data import vectorize_X_data_lr, tocat_encode_labels
 from binary_classifier.read_write_data import read_data
 from gensim.models import Word2Vec
-from binary_classifier.prediction_results import prediction, visualize_results
+from binary_classifier.results import visualize_results
 
 
 def main():
@@ -39,9 +39,9 @@ def main():
     for word in keyed_vectors.index_to_key[:3]:
         print(word)
 
-    y_predict, y_prob = prediction(lr_w2v, X_test)
+    y_predict = lr_w2v.predict(X_test)
+    y_prob = lr_w2v.predict_proba(X_test)[:,1]
     
-
     acc = lr_w2v.score(X_test, y_test)
     visualize_results(y_test, y_predict, y_prob, list(classes),
                       title = 'Logistic regressor', folder_path=plot_path)

@@ -2,25 +2,26 @@
 This test script is written in order to test the exploring function in the explore module.
 '''
 
-from binary_classifier.preanalysis import average_word_or_chars, word_count_twitter, char_count_twitter
+from binary_classifier.preanalysis import average_word_or_chars, word_count_text, char_count_text
 from hypothesis import strategies as st
 from hypothesis import given
 import pandas as pd
 import random
 import numpy as np 
+import unittest
 def test_word_count():
     '''
     This function is used to test how the counting of the words is done.
     '''
 
     test_string = ['Hello, this is a test string']
-    number_of_words = word_count_twitter(test_string)
+    number_of_words = word_count_text(test_string)
 
     assert(len(number_of_words) == 1) # contain only one single sentence
     assert(number_of_words[0] == 6) # the first sentence contains 6 word
 
     test_string.append('Hello world, this is the number 2 #test string.')
-    number_of_words = word_count_twitter(test_string)
+    number_of_words = word_count_text(test_string)
 
     assert(len(number_of_words) == 2) # now the list contains two different sentences
     assert(number_of_words[1] == 9) # the second sentence is composed by 7 words
@@ -35,17 +36,17 @@ def test_word_count_input_type():
     series_test_string = pd.Series(list_test_strings)
     tuple_test_string = tuple(list_test_strings)
 
-    number_of_words = word_count_twitter(list_test_strings)
+    number_of_words = word_count_text(list_test_strings)
 
     assert(len(number_of_words) == 2) # contain only one two sentences
     assert(number_of_words[1] == 3) # the second sentence contains 3 word
 
-    number_of_words = word_count_twitter(series_test_string)
+    number_of_words = word_count_text(series_test_string)
 
     assert(len(number_of_words) == 2) # contain only one two sentences
     assert(number_of_words[1] == 3) # the second sentence contains 3 word
 
-    number_of_words = word_count_twitter(tuple_test_string)
+    number_of_words = word_count_text(tuple_test_string)
 
     assert(len(number_of_words) == 2) # contain only one two sentences
     assert(number_of_words[1] == 3) # the second sentence contains 3 word
@@ -57,13 +58,13 @@ def test_char_count():
     '''
 
     test_string = ['Hello, this is a test string']
-    number_of_chars = char_count_twitter(test_string)
+    number_of_chars = char_count_text(test_string)
 
     assert(len(number_of_chars) == 1) # contain only one single sentence
     assert(number_of_chars[0] == 28) # the first sentence contains 28 characters
 
     test_string.append('Hello world, this is another test string.')
-    number_of_chars = char_count_twitter(test_string)
+    number_of_chars = char_count_text(test_string)
 
     assert(len(number_of_chars) == 2) # now the list contains two different sentences
     assert(number_of_chars[1] == 41) # the second sentence is composed by 41 characters
@@ -78,17 +79,17 @@ def test_char_count_input_type():
     series_test_string = pd.Series(list_test_strings)
     tuple_test_string = tuple(list_test_strings)
 
-    number_of_chars = char_count_twitter(list_test_strings)
+    number_of_chars = char_count_text(list_test_strings)
 
     assert(len(number_of_chars) == 3) # contain 3 sentences
     assert(number_of_chars[0] == 15) # the first sentence contains 15 chars
 
-    number_of_chars = char_count_twitter(series_test_string)
+    number_of_chars = char_count_text(series_test_string)
 
     assert(len(number_of_chars) == 3) # contain 3 sentences
     assert(number_of_chars[1] == 19) # the second sentence contains 19 chars
 
-    number_of_chars = char_count_twitter(tuple_test_string) # tuple
+    number_of_chars = char_count_text(tuple_test_string) # tuple
 
     assert(len(number_of_chars) == 3) # contain 3 sentences
     assert(number_of_chars[2] == 38) # the third sentence contains 38 chars
@@ -99,28 +100,35 @@ def test_char_count(text):
     '''
     This function tests the correct working of the counting function for characaters.
     '''
-    chars_count = char_count_twitter(text)
-    for sentence, char_count in zip(text, chars_count):
-        assert(len(sentence) == char_count)
+    if len(text) == 0:
+        with unittest.TestCase.assertRaises(unittest.TestCase, expected_exception = ValueError):
+            chars_count = char_count_text(text)
+    else:
+        chars_count = char_count_text(text)
+        for sentence, char_count in zip(text, chars_count):
+            assert(len(sentence) == char_count)
 
     
-@given(num_of_sentences = st.lists(st.integers(min_value = 0, max_value = 10), min_size = 1),
-       list_word = st.lists(st.text(max_size = 20), min_size = 1))
+@given(num_of_sentences = st.integers(min_value=0, max_value=10),
+       list_word = st.lists(st.text(max_size = 20)))
 def test_word_count(num_of_sentences, list_word):
     '''
     This function tests the correct working of the counting function for words.
     ''' 
     all_texts = []
-    for num_sentence in num_of_sentences:
-        text = ' '.join(random.choices(list_word, k=num_sentence))
+    for _ in range(num_of_sentences):
+        text = ' '.join(random.choices(list_word, k = len(list_word)))
         all_texts.append(text)
 
-    words_count = word_count_twitter(all_texts)
-    for word_count, text in zip(words_count, all_texts):
-        #print((text.split(' ')), word_count)
-        assert(len(text.split()) == word_count)
+    if len(all_texts) == 0:
+        with unittest.TestCase.assertRaises(unittest.TestCase, expected_exception = ValueError):
+            words_count = word_count_text(all_texts)
+    else:        
+        words_count = word_count_text(all_texts)
+        for word_count, text in zip(words_count, all_texts):
+            assert(len(text.split()) == word_count)
 
-
+test_word_count()
 def test_average_word_func_one_two_lab():
     '''
     This function test the correct working of the average function for one or two string labels.

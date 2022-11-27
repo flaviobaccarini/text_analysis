@@ -100,11 +100,12 @@ def test_remove_tag():
     assert(text_no_tags[2] == 'Hello World')
     assert(text_no_tags[3] == '5 > 4 and 4 < 3')
     assert(text_no_tags[4] == '4  3')
-    
+
+'''    
 def test_remove_emojis():
-    '''
-    This test function tests the correct working of the remove_emojis function.
-    '''
+'''
+#    This test function tests the correct working of the remove_emojis function.
+'''
     text_with_emojis = ['Hello world \U0001f600',
                         'This is a dog: \U0001F436',
                         'This is a rainbow: \U0001F308',
@@ -127,7 +128,7 @@ def test_remove_emojis():
     assert(text_with_no_emojis[5] == 'This is the letter B: ')
     assert(text_with_no_emojis[6] == 'This is SOS: ')
     assert(text_with_no_emojis[7] == 'This is red circle: ')
-
+'''
 def test_rm_noalphanumeric():
     '''
     This test function tests the correct working of the 

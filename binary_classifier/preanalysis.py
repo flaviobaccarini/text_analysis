@@ -1,26 +1,17 @@
 '''
 VISUALIZE AND EXPLORE MODULE
 =============================
-In this module some functions are defined for the visualization, analysis and exploration of the data.
-
-In particular, the info_data function prints the information about the three datasets (train, validation and test dataframes). 
-The plot_label_distribution function plots the label distribution in order to check if it's balanced or not.
-The word_count_twitter function counts how many words per each tweet are contained, while
-the word_count_printer function prints how many words per each tweet, then
-the plotting_word_count function plots how many words per each tweet depending on the label.
-The char_count_twitter function counts how many chars per each tweet are contained, while
-the char_count_printer function prints how many chars per each tweet, then
-the plotting_char_count function plots how many chars per each tweet depending on the label.
-Finally the explore function executes all the previous discussed functions. 
+In this module some functions are defined for the visualization,
+pre-analysis and initial exploration of the data.
 '''
-from pathlib import Path
+
+
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
-from binary_classifier.read_write_data import read_data, split_dataframe
-from binary_classifier.cleantext import rename_columns, drop_empty_rows
+import numpy as np
 
-#TODO CONTROLLA LA DOCUMENTAZIONE DI TUTTE LE FUNZIONI ORA
+
 def info_data(train_ds: pd.DataFrame,
               val_ds: pd.DataFrame,
               test_ds: pd.DataFrame) -> None:
@@ -28,7 +19,7 @@ def info_data(train_ds: pd.DataFrame,
     This function prints the basic informations for each different dataframe (train, validation, test).
     At the beginning, the head of the train dataframe is printed.
     Then the informations about all the dataframes are printed.
-    Finally, three different tweets randomly chosen from the train datased are printed.
+    Finally, three different text strings randomly chosen from the train datased are printed.
 
     Parameters:
     ============
@@ -67,7 +58,7 @@ def plot_label_distribution(label_train: pd.Series,
                             label_test: pd.Series,) -> None:
     '''
     This function plots the label distribution for each different dataframe.
-    In addition to the plot, it will print also the number of label distribution
+    In addition to the plot, the function prints also the number of label distribution
     for each different dataframe.
 
     Parameters:
@@ -110,36 +101,50 @@ def plot_label_distribution(label_train: pd.Series,
     plt.show()
 
 
-def word_count_twitter(tweets: pd.Series(str)) -> list[int]:
+def word_count_text(text: list[str]) -> list[int]:
     '''
-    This function counts how many words there are for each tweet in order to compare the difference
-    in the number of words between real news and fake news regarding COVID.
+    This function counts how many words there are for each text string
+    to compare the number of words difference between different labels.
 
     Parameters:
     ============
-    tweets: pandas.Series(str) or list[str] or tuple[str]
-              The sequence of the tweets to count the number of words. 
+    text:     list[str] 
+              The sequence of the text to count the number of words. 
+
+    Raises:
+    ========
+    ValueError: if the text sequence is empty.
 
     Return:
     ========
     word_count: list[int]
-                The list containing the number of words for each single tweet.
+                The list contains the number of words for each single text.
     '''
-    list_tweets = list(tweets)
-    word_count = [len(str(words).split()) for words in list_tweets]
-    if word_count == []: # CAPIRE SE VALE LA PENA TENERE O NO
-        word_count = [0]
+    if len(text) == 0:
+        raise ValueError("The text sequence passed is empty")
+    list_text = list(text)
+    word_count = [len(str(words).split()) for words in list_text]
     return word_count
 
 
-def printer_word_chars(all_dicts_avg_labels,
-                              unit_of_measure) -> None:
+def printer_word_chars(all_dicts_avg_labels: list[dict],
+                              unit_of_measure: str) -> None:
     '''
-    This function prints the average number of words for each dataframe
-    comparing the difference between fake news and real news.
+    This function prints the average number of words/chars
+    for each different dataframe and label.
 
     Parameters:
     ============
+    all_dicts_avg_labels: list[dict]
+                          This list contain three different dictionaries
+                          (training, validation, test).
+                          Dictionary keys represent the unique labels 
+                          and each key is mapped to the number of
+                          words/chars average for that label.
+    
+    unit_of_measure: str 
+                     This string could be "chars" or "words" and it represents
+                     what the average number inside the dictionary are referred to.
     
     '''
     train_word_char_mean_dict, val_word_char_mean_dict, test_word_char_mean_dict = all_dicts_avg_labels
@@ -148,13 +153,39 @@ def printer_word_chars(all_dicts_avg_labels,
               f'training {train_word_char_mean_dict[key]:.1f}, validation {val_word_char_mean_dict[key]:.1f}, '
               f'test {test_word_char_mean_dict[key]:.1f}')
 
-def average_word_or_chars(labels, word_or_char_count):
-    if list(labels) == []:   # CAPIRE SE VALE LA PENA TENERE O NO
-        print('Label list is EMPTY')
-        return {}
-    if list(word_or_char_count) == []:   # CAPIRE SE VALE LA PENA TENERE O NO
-        print('Count list is EMPTY')
-        return {}
+def average_word_or_chars(labels: list[object], 
+                          word_or_char_count: list[int]) -> dict:
+    '''
+    This function computes the average number of words/chars
+    for each different label.
+
+    Parameters:
+    ============
+    labels: list[object]
+            Sequence containing the labels for each single text.
+    
+    word_or_char_count: list[int] 
+                        Sequence containing the number of words/chars for each single text.
+                     
+    Raises:
+    ========
+    ValueError
+        if labels sequence is empty 
+    ValueError
+        if word_or_char_count sequence is empty 
+
+    Returns:
+    =========
+    unique_labels_dict: dict
+                        Each single key of this dictionary is a unique label.
+                        All the labels are mapped to the average number of words/chars
+                        computed on the text referred to that label.
+    '''
+    if len(labels) == 0:  
+        raise ValueError('The labels sequence passed is empty')
+    if len(word_or_char_count) == 0: 
+        raise ValueError('The word_or_char_count sequence passed is empty')
+
     labels_series = pd.Series(labels)
     unique_labels = labels_series.unique()
     unique_labels_dict = dict.fromkeys(unique_labels, None)
@@ -166,36 +197,53 @@ def average_word_or_chars(labels, word_or_char_count):
     return unique_labels_dict
 
 
-def char_count_twitter(tweets: pd.Series(str)) -> list[int]:
+def char_count_text(text: list[str]) -> list[int]:
     '''
-    This function counts how many characters there are for each tweet in order 
-    to compare the difference in the number of characters between real news and fake news.
+    This function counts how many characters there are for each text in order 
+    to compare the difference in the number of characters between different labels.
 
     Parameters:
     ============
-    tweets: pandas.Series(str) or list[str] or tuple[str]
-              The sequence of the tweets to count the number of characters. 
+    text:   list[str]
+            The sequence of the text to count the number of characters. 
 
-    Return:
+    Raises:
+    =======
+    ValueError: if the text sequence is empty.
+
+    Returns:
     ========
     char_count: list[int]
-                The list containing the number of characters for each single tweet.
+                The list contains the number of characters for each single text.
     '''
-    list_tweets = list(tweets)
-    char_count = [len(str(chars)) for chars in list_tweets]
-    if char_count == []: # CAPIRE SE VALE LA PENA TENERE O NO
-        char_count = [0]
+    if len(text) == 0:
+        raise ValueError("The text sequence passed is empty")
+    list_text = list(text)
+    char_count = [len(str(chars)) for chars in list_text]
     return char_count
 
-import numpy as np
 
-def plotting_word_char_count(labels, word_char_count, unit_of_measure) -> None:
+def plotting_word_char_count(labels: list[object],
+                             word_char_count: list[int],
+                             unit_of_measure: str) -> None:
     '''
-    This function plots the average number of characters for each dataframe
-    comparing the difference between fake news and real news.
+    This function plots the average number of words/characaters for each dataframe
+    highlighting the difference in numbers between different labels.
 
     Parameters:
     ============
+    labels: list[object]
+            Sequence that contains all the labels for the data.
+    
+    word_char_count: list[int]
+                     Sequence that containt all the word/character
+                     counts for each single text data.
+
+    unit_of_measure: str
+                     String that could be "chars"/"characters" or
+                     "words" and represents if the numbers inside 
+                     word_char_count are referred to characters
+                     or words. 
 
     '''  
     word_char_count_df = pd.DataFrame({'label': labels, 'count': word_char_count})

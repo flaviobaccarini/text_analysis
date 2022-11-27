@@ -1,11 +1,9 @@
 '''
-All the tests function will be written in this module
+Test functions for the reading and writing module.
 '''
 
 from binary_classifier.read_write_data import read_data, write_data, read_three_dataframes
 from binary_classifier.read_write_data import read_two_dataframes, handle_multiple_occurencies
-from binary_classifier.read_write_data import split_dataframe, split_single_dataframe, split_two_dataframes
-
 #import numpy as np
 import pandas as pd
 from pathlib import Path
@@ -422,151 +420,44 @@ def test_multiple_occurencies_capital_letters(phase):
 
     assert(name_with_max_count == name_max_count)
 
-@given(number_of_rows = st.integers(10, 100))
-def test_split_single_df(number_of_rows):
+
+def test_read_4df():
     '''
-    Test function to prove the correct working for the split_single_dataframe function.
+    Test function to prove the correct working of the read_data function
+    if inside the input folder there are more than three different files.
+
+    If inside the input folder there are more than three files
+    a ValueError is raised.
     '''
+
+    new_test_folder = Path('test_folder')
+    new_test_folder.mkdir(parents = True, exist_ok = True)
+
     df_fakes = [] 
-    for phase in  ('alldata',): 
-        fake_data = ({'phase': [phase for _ in range(number_of_rows)], 
-                         'tweet': [ ''.join(random.choices(string.ascii_uppercase + string.digits, k = 10)) for _ in range(number_of_rows)], 
-                         'id': [int(index) for index in range(number_of_rows)], 
-                         'label': [random.choice(['real', 'fake']) for _ in range(number_of_rows)]}) 
-        fake_data_dataframe = pd.DataFrame(fake_data)
-        df_fakes.append(fake_data_dataframe) 
+    for phase in  ('train', 'val', 'test', 'newone'): 
+            fake_data = ({'phase': [phase for _ in range(100)], 
+                         'tweet': [ ''.join(random.choices(string.ascii_uppercase + string.digits, k = 10)) for _ in range(100)], 
+                         'id': [int(index) for index in range(100)], 
+                         'label': [random.choice(['real', 'fake']) for _ in range(100)]}) 
+            fake_data_dataframe = pd.DataFrame(fake_data)
+            df_fakes.append(fake_data_dataframe) 
 
-    train_frac, test_frac = 0.70, 0.15
-    assert(len(df_fakes) == 1) # one single dataframe
-    df_split = split_single_dataframe(df_fakes, (train_frac, test_frac), seed = 42)
+    df_fake_train, df_fake_val, df_fake_test, df_newone = df_fakes
 
-    assert(len(df_split) == 3) # three dataframes
-    df_train, df_valid, df_test = df_split
+    csv_path_stem = ['fake_train_dataset.csv',
+                    'fake_val_dataset.csv',
+                    'fake_test_dataset.csv',
+                    'fakeboh_test_dataset.csv']
+    df_fake_train.to_csv(new_test_folder / csv_path_stem[0], index=False)
+    df_fake_val.to_csv(new_test_folder / csv_path_stem[1], index=False)
+    df_fake_test.to_csv(new_test_folder / csv_path_stem[2], index=False)
+    df_newone.to_csv(new_test_folder / csv_path_stem[3], index=False)
 
-    assert(len(df_train) == round(train_frac*number_of_rows))
-    assert(len(df_test) == round(test_frac*number_of_rows))
-    assert(len(df_valid) == number_of_rows - len(df_train) - len(df_test))
+    with unittest.TestCase.assertRaises(unittest.TestCase, 
+                                        expected_exception = ValueError):
+        dfs_fake = read_data(new_test_folder)
 
-@given(number_of_rows = st.integers(500, 700),
-       valid_fract = st.floats(min_value=0.01, max_value=0.3),
-       test_fract = st.floats(min_value=0.01, max_value=0.3))
-def test_split_two_df(number_of_rows, valid_fract, test_fract):
-    '''
-    Test function to prove the correct working for the split_two_dataframes function.
-    '''
-    train_frac = 1. - valid_fract - test_fract
-    number_of_rows_trainval = round((train_frac+valid_fract)*number_of_rows)
-    number_of_rows_test = number_of_rows - number_of_rows_trainval
-    df_fakes = [] 
-    for phase, nr_rows in  zip(('train_val', 'test'), (number_of_rows_trainval, number_of_rows_test)): 
-        fake_data = ({'phase': [phase for _ in range(nr_rows)], 
-                         'tweet': [ ''.join(random.choices(string.ascii_uppercase + string.digits, k = 10)) for _ in range(nr_rows)], 
-                         'id': [int(index) for index in range(nr_rows)], 
-                         'label': [random.choice(['real', 'fake']) for _ in range(nr_rows)]}) 
-        fake_data_dataframe = pd.DataFrame(fake_data)
-        df_fakes.append(fake_data_dataframe) 
-
-    assert(len(df_fakes) == 2) # two dataframes
-    df_split = split_two_dataframes(df_fakes, train_frac, seed = 42)
-
-    assert(len(df_split) == 3) # three dataframes
-    df_train, df_valid, df_test = df_split
-
-    assert(len(df_train) == round(train_frac*number_of_rows))
-    assert(len(df_valid) == number_of_rows_trainval - len(df_train))
-    assert(df_test.equals(df_fakes[1]))
-
-
-
-def test_split_df_single_dataset():
-    '''
-    Test function to prove the correct working for the split_dataframe function for
-    only one dataset provided.
-    '''
-    df_fakes = []
-    nr_of_tot_rows = 100
-    for phase in ('single_dataset',): 
-        fake_data = ({'phase': [phase for _ in range(nr_of_tot_rows)], 
-                         'tweet': [ ''.join(random.choices(string.ascii_uppercase + string.digits, k = 10)) for _ in range(nr_of_tot_rows)], 
-                         'id': [int(index) for index in range(nr_of_tot_rows)], 
-                         'label': [random.choice(['real', 'fake']) for _ in range(nr_of_tot_rows)]}) 
-        fake_data_dataframe = pd.DataFrame(fake_data)
-        df_fakes.append(fake_data_dataframe) 
-
-
-    assert(len(df_fakes) == 1) # one dataframe 
-
-    train_frac, test_frac = 0.70, 0.15
-    df_split = split_dataframe(df_fakes, (train_frac, test_frac), seed = 42)
-    
-    #df_split[0] == df_train, df_split[1] == df_valid, df_split[2] == df_test
-    assert(len(df_split) == 3) # split in three dataframes
-    assert(len(df_split[0]) == round(train_frac * (len(df_split[0]) + len(df_split[1]) + len(df_split[2]) )) )
-    assert(len(df_split[2]) == round(test_frac * (len(df_split[0]) + len(df_split[1]) + len(df_split[2]) )) )
-    assert(len(df_split[1]) == nr_of_tot_rows - len(df_split[0]) - len(df_split[2]))
-
-
-def test_split_df_two_df_error():
-    '''
-    Test function to prove the correct working for the split_dataframe function for
-    two datasets provided in an errror condition. 
-    The error condition happens when the number of samples for the train dataset would be greater
-    than the total number of samples from the dataset for train and valid. 
-    The train fraction, in fact, is considered on the total number of the data, it means:
-    if train_frac = 0.70 and in the train/valid dataset there are 800 values and in the 
-    test dataset there are 200 values -> the train dataset would be with 700 values, the test
-    dataset is not changed (so the same 200 values as before) and the valid dataset will contain the remaining
-    100 values.
-    The two possible reasons for the error behaviour are: 1) the train fraction is too big
-                                                          2) the test dataset is too populated 
-    In this example case the second option is the problem: the fist dataset (which contained train and validation data)
-    contained the same number of values as the second dataset (which is the test dataset) .
-    '''
-    df_fakes = []
-    nr_of_tot_rows = 100
-    for phase in ('train_val', 'test'): 
-        fake_data = ({'phase': [phase for _ in range(nr_of_tot_rows)], 
-                         'tweet': [ ''.join(random.choices(string.ascii_uppercase + string.digits, k = 10)) for _ in range(nr_of_tot_rows)], 
-                         'id': [int(index) for index in range(nr_of_tot_rows)], 
-                         'label': [random.choice(['real', 'fake']) for _ in range(nr_of_tot_rows)]}) 
-        fake_data_dataframe = pd.DataFrame(fake_data)
-        df_fakes.append(fake_data_dataframe) 
-
-    assert(len(df_fakes) == 2) # two dataframes
-
-    train_frac = 0.7
-    fractions = (train_frac,)
-
-    with unittest.TestCase.assertRaises(unittest.TestCase, expected_exception = ValueError):
-        df_split = split_dataframe(df_fakes, fractions, seed = 42)
-
-
-def test_split_df_two_df_correct():
-    '''
-    Test function to prove the correct working for the split_dataframe function for
-    two datasets provided in the correct condition. 
-    '''
-    df_fakes = []
-    nr_of_tot_train_val = 1000
-    nr_of_rows_test = 100
-    for phase, nr_rows in zip(('train_val', 'test'), (nr_of_tot_train_val, nr_of_rows_test)): 
-        fake_data = ({'phase': [phase for _ in range(nr_rows)], 
-                         'tweet': [ ''.join(random.choices(string.ascii_uppercase + string.digits, k = 10)) for _ in range(nr_rows)], 
-                         'id': [int(index) for index in range(nr_rows)], 
-                         'label': [random.choice(['real', 'fake']) for _ in range(nr_rows)]}) 
-        fake_data_dataframe = pd.DataFrame(fake_data)
-        df_fakes.append(fake_data_dataframe) 
-
-    assert(len(df_fakes) == 2) # two dataframes
-
-    train_frac = 0.8
-    fractions = (train_frac,)
-
-    df_split = split_dataframe(df_fakes, fractions, seed = 42)
-    
-    #df_split[0] == df_train, df_split[1] == df_valid, df_split[2] == df_test
-    assert(len(df_split) == 3) # split in three dataframes
-    assert(len(df_split[0]) == round(train_frac * (len(df_split[0]) + len(df_split[1]) + len(df_split[2]) )) )
-    assert(len(df_split[1]) == nr_of_tot_train_val - len(df_split[0]))
-    assert(df_split[2].equals(df_fakes[1]) )
+    for csv_path in csv_path_stem:
+        (new_test_folder / csv_path).unlink()    
+    new_test_folder.rmdir()
 

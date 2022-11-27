@@ -5,36 +5,12 @@ from binary_classifier.read_write_data import read_data
 from binary_classifier.vectorize_data import get_vocabulary, flatten_unique_voc, tocat_encode_labels
 from binary_classifier.vectorize_data import init_vector_layer, vectorize_X_data_tf, calculate_max_len
 from binary_classifier.model import build_model
-from binary_classifier.prediction_results import prediction, visualize_results
+from binary_classifier.results import visualize_results
 import pandas as pd
 import tensorflow as tf
-import ast
+from tqdm import tqdm
 
 
-def evaluate_neural_network(X_test, y_test, 
-                            embedding_vector_size,
-                            vocab_size,
-                            maxlen,
-                            checkpoint_path_weight_nn):
-
-    model = build_model(vocab_size = vocab_size,
-                        embedding_dim = embedding_vector_size,
-                        maxlen = maxlen)
-
-    model.compile(optimizer='adam',
-                loss='binary_crossentropy',
-                metrics=['accuracy'])
-
-    model.load_weights(checkpoint_path_weight_nn)
-
-
-    # evaluate the model
-    
-    y_predict, y_prob = prediction(model, X_test, neural_network = True)
-
-    loss, acc = model.evaluate(X_test, y_test, verbose=2)
-
-    return y_predict, y_prob, acc
 
 def main():
     config_parse = configparser.ConfigParser()
@@ -51,9 +27,7 @@ def main():
     embedding_vector_size = int(config_parse.get('PARAMETERS_TRAIN', 'embedding_vector_size'))
     checkpoint_path = Path('checkpoint') / analysis_folder
 
-
-
-    # NEURAL NETWORK FROM HERE
+    # NEURAL NETWORK
     checkpoint_path_weights_nn = checkpoint_path / 'best_model.hdf5'
     
     # TOKENIZE THE TEXT
@@ -67,7 +41,7 @@ def main():
 
     vocab_size = len(vectorize_layer.get_vocabulary()) + 1
 
-    X_test = [vectorize_X_data_tf(text, vectorize_layer) for text in df_test['clean_text']]
+    X_test = [vectorize_X_data_tf(text, vectorize_layer) for text in tqdm(df_test['clean_text'])]
     X_test = tf.stack(X_test, axis=0) 
     y_test, classes  = tocat_encode_labels(df_test['label'])
 
@@ -85,8 +59,10 @@ def main():
 
 
     # evaluate the model
-    
-    y_predict, y_prob = prediction(model, X_test, neural_network = True)
+    y_prob = model.predict(X_test)
+    y_predict = y_prob
+    y_predict[y_prob > 0.5] = 1
+    y_predict[y_prob <= 0.5] = 0
 
     loss, acc = model.evaluate(X_test, y_test, verbose=2)
 
