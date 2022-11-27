@@ -1,6 +1,6 @@
 from binary_classifier.read_write_data import read_data
 from binary_classifier.vectorize_data import get_vocabulary, tocat_encode_labels
-from binary_classifier.vectorize_data import init_vector_layer, vectorize_text_tf, calculate_max_len
+from binary_classifier.vectorize_data import init_vector_layer, vectorize_data_X_tf, calculate_max_len
 from binary_classifier.vectorize_data import flatten_unique_voc
 from binary_classifier.model import build_model
 import configparser
@@ -38,8 +38,8 @@ def main():
 
     vectorize_layer = init_vector_layer(maxlen, unique_vocabulary)
 
-    X_train = vectorize_text_tf(df_train['clean_text'], vectorize_layer)
-    X_valid = vectorize_text_tf(df_valid['clean_text'], vectorize_layer)
+    X_train = vectorize_data_X_tf(df_train['clean_text'], vectorize_layer)
+    X_valid = vectorize_data_X_tf(df_valid['clean_text'], vectorize_layer)
 
     y_train, _ = tocat_encode_labels(df_train['label'])
     y_valid, _ = tocat_encode_labels(df_valid['label'])
