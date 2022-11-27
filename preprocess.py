@@ -1,4 +1,5 @@
-from binary_classifier.read_write_data import read_data, write_data, split_dataframe
+from binary_classifier.read_write_data import read_data, write_data
+from binary_classifier.split_dataframe import split_dataframe
 from binary_classifier.cleantext import drop_empty_rows, rename_columns
 from binary_classifier.cleantext import finalpreprocess
 from tqdm import tqdm

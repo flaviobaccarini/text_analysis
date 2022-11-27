@@ -1,14 +1,14 @@
 '''
 Test functions for the reading and writing module.
 '''
-
-from binary_classifier.read_write_data import read_data, write_data, read_three_dataframes
-from binary_classifier.read_write_data import read_two_dataframes, handle_multiple_occurencies
-#import numpy as np
+from binary_classifier.read_write_data import read_data, write_data
+from binary_classifier.read_write_data import read_three_dataframes
+from binary_classifier.read_write_data import read_two_dataframes
+from binary_classifier.read_write_data import handle_multiple_occurencies
 import pandas as pd
 from pathlib import Path
 import string    
-import random # define the random module  
+import random
 from hypothesis import strategies as st
 from hypothesis import given
 import unittest
