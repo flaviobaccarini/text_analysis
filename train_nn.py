@@ -48,8 +48,7 @@ def main():
 
     model = build_model(vocab_size = vocab_size,
                         embedding_dim = embedding_vector_size,
-                        maxlen = maxlen,
-                        neurons = [64, 32, 16, 1])
+                        maxlen = maxlen)
     model.summary()
 
     model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=learning_rate),
@@ -73,7 +72,7 @@ def main():
     x=X_train,
     y=y_train,
     validation_data=(X_valid, y_valid),
-   # callbacks = [model_checkpoint_callback, early_stop_callback],
+    callbacks = [model_checkpoint_callback, early_stop_callback],
     batch_size=batch_size,
     epochs=epochs)
 

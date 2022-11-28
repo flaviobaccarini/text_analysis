@@ -35,7 +35,6 @@ def main():
     text_for_vocabulary = list(df_train['clean_text']) + list(df_valid['clean_text'])
     vocabulary = get_vocabulary(text_for_vocabulary)
     unique_voc = flatten_unique_voc(vocabulary)
-    neurons = [64, 32, 16, 1]
 
     vectorize_layer = init_vector_layer(maxlen, unique_voc)
 
@@ -46,8 +45,7 @@ def main():
 
     model = build_model(vocab_size = vocab_size,
                         embedding_dim = embedding_vector_size,
-                        maxlen = maxlen,
-                        neurons = neurons)
+                        maxlen = maxlen)
     model.summary()
 
     model.compile(optimizer='adam',

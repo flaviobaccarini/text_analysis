@@ -44,7 +44,7 @@ def main():
     
     acc = lr_w2v.score(X_test, y_test)
     visualize_results(y_test, y_predict, y_prob, list(classes),
-                      title = 'Logistic regressor', folder_path=plot_path)
+                      name_model = 'Logistic regressor', folder_path=plot_path)
     print("Logistic regressor model, accuracy: {:5.2f}%".format(100 * acc))
     
 

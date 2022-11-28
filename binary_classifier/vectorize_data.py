@@ -8,7 +8,6 @@ import nltk
 import numpy as np
 from numpy.typing import ArrayLike
 from sklearn import preprocessing
-from tensorflow.keras.layers import TextVectorization
 import tensorflow as tf
 from gensim.models import Word2Vec
 
@@ -279,7 +278,7 @@ def init_vector_layer(maxlen: int,
                      The vectorize layer, ready to vectorize
                      the text data.
     '''
-    vectorize_layer = TextVectorization(
+    vectorize_layer = tf.keras.layers.TextVectorization(
     standardize=None,
     output_mode='int',
     output_sequence_length=maxlen,
