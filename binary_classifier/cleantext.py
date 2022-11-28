@@ -39,6 +39,46 @@ def drop_empty_rows(df_to_clean: pd.DataFrame) -> pd.DataFrame:
 
     return df_no_empty_rows
 
+def find_initial_columns(analysis_name: str) -> tuple[str]:
+    '''
+    This function is used to get the original column names 
+    for text and labels in the initial dataset.
+    The possible analysis are three: "covid", "spam", "disaster".
+
+    Parameters:
+    ============
+    analysis_name: str
+                   Name of the analysis the user wants to do.
+    
+    Raise:
+    ======
+    ValueErorr: if the analysis_name is not "covid", "spam", "disaster"
+
+    Returns:
+    =========
+    column_names: tuple[str]
+                  Sequence that contains the column names (for text and labels)
+                  for the dataset selected to analyze.
+    '''
+    if analysis_name != "covid" or "spam" or "disaster":
+        raise ValueError("Wrong analyis name."+
+                        f'Given {analysis_name}'+
+                         ' but it has to be covid, spam or disaster.')
+    column_names_list = [{'analysis': 'covid',
+                          'text_column': 'tweet',
+                          'label_column': 'label'},
+                          {'analysis': 'spam',
+                           'text_column': 'original_message',
+                           'label_column': 'spam'},
+                           {'analysis': 'disaster',
+                            'text_column': 'text',
+                            'label_column': 'target'}]
+    analysis_index = next((index for (index, d) in enumerate(column_names_list)
+                                             if d["analysis"] == analysis_name), None)
+    column_names = (column_names_list[analysis_index]['text_column'],
+                    column_names_list[analysis_index]['label_column'])
+    return column_names
+
 def rename_columns(df: pd.DataFrame, 
                    columns: list[str]) -> pd.DataFrame:
     '''

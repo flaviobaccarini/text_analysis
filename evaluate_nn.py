@@ -16,7 +16,7 @@ def main():
     config_parse = configparser.ConfigParser()
     configuration = config_parse.read(sys.argv[1])
     
-    analysis_folder = config_parse.get('INPUT_OUTPUT', 'analysis')
+    analysis_folder = config_parse.get('ANALYSIS', 'folder_name')
     dataset_folder = Path('preprocessed_datasets') / analysis_folder
 
     data = read_data(dataset_folder)

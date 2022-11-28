@@ -9,6 +9,7 @@ import pandas as pd
 from binary_classifier.read_write_data import read_data
 from binary_classifier.split_dataframe import split_dataframe
 from binary_classifier.cleantext import rename_columns, drop_empty_rows
+from binary_classifier.cleantext import find_initial_columns
 from binary_classifier.preanalysis import info_data, plot_label_distribution
 from binary_classifier.preanalysis import word_count_text, char_count_text
 from binary_classifier.preanalysis import average_word_or_chars
@@ -20,9 +21,9 @@ def main():
     config_parse = configparser.ConfigParser()
     configuration = config_parse.read(sys.argv[1])
     
-    analysis_folder = config_parse.get('INPUT_OUTPUT', 'analysis')
+    analysis_name = config_parse.get('ANALYSIS', 'folder_name')
     seed = int(config_parse.get('PREPROCESS', 'seed'))
-    dataset_folder = Path('datasets') / analysis_folder
+    dataset_folder = Path('datasets') / analysis_name
     
     dfs_raw = read_data(dataset_folder)
 
@@ -31,8 +32,7 @@ def main():
                     float(config_parse.get('PREPROCESS', 'test_fraction')))
         dfs_raw = split_dataframe(dfs_raw, fractions, seed)
 
-    column_names = (config_parse.get('PREPROCESS', 'column_name_text'), 
-                    config_parse.get('PREPROCESS', 'column_name_label'))
+    column_names = find_initial_columns(analysis_name)
 
     df_new = []
     for df in dfs_raw:

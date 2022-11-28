@@ -132,11 +132,13 @@ def make_confusion_matrix(cm: np.ndarray,
         group_counts = blanks
 
     if percent:
-        group_percentages = ["{0:.2%}".format(value) for value in cm.flatten()/np.sum(cm)]
+        group_percentages = ["{0:.2%}".format(value) for value 
+                                                        in cm.flatten()/np.sum(cm)]
     else:
         group_percentages = blanks
 
-    box_labels = [f"{v1}{v2}{v3}".strip() for v1, v2, v3 in zip(group_labels,group_counts,group_percentages)]
+    box_labels = [f"{v1}{v2}{v3}".strip() for v1, v2, v3 in 
+                                zip(group_labels,group_counts,group_percentages)]
     box_labels = np.asarray(box_labels).reshape(cm.shape[0],cm.shape[1])
 
     # SET FIGURE PARAMETERS ACCORDING TO OTHER ARGUMENTS

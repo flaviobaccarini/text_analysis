@@ -2,31 +2,17 @@ from binary_classifier.read_write_data import read_data, write_data
 from binary_classifier.split_dataframe import split_dataframe
 from binary_classifier.cleantext import drop_empty_rows, rename_columns
 from binary_classifier.cleantext import finalpreprocess
+from binary_classifier.cleantext import find_initial_columns
 from tqdm import tqdm
 from pathlib import Path
 import sys
 import configparser
 
-
-def print_cleaned_data(dfs_cleaned):
-    df_train, df_valid, df_test = dfs_cleaned
-    print(df_train['clean_text'].head())
-    print("="*40)
-    print(df_valid['clean_text'].head())
-    print("="*40)
-
-    print("Some random texts:\n" + "="*40)
-    for index, row in df_train.sample(n = 3).iterrows():
-        print("\nOriginal text:\n" + "="*40) 
-        print(row['text'])
-        print("\nCleaned text:\n" + "="*40)
-        print(row['clean_text'])
-
 def main():
     config_parse = configparser.ConfigParser()
     configuration = config_parse.read(sys.argv[1])
     
-    analysis_name = config_parse.get('INPUT_OUTPUT', 'analysis')
+    analysis_name = config_parse.get('ANALYSIS', 'folder_name')
     seed = int(config_parse.get('PREPROCESS', 'seed'))
     dataset_folder = Path('datasets') / analysis_name
 
@@ -37,9 +23,7 @@ def main():
                         float(config_parse.get('PREPROCESS', 'test_fraction')))
         dfs_raw = split_dataframe(dfs_raw, fractions, seed)
 
-    column_names = (config_parse.get('PREPROCESS', 'column_name_text'), 
-                    config_parse.get('PREPROCESS', 'column_name_label'))
-
+    column_names = find_initial_columns(analysis_name)
 
     dfs_processed = []
     for df in dfs_raw:
@@ -56,9 +40,21 @@ def main():
     output_folder = Path('preprocessed_datasets') / analysis_name
     output_folder.mkdir(parents=True, exist_ok=True)
 
-
     write_data(dfs_processed, output_folder = output_folder, analysis = analysis_name)
-    print_cleaned_data(dfs_processed)
+
+    df_train, df_valid, df_test = dfs_processed
+    print(df_train['clean_text'].head())
+    print("="*40)
+    print(df_valid['clean_text'].head())
+    print("="*40)
+
+    print("Some random texts:\n" + "="*40)
+    for index, row in df_train.sample(n = 3).iterrows():
+        print("\nOriginal text:\n" + "="*40) 
+        print(row['text'])
+        print("\nCleaned text:\n" + "="*40)
+        print(row['clean_text'])
+
 
 if __name__ == '__main__':
     main()

@@ -5,7 +5,6 @@ from binary_classifier.vectorize_data import init_vector_layer, tocat_encode_lab
 from binary_classifier.vectorize_data import flatten_unique_voc
 import numpy as np
 import nltk
-
 from hypothesis import strategies as st
 from hypothesis import given
 import string

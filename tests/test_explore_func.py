@@ -1,7 +1,6 @@
 '''
 This test script is written in order to test the exploring function in the explore module.
 '''
-
 from binary_classifier.preanalysis import average_word_or_chars, word_count_text, char_count_text
 from hypothesis import strategies as st
 from hypothesis import given
