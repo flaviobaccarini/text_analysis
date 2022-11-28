@@ -151,7 +151,7 @@ def test_encode_labels():
     indices = {'real': [index for (index, label) in enumerate(labels) if label == 'real'],
                'fake': [index for (index, label) in enumerate(labels) if label == 'fake']}
     
-    y_categorical, classes = tocat_encode_labels(labels)
+    y_categorical, classes = tocat_encode_labels(labels, classes = True)
 
     assert(len(y_categorical) == 100)
     assert(set(classes) == {'real', 'fake'})
@@ -180,7 +180,7 @@ def test_encode_random_labels(unique_labels):
     indices = {}
     for label in unique_labels:
         indices[label] = [index for (index, lab) in enumerate(labels_list) if label == lab]
-    y_categorical, classes = tocat_encode_labels(labels_list)
+    y_categorical, classes = tocat_encode_labels(labels_list, classes=True)
 
     assert(len(y_categorical) == 500)
     assert(type(y_categorical) == np.ndarray)

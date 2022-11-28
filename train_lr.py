@@ -38,7 +38,7 @@ def main():
     # PREPARE THE DATA:
     df_train_val = pd.concat([df_train, df_valid], ignore_index = True)
     X_train = vectorize_X_data_lr(df_train_val['clean_text'], modelw2v)
-    y_train, _ = tocat_encode_labels(df_train_val['label'])
+    y_train = tocat_encode_labels(df_train_val['label'])
 
     # CHECKPOINT PATH:
     checkpoint_path.mkdir(parents = True, exist_ok = True)

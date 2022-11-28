@@ -32,7 +32,7 @@ def main():
 
     
     X_test  = vectorize_X_data_lr(df_test['clean_text'], modelw2v)
-    y_test, classes  = tocat_encode_labels(df_test['label'])
+    y_test, classes  = tocat_encode_labels(df_test['label'], classes = True)
 
     keyed_vectors = modelw2v.wv  # structure holding the result of training
     print("The three most common words:")

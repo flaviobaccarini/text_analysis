@@ -42,7 +42,7 @@ def main():
     vocab_size = len(vectorize_layer.get_vocabulary()) + 1
 
     X_test = vectorize_X_data_tf(df_test['clean_text'], vectorize_layer)
-    y_test, classes  = tocat_encode_labels(df_test['label'])
+    y_test, classes  = tocat_encode_labels(df_test['label'], classes = True)
 
     model = build_model(vocab_size = vocab_size,
                         embedding_dim = embedding_vector_size,
