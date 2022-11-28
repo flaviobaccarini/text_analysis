@@ -17,7 +17,7 @@ def visualize_results(y_test: np.ndarray,
                       classes: ArrayLike,
                       name_model: str, 
                       history: dict = None,
-                      folder_path: str = None):
+                      folder_path: str = None) -> None:
     '''
     Function to visualize the results after the predict process.
     It takes as input the test y, the predicted y and the probability
@@ -80,7 +80,7 @@ def make_confusion_matrix(cm: np.ndarray,
                           figsize: tuple=None,
                           cmap: str='Blues',
                           title: str=None,
-                          filepath: str=None):
+                          filepath: str=None) -> None:
     '''
     This function will make a pretty plot of an sklearn Confusion Matrix (cm)
     using a Seaborn heatmap visualization. 
@@ -165,7 +165,7 @@ def make_confusion_matrix(cm: np.ndarray,
 
 
 def plot_history(history: dict,
-                 filepath: str=None):
+                 filepath: str=None) -> None:
     '''
     This function will make plot of the history for the training of 
     the neural network.
