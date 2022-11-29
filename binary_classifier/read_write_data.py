@@ -22,14 +22,14 @@ def read_data(input_folder: str) -> tuple[pd.DataFrame]:
 
     If inside the folder there are only two different files, this function
     assumes that data are already split between train and test.
-    The train dataset file must contain the "train" word,
+    The train dataset file must contain the "train" string,
     no request are needed for the other file contained in the folder.
 
     If inside the folder there is only one single, this function
     assumes that data are not alread split.
     No request on the name of the file.
 
-    The words "train", "val", "test" that have to be in the filenames
+    The strings "train", "val", "test" that have to be in the filenames
     are not case sensitive.
 
     Parameters:
@@ -139,7 +139,7 @@ def read_two_dataframes(datasets_path: Path,
     while the other dataset (which the function assumes to be the test
     dataset) has no request at all on the file name.
 
-    The word "train" that has to be in the file name
+    The string "train" that has to be in the file name
     is not case sensitive.
 
     Parameters:
@@ -190,17 +190,22 @@ def handle_multiple_occurencies(paths_list: list[str],
     Imagine that we have three different files inside a folder.
     This means that one file is for the training dataset, one for the validation
     dataset and the other one for the test dataset. When the user uses the read_data
-    function, this function search inside the file names the magic words "train", "val"
-    and "test" in order to initialize three different dataframes corresponding to the three
-    different files. 
-    But what if inside the file names is there another "train" word? 
-    For example, if the file names are: "constrain_train.csv", "constrain_val.csv",
-    "constrain_test.csv", the only read_data function may can't understand which one is the
-    train dataset (because in each file name there is a "train" word).
-    Basically handle_multiple_occurencies helps understanding which
-    is the real train dataset, looking for the file name that contains the highest
+    function, this function search inside the file names the words "train", "val"
+    and "test" in order to initialize three different dataframes corresponding to
+    the three different files. If the names are: "random_train.csv", "random_val.csv"
+    and "random_test.csv" the train dataset corresponds to "random_train.csv", the
+    validation dataset corresponds to "random_val.csv" and the test dataset corresponds
+    to "random_test.csv". 
+    But what if inside the file names is there another "train" word (or could be "val"
+    "test")? For example, if the file names are: "constrain_train.csv",
+    "constrain_val.csv", "constrain_test.csv", the only read_data function may can't
+    understand which one is the train dataset (because in each file name there
+    is a "train" word). Basically handle_multiple_occurencies helps to understand which
+    is the real train dataset, looking for the matched file name that contains the highest
     number of occurencies for the "train" word (we can expect that in the train dataset
     file name there is one "train" word more than the other file names.)
+    The example is made with the "train" word, but handle_multiple_occurencies works 
+    also with "val"/"validation" and "test".
 
     Parameters:
     ============
@@ -209,9 +214,9 @@ def handle_multiple_occurencies(paths_list: list[str],
                 file names for one dataset.
     
     word_to_count: str
-                   This is the word that corresponds to the dataset
-                   that we want to obtain.
-                   It could be "train", "val" or "test".
+                   This is the word that we want to count in the 
+                   file names list (paths_list).
+                   It could be "train", "val"/"validation" or "test".
                    The handle_multiple_occurencies
                    is going to search inside all the file names
                    contained in the paths_list the
@@ -239,6 +244,8 @@ def write_data(dataframes: tuple[pd.DataFrame],
     '''
     This function writes the preprocessed data in csv files, divided between 
     train, validation and test, in the output folder passed as parameter.
+    It is important that dataframes tuple (or list) contains three different 
+    dataframes in this order: train, validation and test. 
     The name of the new files will be the analysis name followed by;
     "train_preprocessed.csv" or "val_preprocessed.csv" or "test_preprocessed.csv".
 
@@ -255,7 +262,6 @@ def write_data(dataframes: tuple[pd.DataFrame],
               Name of the analysis the user is doing.
               For example, if data regarding COVID-19 are analyzed, the 
               analysis name could be "covid".
-
     '''
 
     if type(output_folder) == str:

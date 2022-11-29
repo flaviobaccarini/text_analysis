@@ -104,34 +104,6 @@ def test_remove_tag():
     assert(text_no_tags[3] == '5 > 4 and 4 < 3')
     assert(text_no_tags[4] == '4  3')
 
-'''    
-def test_remove_emojis():
-'''
-#    This test function tests the correct working of the remove_emojis function.
-'''
-    text_with_emojis = ['Hello world \U0001f600',
-                        'This is a dog: \U0001F436',
-                        'This is a rainbow: \U0001F308',
-                        '\U0000274C this is a cross mark',
-                        'This is the number three (3): \U00000033',
-                        'This is the letter B: \U0001F171',
-                        'This is SOS: \U0001F198',
-                        'This is red circle: \U0001F534']
-    
-    text_with_no_emojis = []
-    for text in text_with_emojis:
-        text_no_emoji = remove_emojis(text)
-        text_with_no_emojis.append(text_no_emoji)
-
-    assert(text_with_no_emojis[0] == 'Hello world ')
-    assert(text_with_no_emojis[1] == 'This is a dog: ')
-    assert(text_with_no_emojis[2] == 'This is a rainbow: ')
-    assert(text_with_no_emojis[3] == ' this is a cross mark')
-    assert(text_with_no_emojis[4] == 'This is the number three (3): 3')
-    assert(text_with_no_emojis[5] == 'This is the letter B: ')
-    assert(text_with_no_emojis[6] == 'This is SOS: ')
-    assert(text_with_no_emojis[7] == 'This is red circle: ')
-'''
 def test_rm_noalphanumeric():
     '''
     This test function tests the correct working of the 
@@ -160,38 +132,6 @@ def test_rm_noalphanumeric():
     assert(text_noalphanumeric[4] == "try with underscore     ")
     assert(text_noalphanumeric[5] == "try with some numbers  3092")
     assert(text_noalphanumeric[6] == "emoticons      ")
-
-
-# TODO: DA DECIDERE SE TENERE O NO LA FUNZIONE QUI SOTTO..
-'''
-def test_rm_singlechar():
-'''
-#    This test function tests the correct working of the 
-#    remove_noalphanum_singlechar function.
-#    In particular, this test functions tests that all the single
-#    characters are removed from the text (the 's' after the apostrophe for example.)
-'''
-    text_example = ["Hello, it's me",
-                    "I've done something",
-                    "The U S government"]
-    
-    texts_no_singlechar = []
-    # THIS EXAMPLE IS DONE BECAUSE IF IN THE TEXT THERE IS U.S.
-    # WITHOUT PUNCTUATION WE FIND U S
-    text_example[2] = stopword(text_example[2].lower())
-
-    for text in text_example:
-        texts_no_singlechar.append(remove_noalphanum(text))
-
-    assert(texts_no_singlechar[0] == 'Hello  it me')
-    assert(texts_no_singlechar[1] == " ve done something")
-
-    print(texts_no_singlechar)
-    # FROM U S the stopword can eliminate only the S
-    assert(text_example[2] == 'u government')
-    # BUT NOW WE CAN ELIMINATE ALSO THE u WORD:
-    assert(texts_no_singlechar[2] == ' government')
-'''
 
 def test_clean_text():
     '''

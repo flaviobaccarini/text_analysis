@@ -6,9 +6,10 @@ if the data are not already split in three different datasets.
 '''
 import pandas as pd
 import numpy as np
+from numpy.typing import ArrayLike
 
 def split_dataframe(dataframes_list: tuple[pd.DataFrame],
-                    fractions: tuple[float],
+                    fractions: ArrayLike,
                     seed: int) -> tuple[pd.DataFrame]:
     '''
     Function used to split the dataframe/dataframes.
@@ -17,6 +18,8 @@ def split_dataframe(dataframes_list: tuple[pd.DataFrame],
     two already split dataframes in train and test data);
     the fractions to split the dataframes; the seed in order 
     to have a determinitic behaviour.
+    The dataframes are returned in this order: train, validation
+    and test dataset.
 
     Parameters:
     ============
@@ -24,9 +27,10 @@ def split_dataframe(dataframes_list: tuple[pd.DataFrame],
                      Sequence that contains one or two dataframes
                      to split. The length must be at maximum of 2.
     
-    fractions: tuple[float]
+    fractions: 1-D array-like[float]
                Fractions that determines how the data have
                to be split in the different dataset.
+               The sequence needs to have two values.
                They have to be float number between 0 and 1.
     
     seed: number
@@ -72,22 +76,25 @@ def split_dataframe(dataframes_list: tuple[pd.DataFrame],
 
 
 def split_single_dataframe(single_df: pd.DataFrame,
-                           fractions: tuple[float], 
+                           fractions: ArrayLike, 
                            seed: int) -> tuple[pd.DataFrame]:
     '''
-    Helper function for splitting the initial dataset:
+    Helper function for splitting data:
     case where only one single dataframe is provided.
     This function takes as input one single dataframe and the fractions
     to divide the single initial dataset in the three final datasets.
+    The dataframes are returned in this order: train, validation
+    and test dataset.
 
     Parameters:
     ============
     single_df: pd.DataFrame
                Dataframe that contains all the data.
 
-    fractions: tuple(float)
+    fractions: 1-D array-like[float]
                Divide the data in the three final dataset
                accordingly these fraction numbers.
+               Sequence of length two (train and test fractions).
     
     seed: number
           Number to set the seed in order to have not a completely 
@@ -115,15 +122,19 @@ def split_two_dataframes(dataframes: tuple[pd.DataFrame],
                          train_frac: float, 
                          seed: int) -> tuple[pd.DataFrame]:
     '''
-    Helper function for splitting the initial dataset:
-    case where two different dataframs are provided.
+    Helper function for splitting data:
+    case where two different dataframes are provided.
     This function takes as input a list containing two different
     dataframes. The first one is considered as the train dataset
     and so it will split in train and validation. The second one
     is considered as the test dataset.
-    The other important input is the train_frac, which represents
-    the train fraction (the fraction is computed on the amount 
-    of data from the first dataframe).
+    The other important input parameter is the train_frac,
+    which represents the train fraction. The train dataframe will
+    have a number of samples equal to the train fraction times 
+    the total number of samples inside the original dataframe (first
+    dataframe in the dataframes list given as input).
+    The dataframes are returned in this order: train, validation
+    and test dataset.
 
     Parameters:
     ============
