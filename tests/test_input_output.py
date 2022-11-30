@@ -41,9 +41,11 @@ def create_fake_data(phases: list[str],
     for phase, nr_rows in  zip(phases, nr_of_rows_per_phase): 
             fake_data = ({'phase': [phase for _ in range(nr_rows)], 
                          'tweet': [ ''.join(random.choices(string.ascii_uppercase
-                                                 + string.digits, k = 10)) for _ in range(nr_rows)], 
+                                                 + string.digits, k = 10)) 
+                                                 for _ in range(nr_rows)], 
                          'id': [int(index) for index in range(nr_rows)], 
-                         'label': [random.choice(['real', 'fake']) for _ in range(nr_rows)]}) 
+                         'label': [random.choice(['real', 'fake']) 
+                                                 for _ in range(nr_rows)]}) 
             fake_data_dataframe = pd.DataFrame(fake_data)
             df_fakes.append(fake_data_dataframe) 
     return df_fakes

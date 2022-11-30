@@ -9,21 +9,27 @@ import string
 import random 
 from hypothesis import strategies as st
 from hypothesis import given
+import unittest
 from binary_classifier.cleantext import lower_strip, finalpreprocess
 from binary_classifier.cleantext import remove_urls_tags, get_wordnet_pos
 from binary_classifier.cleantext import remove_noalphanum, stopword
 from binary_classifier.cleantext import clean_text, lemmatizer
 from binary_classifier.cleantext import rename_columns, drop_empty_rows
+from binary_classifier.cleantext import find_initial_columns
+
+#TODO: aggiungere una test function per find_initial_columns
 
 def test_lower():
     '''
-    This test function tests the correct working of the lower_strip function.
-    In particular, in this test function only the lower part is tested.
+    This test function tests the behaviour of lower_strip function.
+    In particular, in this test function the lower part is tested.
     '''
+    # some text with capital letters
     capital_texts = ['HELLO WORLD',
                      'Hello World',
                      'hello world']
     lower_texts = []
+    # lower the text
     for capital in capital_texts:
         text_lower = lower_strip(capital)
         lower_texts.append(text_lower)
@@ -34,14 +40,17 @@ def test_lower():
 
 def test_strip():
     '''
-    This test function tests the correct working of the lower_strip function.
+    This test function tests the behaviour of lower_strip function.
     In particular, in this test function the stripping part is tested.
-    The lower_strip function eliminates also useless whitespaces. 
+    The lower_strip function eliminates also useless whitespaces within 
+    the input string.
     '''
+    # soem text with whitespaces
     texts_to_strip = ['    hello world',
                       'hello world    ',
                       '     Hello         World     ' ]
     texts_stripped = []
+    # remove useless whitespaces
     for text_to_strip in texts_to_strip:
         text_stripped = lower_strip(text_to_strip)
         texts_stripped.append(text_stripped)
@@ -51,11 +60,16 @@ def test_strip():
     assert(texts_stripped[2] == 'hello world')    
 
 
-@given(text = st.text(min_size = 0, max_size = 10))
+@given(text = st.text(min_size = 0, max_size = 20))
 def test_lower_strip(text):
     '''
-    This test function tests the correct working of the lower_strip function
+    This test function tests the behaviour of the lower_strip function
     with some random text given as input.
+    
+    @given:
+    ========
+    text: str
+          Random generated text.
     '''
     # 1) lower the text; 2) strip the text; 3) remove whitespaces
     correct_text = " ".join(text.lower().split())
@@ -64,15 +78,16 @@ def test_lower_strip(text):
 
 def test_remove_url():
     '''
-    This test function tests the correct working of the remove_url_tag function.
-    In particular, in this test function only the part about urls is tested.
+    This test function tests the behaviour of remove_url_tag function.
+    In particular, in this test function only the part about URLs is tested.
     '''
-
+    # some random text with URLs
     texts_with_url = ['This is wikipedia site: https://en.wikipedia.org/wiki',
                       'https://en.wikipedia.org/wiki',
                       '   https://en.wikipedia.org/wiki   ',
                       'Hello World']
     text_nourls = []
+    # remove URLs
     for text_with_url in texts_with_url:
         text_without_url = remove_urls_tags(text_with_url)
         text_nourls.append(text_without_url)
@@ -84,9 +99,10 @@ def test_remove_url():
 
 def test_remove_tag():
     '''
-    This test function tests the correct working of the remove_url_tag function.
+    This test function tests the behaviour of remove_url_tag function.
     In particular, in this test function only the part about tags is tested.
     '''
+    # text with some tags
     texts_with_tag = ['<TEXT> Hello World <TEXT>',
                       '<HELLO WORLD>',
                       'Hello World',
@@ -94,6 +110,7 @@ def test_remove_tag():
                       '4 < 3 but 5 > 3']
     
     text_no_tags = []
+    # remove the tags from the text
     for text_with_tag in texts_with_tag:
         text_without_tag = remove_urls_tags(text_with_tag)
         text_no_tags.append(text_without_tag)
@@ -106,12 +123,15 @@ def test_remove_tag():
 
 def test_rm_noalphanumeric():
     '''
-    This test function tests the correct working of the 
-    remove_noalphanum_singlechar function.
+    This test function tests the behaviour of remove_noalphanum function.
     In particular, this test functions tests that all the non alphanumeric
     characters are removed from the text.
+    The non alphanumeric characters could be: punctuation, underscores, emoticons,
+    special characters ('#', '@'...) etc.
+    Everything but letters and numbers is removed from remove_noalphanum function.
     '''
-    test_allchars = ["Hashtag try: #hello world!!",
+    # text with non alphanumeric characters
+    text_allchars = ["Hashtag try: #hello world!!",
                      "random.email@gmail.com",
                      "<TEXT> html tag",
                      "wikipedia site: https://en.wikipedia.org/wiki",
@@ -120,10 +140,10 @@ def test_rm_noalphanumeric():
                      "emoticons: \U0000274C\U0001f600\U0001F436\U0001F534"]
     
     text_noalphanumeric = []
-    for allchars in test_allchars:
+    # remove the non alphanumeric characters
+    for allchars in text_allchars:
         noalphanumeric = remove_noalphanum(allchars)
         text_noalphanumeric.append(noalphanumeric)
-
 
     assert(text_noalphanumeric[0] == 'Hashtag try   hello world  ')
     assert(text_noalphanumeric[1] == 'random email gmail com')
@@ -135,10 +155,12 @@ def test_rm_noalphanumeric():
 
 def test_clean_text():
     '''
-    This test functions test the correct working of the clean_text function.
-    The idea is to remove all the punctuations, all the non alphanumeric characters,
-    URLs, HTML tags, apostrophes, quotation marks and underscore
+    This test function test the behaviour of clean_text function.
+    clean_text function remove all the non alphanumeric characters,
+    URLs, HTML tags and useless whitespaces genereated by removing the 
+    characters.
     '''
+    # some random text we want to clean
     text_to_clean = ['Hello, my name is Flavio!',
                      '<SITE> wikpedia site: https://en.wikipedia.org/wiki',
                      '#project for binary classification.',
@@ -148,6 +170,7 @@ def test_clean_text():
                      'This is the number three (3): \U00000033']
     
     texts_cleaned = []
+    # clean the text
     for text in text_to_clean:
         cleaned_text = clean_text(text)
         texts_cleaned.append(cleaned_text)
@@ -162,25 +185,28 @@ def test_clean_text():
 
 def test_stopword():
     '''
-    This test functions test the correct working of the stopwrod function.
-    The idea is to remove all the stop words in the english vocabulary.
-    The list for the all stop words can be seen with these three lines of code.
-    
+    This test function test the behaviour of stopword function.
+    The idea is to remove all the words present in the stop list 
+    for the english vocabulary.
+    The list of the all stop words can be seen with these lines of code.
     import nltk
+    nltk.download('stopwords')
     from nltk.corpus import stopwords
     print(stopwords.words('english')) 
     '''
+    # text with stopword
     sentences = ['I have many pets at home.',
                 "That's my pen!",
                 'Hello world, how are you?',
                 'A random sentence to see how it works.']
 
     sentences_stop_word = []
+    # before removing the stopwords
+    # clean the text
     for text_example in sentences:
         test_clean_text = clean_text(text_example)
         test_no_stopword = stopword(test_clean_text)
         sentences_stop_word.append(test_no_stopword)
-
     
     assert(sentences_stop_word[0] == 'many pets home')
     assert(sentences_stop_word[1] == 'pen')
@@ -190,47 +216,45 @@ def test_stopword():
 
 def test_lemmatizer():
     '''
-    Test function to test the correct working for the lemmatizer function.
-    The lemmatizer function take a text (string) as input and lemmatize the text.
+    Test function to test the behaviour of lemmatizer function.
+    The lemmatizer function takes a text (string) as input and lemmatize the text.
     The output is the lemmatized text.
     '''
+    # some random text to lemmatize
     texts_to_lemmatize = ["The striped bats are hanging on their feet for best",
-                          "All the players are playing.",
-                          "Cats and dogs usually are not best friends.",
-                          "Accordingly to the weather forecast tomorrow it is going to rain",
-                          "the text at this preprocess point would be all lower and without punctuations",
+                          "All the players are playing",
+                          "cats and dogs usually are not best friends",
+                          "Weather forecasters said tomorrow it is going to rain",
                         ]
     texts_lemmatized = []
-
-    # let's see how all the process works: 
-    # 1) we start from a lower text with no punctuation 
-    # 2) we apply the stopword
-    # 3) we lemmatize the text 
-    texts_to_lemmatize[4] = stopword(texts_to_lemmatize[4])
-
+    # text lemmatization
     for text in texts_to_lemmatize:
         lemmatized_text = lemmatizer(text)
         texts_lemmatized.append(lemmatized_text)
 
     assert(texts_lemmatized[0] == 'The striped bat be hang on their foot for best')
-    assert(texts_lemmatized[1] == 'All the player be play .')
-    assert(texts_lemmatized[2] == 'Cats and dog usually be not best friend .')
-    assert(texts_lemmatized[3] == "Accordingly to the weather forecast tomorrow it be go to rain")
-    assert(texts_lemmatized[4] == 'text preprocess point would lower without punctuation')
+    assert(texts_lemmatized[1] == 'All the player be play')
+    assert(texts_lemmatized[2] == 'cat and dog usually be not best friend')
+    assert(texts_lemmatized[3] == "Weather forecaster say tomorrow it be go to rain")
 
 def test_get_wordnet_pos():
     '''
-    Test function to test how the get_wordnet_pos function works.
+    Test function to test how the behaviour of get_wordnet_pos function.
     The idea is to match all the words from the sentences with the wordnet tags,
-    in order to lemmatize the words after this process.
+    in order to lemmatize correctly the words after this process.
+    In this way the lemmatizer understand if the word is a noun, verb, adverb
+    or adjective.
     '''
-    text_to_test = ['This is a try',
+    # some text to extrapolate tags
+    text_for_tags = ['This is a try',
                     "it is incredibly beautiful",
                     "i run outside if the weather is really good"]
-    tags = [nltk.pos_tag(word_tokenize(text)) for text in text_to_test]
+    tags = [nltk.pos_tag(word_tokenize(text)) for text in text_for_tags]
 
     wordnet_pos_tags = []
     n = 1
+    # find the first character for each tag, that tells us 
+    # if the word is a noun, verb, adjective or adverb
     for tag in tags:
         only_tag = [x[n] for x in tag]
         wordnet_pos = [get_wordnet_pos(tag) for tag in only_tag]
@@ -244,13 +268,13 @@ def test_get_wordnet_pos():
 
 def test_final_preprocess():
     '''
-    Test function to test how the finalpreprocess function works.
-    Final preprocess is the function that applies all the functions
-    for cleaning the text. 
-    The output of this function should be only some meaningful words
-    for the sentence to analyze.
+    Test function to test the behaviour of finalpreprocess function.
+    finalpreprocess is the function that applies all the functions
+    for cleaning the text (clean_text, stopword and lemmatize)
+    The output of this function should be only some meaningful lemmatized words
+    for the analyzed text.
     '''
-
+    # some random text to preprocess
     text_example = ['Some random text to use',
                     'This year 2022 is fantastic',
                     "I don't know what to do!",
@@ -264,7 +288,7 @@ def test_final_preprocess():
                     "The rainbow \U0001F308 is very beautiful"]
 
     text_processed = []
-
+    # preprocessed text
     for text in text_example:
         text_processed.append(finalpreprocess(text))
 
@@ -280,47 +304,93 @@ def test_final_preprocess():
     assert(text_processed[9] == 'user 10')
     assert(text_processed[10] == 'rainbow beautiful')
 
+@given(analysis = st.sampled_from(("covid", "spam", "disaster", "random")))
+def test_find_initial_columns(analysis):
+    '''
+    Test function to test the behaviour of find_initial_columns.
+    find_initial_columns takes as input the analysis name, that could be
+    "covid", "spam" or "disaster", and it returns the original 
+    column names for the selected dataset. 
+    If the analysis name is different than "covid", "spam", "disaster"
+    find_initial_columns will raise a ValueError.
+
+    @given:
+    =======
+    analysis: str
+              Analysis name.
+    '''
+    # initialize the dictionary for the different possibilities
+    covid_columns = ('tweet', 'label')
+    spam_columns = ('original_message', 'spam')
+    disaster_columns = ('text', 'target')
+    dict_columns = {'covid': covid_columns,
+                    'spam': spam_columns,
+                    'disaster': disaster_columns}
+
+    if analysis != 'random':
+        column_names = find_initial_columns(analysis)
+        assert(column_names == dict_columns[analysis])
+    else:
+        # if analysis is not "covid", "spam", "disaster"
+        # we expect a ValueError 
+        # in this case analysis is "random"
+        with unittest.TestCase.assertRaises(unittest.TestCase, 
+                                            expected_exception = ValueError):
+            column_names = find_initial_columns(analysis)
+
 
 @given(column_names = st.lists(st.text(max_size=10),
                                  min_size=2, max_size=2, unique = True)) 
 def test_rename_columns(column_names):
     '''
-    Test function to test the working of the rename_columns function.
+    Test function to test the behaviour of rename_columns function.
     The rename_columns function takes as input the dataframe that the user wants
-    to change the column names and the text's and labels' column names. 
-    The order of the column names given as input to the function is important:
-    so the list (or tuple) must be always composed by the first string that corresponds
-    to the text's column name and the second string, which corresponds to the label's column name.
-    The output is a new dataframe composed by just two columns with the names: "text", "label".
+    to change the column names and the text's and labels' original column names. 
+    The list of the original column names as input to rename_columns has to be 
+    ordered in that way: 1) text column name; 2) label column name.
+    The output is a new dataframe composed by just two columns with the names:
+    "text", "label".
+
+    @given:
+    =======
+    column_names: list[str] of length 2
+                  Sequence that contains the original column names.
     '''
-
+    # let's create some fake data: labels and text.
+    # then the data are stored in a pandas dataframe.
     unique_labels = ['real', 'fake']
-
     sentences = [' '.join(random.choices(string.ascii_letters + 
                              string.digits, k=10)) for _ in range(100)]
     labels = [unique_labels[random.randrange(len(unique_labels))] for _ in range(100)]
-
     other_text = [' '.join(random.choices(string.ascii_letters + 
                              string.digits, k=10)) for _ in range(100)]
-
     df_fake = pd.DataFrame({column_names[0]: sentences,
                             column_names[1]: labels, 'other': other_text })
     
-    df_correct_col_names = rename_columns(df_fake, column_names)
+    # rename the column_names
+    text_column_name = column_names[0]
+    label_column_name = column_names[1]
+    df_correct_col_names = rename_columns(df_fake, text_column_name, label_column_name)
 
     assert(len(df_correct_col_names.columns.values.tolist()) == 2) # only two columns
-    assert(df_correct_col_names.columns.values.tolist() == ['text', 'label']) # check name of colums are correct
-    if len(df_correct_col_names) != 0: # check if in the label column there are actually the labels
+    # check name of colums are correct:
+    assert(df_correct_col_names.columns.values.tolist() == ['text', 'label']) 
+    # check if in the label column there are actually the labels:
+    if len(df_correct_col_names) != 0: 
         assert(list(df_correct_col_names['label']).count('real') > 0 or
                              list(df_correct_col_names['label']).count('fake') > 0 )
 
     # THE ORDER OF THE COLUMNS IN THE DATAFRAME IS NOT IMPORTANT
     # THE IMPORTANT IS THE ORDER OF THE COLUMN NAMES IN THE rename_columns FUNCTION
-    df_fake_inverted_order = pd.DataFrame({column_names[1]: labels,
-                                           column_names[0]: sentences})
-    df_inverted_order_colnames = rename_columns(df_fake_inverted_order, column_names)
-    assert(df_inverted_order_colnames.columns.values.tolist() == ['text', 'label']) # check name of colums are correct
-    if len(df_inverted_order_colnames) != 0: # check if in the label column there are actually the labels
+    df_fake_inverted_order = pd.DataFrame({label_column_name: labels,
+                                           text_column_name: sentences})
+    df_inverted_order_colnames = rename_columns(df_fake_inverted_order,
+                                                text_column_name,
+                                                label_column_name)
+    # check name of colums are correct
+    assert(df_inverted_order_colnames.columns.values.tolist() == ['text', 'label']) 
+    # check if in the label column there are actually the labels
+    if len(df_inverted_order_colnames) != 0:
         assert(list(df_inverted_order_colnames['label']).count('real') > 0 or 
                     list(df_inverted_order_colnames['label']).count('fake') > 0 )
 
@@ -329,24 +399,38 @@ def test_rename_columns(column_names):
                                         min_size = 0, max_size = 20))
 def test_drop_empty(all_sentences):
     '''
-    Test function to prove the correctly dropping of the empty rows in the dataframe.
-    The initial dataset can be composed of empty cells, or cells with no text inside (only '').
-    This kind of data are not so meaningful, so this function cares to remove these rows.
+    Test function to test the behaviour of drop_empty_rows function.
+    The initial dataset can be composed of empty cells, or cells with
+    no text inside (only ''). This kind of data are not so meaningful,
+    so drop_empty_rows cares to remove these rows.
     The final dataset contain only rows with text.
+
+    @given:
+    ========
+    all_sentences: list[str]
+                   Sequence that contains the text.
     '''
+    # create some random fake labels
     unique_labels = ['real', 'fake',]
     labels = [unique_labels[random.randrange(len(unique_labels))] 
                                             for _ in range(len(all_sentences))]
-
+    # data inside a dataframe                                        
     df_fake = pd.DataFrame({'text': all_sentences, 'label': labels})
 
+    # remove rows with empty cells
     df_no_empty_rows = drop_empty_rows(df_fake)
 
-    assert( len(np.where(pd.isnull(df_no_empty_rows))[0]) == 0 ) # no empty cells for text
-    assert( len(np.where(pd.isnull(df_no_empty_rows))[1]) == 0 ) # no empty cells for label
-    assert( len(np.where(df_no_empty_rows.applymap(lambda x: x == ''))[0]) == 0 ) # no cells '' for text
-    assert( len(np.where(df_no_empty_rows.applymap(lambda x: x == ''))[1]) == 0 ) # no cells '' for label
+    # no empty cells for text:
+    assert( len(np.where(pd.isnull(df_no_empty_rows))[0]) == 0 ) 
+    # no empty cells for label:
+    assert( len(np.where(pd.isnull(df_no_empty_rows))[1]) == 0 ) 
+    # no cells '' for text:
+    assert( len(np.where(df_no_empty_rows.applymap(lambda x: x == ''))[0]) == 0 ) 
+    # no cells '' for label:
+    assert( len(np.where(df_no_empty_rows.applymap(lambda x: x == ''))[1]) == 0 )
 
+    # if the dataframe is not empty
+    # control that text is composed at least of one character
     if len(df_no_empty_rows )> 0:
         text_count = map(len, df_no_empty_rows['text'])
         assert(min(text_count) >= 1)

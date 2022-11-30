@@ -279,9 +279,9 @@ def init_vector_layer(maxlen: int,
                      the text data.
     '''
     vectorize_layer = tf.keras.layers.TextVectorization(
-    standardize=None,
-    output_mode='int',
-    output_sequence_length=maxlen,
+    standardize = None,
+    output_mode ='int',
+    output_sequence_length = maxlen,
     vocabulary = uniq_vocabulary
     )
     return vectorize_layer

@@ -38,7 +38,7 @@ def main():
 
     vectorize_layer = init_vector_layer(maxlen, unique_voc)
 
-    vocab_size = len(vectorize_layer.get_vocabulary()) + 1
+    vocab_size = len(vectorize_layer.get_vocabulary())
 
     X_test = vectorize_X_data_tf(df_test['clean_text'], vectorize_layer)
     y_test, classes  = tocat_encode_labels(df_test['label'], classes = True)

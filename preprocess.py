@@ -23,11 +23,11 @@ def main():
                         float(config_parse.get('PREPROCESS', 'test_fraction')))
         dfs_raw = split_dataframe(dfs_raw, fractions, seed)
 
-    column_names = find_initial_columns(analysis_name)
+    text_col_name, label_col_name = find_initial_columns(analysis_name)
 
     dfs_processed = []
     for df in dfs_raw:
-        df_cleaned = rename_columns(df, column_names)
+        df_cleaned = rename_columns(df, text_col_name, label_col_name)
         df_cleaned = drop_empty_rows(df_cleaned)
 
         df_cleaned['clean_text'] = df_cleaned['text']

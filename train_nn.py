@@ -44,7 +44,7 @@ def main():
     y_train = tocat_encode_labels(df_train['label'])
     y_valid = tocat_encode_labels(df_valid['label'])
 
-    vocab_size = len(vectorize_layer.get_vocabulary()) + 1
+    vocab_size = len(vectorize_layer.get_vocabulary())
 
     model = build_model(vocab_size = vocab_size,
                         embedding_dim = embedding_vector_size,

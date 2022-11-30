@@ -32,11 +32,11 @@ def main():
                     float(config_parse.get('PREPROCESS', 'test_fraction')))
         dfs_raw = split_dataframe(dfs_raw, fractions, seed)
 
-    column_names = find_initial_columns(analysis_name)
+    text_col_name, label_col_name  = find_initial_columns(analysis_name)
 
     df_new = []
     for df in dfs_raw:
-        df_new.append(drop_empty_rows(rename_columns(df, column_names)))
+        df_new.append(drop_empty_rows(rename_columns(df, text_col_name, label_col_name)))
     
     df_train, df_val, df_test = df_new
 

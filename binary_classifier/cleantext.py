@@ -60,10 +60,10 @@ def find_initial_columns(analysis_name: str) -> tuple[str]:
                   Sequence that contains the column names (for text and labels)
                   for the dataset selected to analyze.
     '''
-    if analysis_name != "covid" or "spam" or "disaster":
+    if analysis_name not in ("covid", "spam", "disaster"):
         raise ValueError("Wrong analyis name."+
-                        f'Given {analysis_name}'+
-                         ' but it has to be covid, spam or disaster.')
+                        f' Passed {analysis_name}'+
+                         ' but it has to be "covid", "spam" or "disaster".')
     column_names_list = [{'analysis': 'covid',
                           'text_column': 'tweet',
                           'label_column': 'label'},
@@ -80,7 +80,8 @@ def find_initial_columns(analysis_name: str) -> tuple[str]:
     return column_names
 
 def rename_columns(df: pd.DataFrame, 
-                   columns: list[str]) -> pd.DataFrame:
+                   text_column_name: str,
+                   label_column_name: str) -> pd.DataFrame:
     '''
     Function used for renaming the dataframe columns.
     The inital dataframe can have multiple columns, while after
@@ -92,11 +93,17 @@ def rename_columns(df: pd.DataFrame,
     df: pd.DataFrame
         Initial dataframe with all the columns.
 
-    columns: list[str]
-             Sequence of length 2 of strings that corresponds to the 
-             initial column names for the text and the label.
-             These columns will be kept in the final dataframe
-             changing their names in "text" and "label".
+    text_column_name: str
+                      String that corresponds to the 
+                      initial text column name
+                      This column will be kept in the final dataframe,
+                      changing its names in "text".
+
+    label_column_name: str
+                       String that corresponds to the 
+                       initial label column name
+                       This column will be kept in the final dataframe,
+                       changing its names in "label".    
     
     Returns:
     =========
@@ -107,9 +114,9 @@ def rename_columns(df: pd.DataFrame,
 
     df_new_column_names = df.copy()
     # COLUMN NUMBER 0: TEXT, COLUMN NUMBER 1: LABEL
-    df_new_column_names = df.loc[:, list(columns)]
-    df_new_column_names.rename(columns = {columns[0]: 'text',
-                                          columns[1]: 'label'}, inplace=True)
+    df_new_column_names = df.loc[:, [text_column_name, label_column_name]]
+    df_new_column_names.rename(columns = {text_column_name: 'text',
+                                          label_column_name: 'label'}, inplace=True)
     return df_new_column_names
 
 
@@ -142,17 +149,17 @@ def lower_strip(text: str) -> str:
 def remove_urls_tags(text: str) -> str:
     '''
     This function removes from the text all the HTML/JSON tags
-    or the URLs.
+    and the URLs.
 
     Parameters:
     ===========
     text: str
-          Text to remove HTML/JSON tags or URLs.
+          Text to remove HTML/JSON tags and URLs.
 
     Returns:
     =========
     text_cleaned: str
-                  Text without HTML/JSON tags or URLs.
+                  Text without HTML/JSON tags and URLs.
     '''
     text_cleaned = re.sub(r'http\S+', '', text) # remove url
     text_cleaned = re.compile('<.*?>').sub('', text_cleaned) # remove all chars between < >
