@@ -1,10 +1,10 @@
 '''
 Test functions for the reading and writing module.
 '''
-from binary_classifier.read_write_data import read_data, write_data
-from binary_classifier.read_write_data import read_three_dataframes
-from binary_classifier.read_write_data import read_two_dataframes
-from binary_classifier.read_write_data import handle_multiple_occurencies
+from text_analysis.read_write_data import read_data, write_data
+from text_analysis.read_write_data import read_three_dataframes
+from text_analysis.read_write_data import read_two_dataframes
+from text_analysis.read_write_data import handle_multiple_occurencies
 import pandas as pd
 from pathlib import Path
 import string    

@@ -1,9 +1,9 @@
 '''
 Test functions for the splitting module.
 '''
-from binary_classifier.split_dataframe import split_dataframe
-from binary_classifier.split_dataframe import split_single_dataframe
-from binary_classifier.split_dataframe import split_two_dataframes
+from text_analysis.split_dataframe import split_dataframe
+from text_analysis.split_dataframe import split_single_dataframe
+from text_analysis.split_dataframe import split_two_dataframes
 from tests.test_input_output import create_fake_data
 import pandas as pd
 import random

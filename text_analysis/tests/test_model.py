@@ -1,4 +1,4 @@
-from binary_classifier.model import build_model
+from text_analysis.model import build_model
 import tensorflow as tf
 
 def test_build_model():

@@ -10,12 +10,12 @@ import random
 from hypothesis import strategies as st
 from hypothesis import given
 import unittest
-from binary_classifier.cleantext import lower_strip, finalpreprocess
-from binary_classifier.cleantext import remove_urls_tags, get_wordnet_pos
-from binary_classifier.cleantext import remove_noalphanum, stopword
-from binary_classifier.cleantext import clean_text, lemmatizer
-from binary_classifier.cleantext import rename_columns, drop_empty_rows
-from binary_classifier.cleantext import find_initial_columns
+from text_analysis.cleantext import lower_strip, finalpreprocess
+from text_analysis.cleantext import remove_urls_tags, get_wordnet_pos
+from text_analysis.cleantext import remove_noalphanum, stopword
+from text_analysis.cleantext import clean_text, lemmatizer
+from text_analysis.cleantext import rename_columns, drop_empty_rows
+from text_analysis.cleantext import find_initial_columns
 
 #TODO: aggiungere una test function per find_initial_columns
 

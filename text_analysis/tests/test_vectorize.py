@@ -1,11 +1,11 @@
 '''
 Test functions for testing the functions inside the vectorize_data module.
 '''
-from binary_classifier.vectorize_data import vectorize_X_data_lr, vectorize_X_data_tf
-from binary_classifier.vectorize_data import calculate_max_len, get_vocabulary
-from binary_classifier.vectorize_data import MeanEmbeddingVectorizer
-from binary_classifier.vectorize_data import init_vector_layer, tocat_encode_labels
-from binary_classifier.vectorize_data import flatten_unique_voc
+from text_analysis.vectorize_data import vectorize_X_data_lr, vectorize_X_data_tf
+from text_analysis.vectorize_data import calculate_max_len, get_vocabulary
+from text_analysis.vectorize_data import MeanEmbeddingVectorizer
+from text_analysis.vectorize_data import init_vector_layer, tocat_encode_labels
+from text_analysis.vectorize_data import flatten_unique_voc
 import numpy as np
 import nltk
 from hypothesis import strategies as st

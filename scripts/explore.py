@@ -6,14 +6,14 @@ of the raw data.
 '''
 from pathlib import Path
 import pandas as pd
-from binary_classifier.read_write_data import read_data
-from binary_classifier.split_dataframe import split_dataframe
-from binary_classifier.cleantext import rename_columns, drop_empty_rows
-from binary_classifier.cleantext import find_initial_columns
-from binary_classifier.preanalysis import info_data, plot_label_distribution
-from binary_classifier.preanalysis import word_count_text, char_count_text
-from binary_classifier.preanalysis import average_word_or_chars
-from binary_classifier.preanalysis import plotting_word_char_count, printer_word_chars
+from text_analysis.read_write_data import read_data
+from text_analysis.split_dataframe import split_dataframe
+from text_analysis.cleantext import rename_columns, drop_empty_rows
+from text_analysis.cleantext import find_initial_columns
+from text_analysis.preanalysis import info_data, plot_label_distribution
+from text_analysis.preanalysis import word_count_text, char_count_text
+from text_analysis.preanalysis import average_word_or_chars
+from text_analysis.preanalysis import plotting_word_char_count, printer_word_chars
 import configparser
 import sys
 

@@ -2,8 +2,8 @@
 In this file there are different test functions to test the 
 preanalysis module.
 '''
-from binary_classifier.preanalysis import average_word_or_chars
-from binary_classifier.preanalysis import word_count_text, char_count_text
+from text_analysis.preanalysis import average_word_or_chars
+from text_analysis.preanalysis import word_count_text, char_count_text
 from hypothesis import strategies as st
 from hypothesis import given
 import pandas as pd
