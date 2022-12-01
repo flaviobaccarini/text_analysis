@@ -223,7 +223,7 @@ class MeanEmbeddingVectorizer():
 
 def calculate_max_len(text: ArrayLike) -> int:
     '''
-    Function for calculating the length to pad/truncate
+    Function for calculating the maximum vector length to pad/truncate
     the sequences. The padding/truncation operation is 
     performed in order to have vector data with the same 
     shape (necessary for the neural network).

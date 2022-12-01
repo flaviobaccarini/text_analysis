@@ -1,5 +1,5 @@
 '''
-Test functions for testing the functions inside the clean_text module.
+Test functions for testing the functions inside the cleantext module.
 '''
 import numpy as np
 import pandas as pd
