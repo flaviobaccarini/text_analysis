@@ -15,9 +15,7 @@ from text_analysis.cleantext import remove_urls_tags, get_wordnet_pos
 from text_analysis.cleantext import remove_noalphanum, stopword
 from text_analysis.cleantext import clean_text, lemmatizer
 from text_analysis.cleantext import rename_columns, drop_empty_rows
-from text_analysis.cleantext import find_initial_columns
 
-#TODO: aggiungere una test function per find_initial_columns
 
 def test_lower():
     '''
@@ -303,22 +301,22 @@ def test_final_preprocess():
     assert(text_processed[8] == '')
     assert(text_processed[9] == 'user 10')
     assert(text_processed[10] == 'rainbow beautiful')
-
+'''
 @given(analysis = st.sampled_from(("covid", "spam", "disaster", "random")))
 def test_find_initial_columns(analysis):
-    '''
-    Test function to test the behaviour of find_initial_columns.
-    find_initial_columns takes as input the analysis name, that could be
-    "covid", "spam" or "disaster", and it returns the original 
-    column names for the selected dataset. 
-    If the analysis name is different than "covid", "spam", "disaster"
-    find_initial_columns will raise a ValueError.
-
-    @given:
-    =======
-    analysis: str
-              Analysis name.
-    '''
+'''
+#    Test function to test the behaviour of find_initial_columns.
+#    find_initial_columns takes as input the analysis name, that could be
+#    "covid", "spam" or "disaster", and it returns the original 
+#    column names for the selected dataset. 
+#    If the analysis name is different than "covid", "spam", "disaster"
+#    find_initial_columns will raise a ValueError.
+#
+#    @given:
+#    =======
+#    analysis: str
+#              Analysis name.
+'''
     # initialize the dictionary for the different possibilities
     covid_columns = ('tweet', 'label')
     spam_columns = ('original_message', 'spam')
@@ -337,7 +335,7 @@ def test_find_initial_columns(analysis):
         with unittest.TestCase.assertRaises(unittest.TestCase, 
                                             expected_exception = ValueError):
             column_names = find_initial_columns(analysis)
-
+'''
 
 @given(column_names = st.lists(st.text(max_size=10),
                                  min_size=2, max_size=2, unique = True)) 

@@ -1,4 +1,5 @@
 from setuptools import find_packages, setup
+
 setup(
     name='text_analysis',
     packages=find_packages(include=['text_analysis']),
@@ -11,7 +12,7 @@ setup(
                       'numpy', 
                       'gensim',
                       'tensorflow',
-                      'sklearn',
+                      'scikit-learn',
                       'seaborn',
                       'matplotlib',
                       'pathlib'],

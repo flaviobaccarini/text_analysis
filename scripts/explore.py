@@ -9,13 +9,53 @@ import pandas as pd
 from text_analysis.read_write_data import read_data
 from text_analysis.split_dataframe import split_dataframe
 from text_analysis.cleantext import rename_columns, drop_empty_rows
-from text_analysis.cleantext import find_initial_columns
 from text_analysis.preanalysis import info_data, plot_label_distribution
 from text_analysis.preanalysis import word_count_text, char_count_text
 from text_analysis.preanalysis import average_word_or_chars
 from text_analysis.preanalysis import plotting_word_char_count, printer_word_chars
 import configparser
 import sys
+
+
+def find_initial_columns(analysis_name: str) -> tuple[str]:
+    '''
+    This function is used to get the original column names 
+    for text and labels in the initial dataset.
+    The possible analysis are three: "covid", "spam", "disaster".
+
+    Parameters:
+    ============
+    analysis_name: str
+                   Name of the analysis the user wants to do.
+    
+    Raise:
+    ======
+    ValueErorr: if the analysis_name is not "covid", "spam", "disaster"
+
+    Returns:
+    =========
+    column_names: tuple[str]
+                  Sequence that contains the column names (for text and labels)
+                  for the dataset selected to analyze.
+    '''
+    if analysis_name not in ("covid", "spam", "disaster"):
+        raise ValueError("Wrong analyis name."+
+                        f' Passed {analysis_name}'+
+                         ' but it has to be "covid", "spam" or "disaster".')
+    column_names_list = [{'analysis': 'covid',
+                          'text_column': 'tweet',
+                          'label_column': 'label'},
+                          {'analysis': 'spam',
+                           'text_column': 'original_message',
+                           'label_column': 'spam'},
+                           {'analysis': 'disaster',
+                            'text_column': 'text',
+                            'label_column': 'target'}]
+    analysis_index = next((index for (index, d) in enumerate(column_names_list)
+                                             if d["analysis"] == analysis_name), None)
+    column_names = (column_names_list[analysis_index]['text_column'],
+                    column_names_list[analysis_index]['label_column'])
+    return column_names
 
 def main():
     config_parse = configparser.ConfigParser()

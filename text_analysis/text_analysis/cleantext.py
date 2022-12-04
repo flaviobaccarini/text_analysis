@@ -38,28 +38,28 @@ def drop_empty_rows(df_to_clean: pd.DataFrame) -> pd.DataFrame:
     df_no_empty_rows.dropna(axis = 0, how = 'any', inplace = True)
 
     return df_no_empty_rows
-
+'''
 def find_initial_columns(analysis_name: str) -> tuple[str]:
-    '''
-    This function is used to get the original column names 
-    for text and labels in the initial dataset.
-    The possible analysis are three: "covid", "spam", "disaster".
-
-    Parameters:
-    ============
-    analysis_name: str
-                   Name of the analysis the user wants to do.
-    
-    Raise:
-    ======
-    ValueErorr: if the analysis_name is not "covid", "spam", "disaster"
-
-    Returns:
-    =========
-    column_names: tuple[str]
-                  Sequence that contains the column names (for text and labels)
-                  for the dataset selected to analyze.
-    '''
+'''
+#    This function is used to get the original column names 
+#    for text and labels in the initial dataset.
+#    The possible analysis are three: "covid", "spam", "disaster".
+#
+#    Parameters:
+#    ============
+#    analysis_name: str
+#                   Name of the analysis the user wants to do.
+#    
+#    Raise:
+#    ======
+#    ValueErorr: if the analysis_name is not "covid", "spam", "disaster"
+#
+#    Returns:
+#    =========
+#    column_names: tuple[str]
+#                  Sequence that contains the column names (for text and labels)
+#                  for the dataset selected to analyze.
+'''
     if analysis_name not in ("covid", "spam", "disaster"):
         raise ValueError("Wrong analyis name."+
                         f' Passed {analysis_name}'+
@@ -78,7 +78,7 @@ def find_initial_columns(analysis_name: str) -> tuple[str]:
     column_names = (column_names_list[analysis_index]['text_column'],
                     column_names_list[analysis_index]['label_column'])
     return column_names
-
+'''
 def rename_columns(df: pd.DataFrame, 
                    text_column_name: str,
                    label_column_name: str) -> pd.DataFrame:

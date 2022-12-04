@@ -181,7 +181,8 @@ class MeanEmbeddingVectorizer():
         # if a text is empty we should return a vector of zeros
         # with the same dimensionality as all the other vectors
         self.dim = len(next(iter(word2vec.values())))
-            
+    
+
     def transform(self, X_text: ArrayLike) -> np.ndarray:
         '''
         Function for the vectorization of the text data for the

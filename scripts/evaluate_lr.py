@@ -2,10 +2,10 @@ import pickle
 import configparser
 import sys
 from pathlib import Path
-from binary_classifier.vectorize_data import vectorize_X_data_lr, tocat_encode_labels
-from binary_classifier.read_write_data import read_data
+from text_analysis.vectorize_data import vectorize_X_data_lr, tocat_encode_labels
+from text_analysis.read_write_data import read_data
 from gensim.models import Word2Vec
-from binary_classifier.results import visualize_results
+from text_analysis.results import visualize_results
 
 
 def main():

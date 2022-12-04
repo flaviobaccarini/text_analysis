@@ -1,5 +1,5 @@
-from binary_classifier.read_write_data import read_data
-from binary_classifier.vectorize_data import get_vocabulary, tocat_encode_labels, vectorize_X_data_lr
+from text_analysis.read_write_data import read_data
+from text_analysis.vectorize_data import get_vocabulary, tocat_encode_labels, vectorize_X_data_lr
 import configparser
 import sys
 from pathlib import Path
