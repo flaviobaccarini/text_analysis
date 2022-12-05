@@ -1,11 +1,11 @@
 import configparser
 import sys
 from pathlib import Path
-from binary_classifier.read_write_data import read_data
-from binary_classifier.vectorize_data import get_vocabulary, flatten_unique_voc, tocat_encode_labels
-from binary_classifier.vectorize_data import init_vector_layer, vectorize_X_data_tf, calculate_max_len
-from binary_classifier.model import build_model
-from binary_classifier.results import visualize_results
+from text_analysis.read_write_data import read_data
+from text_analysis.vectorize_data import get_vocabulary, flatten_unique_voc, tocat_encode_labels
+from text_analysis.vectorize_data import init_vector_layer, vectorize_X_data_tf, calculate_max_len
+from text_analysis.model import build_model
+from text_analysis.results import visualize_results
 import pandas as pd
 import tensorflow as tf
 from tqdm import tqdm
@@ -67,7 +67,7 @@ def main():
     history_df = pd.read_csv(history_path, index_col = False)
 
     visualize_results(y_test, y_predict, y_prob, list(classes),
-                      title = 'Bidirection LSTM', history = history_df, folder_path=plot_path)
+                      name_model = 'Bidirection LSTM', history = history_df, folder_path=plot_path)
     print("LSTM model, accuracy: {:5.2f}%".format(100 * acc))
 
 

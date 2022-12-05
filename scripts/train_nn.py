@@ -1,14 +1,57 @@
-from binary_classifier.read_write_data import read_data
-from binary_classifier.vectorize_data import get_vocabulary, tocat_encode_labels
-from binary_classifier.vectorize_data import init_vector_layer, vectorize_X_data_tf, calculate_max_len
-from binary_classifier.vectorize_data import flatten_unique_voc
-from binary_classifier.model import build_model
+from text_analysis.read_write_data import read_data
+from text_analysis.vectorize_data import get_vocabulary, tocat_encode_labels
+from text_analysis.vectorize_data import init_vector_layer, vectorize_X_data_tf, calculate_max_len
+from text_analysis.vectorize_data import flatten_unique_voc
 import configparser
 import sys
 import tensorflow as tf
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense, LSTM, Dropout, Bidirectional
+from tensorflow.keras.layers import Embedding
 from pathlib import Path
 from tqdm import tqdm
 import pandas as pd
+
+def build_model(vocab_size: int,
+                embedding_dim: int, 
+                maxlen: int) -> tf.keras.models.Sequential:
+    '''
+    This function builds the neural network model.
+    The three input parameters are used for the initialization
+    of the embedding layer.
+
+    Parameters:
+    ===========
+    vocab_size: int
+                It is the vocabulary size. 
+                Number of tokens present in the vocabulary.
+
+    embedding_dim: int
+                   Embedding vector size for the data after
+                   the embedding layer.
+
+    maxlen: int
+            Input length of the data (before the embedding layer). 
+
+    Returns:
+    =========
+    model: tf.keras.models.Sequential
+           Neural network model.
+    '''
+    
+    model = Sequential()
+    model.add(Embedding(input_dim=vocab_size, 
+                        output_dim=embedding_dim, 
+                        input_length=maxlen))
+    model.add(Bidirectional(LSTM(64, recurrent_dropout=0)))
+    model.add(Dropout(0.3))
+    model.add(Dense(32, activation = 'relu'))
+    model.add(Dropout(0.25))
+    model.add(Dense(10, activation = 'relu'))
+    model.add(Dropout(0.25))    
+    model.add(Dense(1, activation='sigmoid'))
+
+    return model
 
 def main():
 
@@ -28,14 +71,14 @@ def main():
     learning_rate = float(config_parse.get('PARAMETERS_TRAIN', 'learning_rate'))
     batch_size = int(config_parse.get('PARAMETERS_TRAIN', 'batch_size'))
     checkpoint_path = Path('checkpoint') / analysis_folder
+    checkpoint_path.mkdir(parents = True, exist_ok = True)
 
     all_train_words = list(df_train['clean_text']) + list(df_valid['clean_text'])
     vocabulary = get_vocabulary(all_train_words)
-
-    # TOKENIZE THE TEXT
-    maxlen = calculate_max_len(df_train['clean_text'])
     unique_vocabulary = flatten_unique_voc(vocabulary)
-
+    maxlen = calculate_max_len(df_train['clean_text'])
+    
+    # VECTORIZE THE TEXT
     vectorize_layer = init_vector_layer(maxlen, unique_vocabulary)
 
     X_train = vectorize_X_data_tf(df_train['clean_text'], vectorize_layer)

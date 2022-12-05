@@ -61,9 +61,9 @@ def main():
     config_parse = configparser.ConfigParser()
     configuration = config_parse.read(sys.argv[1])
     
-    analysis_name = config_parse.get('ANALYSIS', 'folder_name')
+    analysis_folder = config_parse.get('ANALYSIS', 'folder_name')
     seed = int(config_parse.get('PREPROCESS', 'seed'))
-    dataset_folder = Path('datasets') / analysis_name
+    dataset_folder = Path('../datasets') / analysis_folder
     
     dfs_raw = read_data(dataset_folder)
 
@@ -72,7 +72,7 @@ def main():
                     float(config_parse.get('PREPROCESS', 'test_fraction')))
         dfs_raw = split_dataframe(dfs_raw, fractions, seed)
 
-    text_col_name, label_col_name  = find_initial_columns(analysis_name)
+    text_col_name, label_col_name  = find_initial_columns(analysis_folder)
 
     df_new = []
     for df in dfs_raw:
