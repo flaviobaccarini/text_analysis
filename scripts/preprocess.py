@@ -52,9 +52,9 @@ def main():
     config_parse = configparser.ConfigParser()
     configuration = config_parse.read(sys.argv[1])
     
-    analysis_name = config_parse.get('ANALYSIS', 'folder_name')
+    analysis_folder = config_parse.get('ANALYSIS', 'folder_name')
     seed = int(config_parse.get('PREPROCESS', 'seed'))
-    dataset_folder = Path('datasets') / analysis_name
+    dataset_folder = Path('../datasets') / analysis_folder
 
     dfs_raw = read_data(dataset_folder)
     if len(dfs_raw) != 3:
@@ -63,7 +63,7 @@ def main():
                         float(config_parse.get('PREPROCESS', 'test_fraction')))
         dfs_raw = split_dataframe(dfs_raw, fractions, seed)
 
-    text_col_name, label_col_name = find_initial_columns(analysis_name)
+    text_col_name, label_col_name = find_initial_columns(analysis_folder)
 
     dfs_processed = []
     for df in dfs_raw:
@@ -77,10 +77,10 @@ def main():
         dfs_processed.append(df_cleaned)
     
 
-    output_folder = Path('preprocessed_datasets') / analysis_name
+    output_folder = Path('preprocessed_datasets') / analysis_folder
     output_folder.mkdir(parents=True, exist_ok=True)
 
-    write_data(dfs_processed, output_folder = output_folder, analysis = analysis_name)
+    write_data(dfs_processed, output_folder = output_folder, analysis = analysis_folder)
 
     df_train, df_valid, df_test = dfs_processed
     print(df_train['clean_text'].head())

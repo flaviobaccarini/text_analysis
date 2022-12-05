@@ -312,7 +312,7 @@ def vectorize_X_data_tf(text: ArrayLike,
                      The vectorized text.
                      The shape is (len(text), maxlen) if text
                      is a 1-D array-like (to understand what maxlen
-                     is see functions calculate_max_len and
+                     stands for, see functions calculate_max_len and
                      init_vector_layer).
                      The shape is (1, maxlen) if text is a single string.
                      The tensor is composed by 32 bit integers.
