@@ -10,12 +10,14 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 import numpy as np
 from numpy.typing import ArrayLike
+from pathlib import Path
 
 def visualize_results(y_test: np.ndarray,
                       y_predict: np.ndarray,
                       y_prob: np.ndarray,
                       classes: ArrayLike,
                       name_model: str, 
+                      metrics: list[str] = None,
                       history: dict = None,
                       folder_path: str = None) -> None:
     '''
@@ -46,6 +48,10 @@ def visualize_results(y_test: np.ndarray,
 
     name_model: str
            The name of the model.
+    
+    metrics: list[str]
+             Sequence of metrics used for the neural network. Default is None,
+             necessary for neural network history.
 
     history: dict default: None
              If provided, dictionary that contains all
@@ -64,14 +70,19 @@ def visualize_results(y_test: np.ndarray,
     fpr, tpr, thresholds = roc_curve(y_test, y_prob)
     roc_auc = auc(fpr, tpr)
     print('AUC:', roc_auc)
-
-    cm_plot_path = folder_path / (name_model + '.svg')
-    make_confusion_matrix(cm, classes, title = name_model, filepath=cm_plot_path)
+    
+    if folder_path is not None:
+       cm_plot_path = Path(folder_path) / (name_model + '.svg')
+       make_confusion_matrix(cm, classes, title = name_model, filepath=cm_plot_path)
+    else:
+    	make_confusion_matrix(cm, classes, title = name_model)
     
     if history is not None:
-        history_plot_path = folder_path / 'history.svg'
-        plot_history(history, filepath=history_plot_path)
-
+        if folder_path is not None:
+            history_plot_path = folder_path / 'history.svg'
+            plot_history(history, metrics_name = metrics, filepath = history_plot_path)
+        else:
+            plot_history(history, metrics_name = metrics)
 
 def make_confusion_matrix(cm: np.ndarray,
                           group_names: ArrayLike,
@@ -165,11 +176,13 @@ def make_confusion_matrix(cm: np.ndarray,
 
 
 def plot_history(history: dict,
+                 metrics_name: list[str],
                  filepath: str=None) -> None:
     '''
-    This function will make plot of the history for the training of 
-    the neural network.
-
+    This function will make a plot of the history for the training of 
+    the neural network. In particular, loss and validation loss will be 
+    plot and metrics used for training the model are plotted.
+    
     Parametes:
     ==========
     history: dict
@@ -177,27 +190,35 @@ def plot_history(history: dict,
              accuracy, val_accuracy, loss and val_loss 
              during the neural network train.
     
+    metrics_name: list[str]
+    		      Sequence of metrics used for training the model.
+    
     filepath: Path-like or str
               File path where to save the figure. Default is None.
     '''
     sns.set(font_scale=1.2)
 
-    acc = history['accuracy']
-    val_acc = history['val_accuracy']
     loss = history['loss']
     val_loss = history['val_loss']
-    x = range(1, len(acc) + 1)
 
-    fig, (ax1, ax2) = plt.subplots(1,2, figsize=(12, 10))
-    ax1.plot(x, acc, 'b', label='Training acc')
-    ax1.plot(x, val_acc, 'r', label='Validation acc')
-    ax1.set_title('Training and validation accuracy')
-    ax1.legend()
-
-    ax2.plot(x, loss, 'b', label='Training loss')
-    ax2.plot(x, val_loss, 'r', label='Validation loss')
-    ax2.set_title('Training and validation loss')
-    ax2.legend()
+    fig, ax = plt.subplots(1, len(metrics_name) + 1, figsize=(12, 10))
+    x = range(1, len(loss) + 1)
+    ax[0].plot(x, loss, 'b', label='Training loss')
+    ax[0].plot(x, val_loss, 'r', label='Validation loss')
+    ax[0].set_title('Training and validation loss')
+    ax[0].set_xlabel('Epochs')
+    ax[0].set_ylabel('Loss')
+    ax[0].legend()
+        
+    for index, metric in enumerate(metrics_name):
+        train_metric = history[metric]
+        valid_metric = history['val_'+metric]
+        ax[index+1].plot(x, train_metric, 'b', label='train_'+metric)
+        ax[index+1].plot(x, valid_metric, 'r', label='val_'+metric)
+        ax[index+1].set_title(metric)
+        ax[index+1].set_xlabel('Epochs')
+        ax[index+1].set_ylabel('Metric score')
+        ax[index+1].legend()
     
     plt.show()
 
