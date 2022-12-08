@@ -7,9 +7,6 @@ from text_analysis.vectorize_data import init_vector_layer, vectorize_X_data_tf,
 from text_analysis.model import build_model
 from text_analysis.results import visualize_results
 import pandas as pd
-import tensorflow as tf
-from tqdm import tqdm
-
 
 
 def main():
@@ -67,7 +64,9 @@ def main():
     history_df = pd.read_csv(history_path, index_col = False)
 
     visualize_results(y_test, y_predict, y_prob, list(classes),
-                      name_model = 'Bidirection LSTM', history = history_df, folder_path=plot_path)
+                      name_model = 'Bidirection LSTM',
+                      metrics = ['accuracy'], 
+                      history = history_df, folder_path=plot_path)
     print("LSTM model, accuracy: {:5.2f}%".format(100 * acc))
 
 
