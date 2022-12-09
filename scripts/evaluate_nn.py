@@ -4,9 +4,9 @@ from pathlib import Path
 from text_analysis.read_write_data import read_data
 from text_analysis.vectorize_data import get_vocabulary, flatten_unique_voc, tocat_encode_labels
 from text_analysis.vectorize_data import init_vector_layer, vectorize_X_data_tf, calculate_max_len
-from text_analysis.model import build_model
 from text_analysis.results import visualize_results
 import pandas as pd
+from train_nn import build_model
 
 
 def main():

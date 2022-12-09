@@ -29,6 +29,7 @@ Now the library should be installed.
 Running:\
 `pytest tests`\
 will execute all test functions inside the `tests` folder.
+The library was built and tested with python version `3.10.9`.
 
 ## Library structure
 The aim of the library is to make an initial exploration data analysis in order to better understand the data, then the library is aimed to preprocess the data: both cleaning and vectorization of the text data. The library is also composed by functions for plotting the results coming from the evaluation of the models. The selection, training and evaluation of the machine or deep learning model is up to the user. 
