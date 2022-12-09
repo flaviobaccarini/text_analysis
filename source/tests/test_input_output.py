@@ -1,5 +1,5 @@
 '''
-Test functions for the reading and writing module.
+Test functions for the reading and writing functions.
 '''
 from text_analysis.read_write_data import read_data, write_data
 from text_analysis.read_write_data import read_three_dataframes
@@ -23,14 +23,14 @@ def create_fake_data(phases: list[str],
     phases: list[str]
             This sequence represents the phases for the data (train/val/test).
     
-    nr_of_rows_per_phase: list[int]
+    nr_of_rows_per_phase: list[int] default: None
                           This sequence represents how many rows for each phase.
                           This sequence has to have the same length of phases.
 
     Returns:
     ========
     df_fakes: list[pd.DataFrame]
-              Fake generated pandas Dataframe.
+              pandas Dataframe with some fake random data.
     '''
 
     df_fakes = [] 
@@ -52,7 +52,7 @@ def create_fake_data(phases: list[str],
 
 def test_read_data():
     '''
-    This function tests the read_data behaviour.
+    This function tests the read_data function behaviour.
     In order to do so we will create a "fake" folder and we will place 
     some fake text data inside this folder.
     '''
@@ -101,7 +101,7 @@ def test_read_data():
 def test_read_data_capital_letters():
     '''
     This function tests the correct reading of the data (read_data function).
-    In particular, in this test function the correct reading indipendent
+    In particular, in this test function the indipendency of the reading
     from the presence of capital letters in the file names is tested.
     In order to do so we will create a "fake" folder and we will place 
     some fake text data inside this folder.
@@ -163,7 +163,7 @@ def test_read_data_capital_letters():
 
 def test_read_three_df():
     '''
-    This function tests the read_three_dataframe function.
+    This function tests the read_three_dataframe function behaviour.
     The dataset are already split in three different csv files, ready
     to be read from read_three_dataframe function.
     In order to do so we will create a "fake" folder and we will place 
@@ -202,13 +202,11 @@ def test_read_twodf(name_phase):
     Regarding the train dataset: in the filename there must be a 'train' word.
     Instead, regarding the valid/test dataset no requests are needed.
     The name of this dataset, actually, could be everything.
-    In order to do so we will create a "fake" folder and we will place 
-    some fake text data inside this folder.
 
     @given:
     =======
     name_phase: str
-                Name of the phase that we are considering (no train).
+                Name of the phase that we are considering.
                 It could be 'val', 'test', 'random_name_phase'.
     '''
     # create fake folder
@@ -335,10 +333,10 @@ def test_read_3df_multiple_word():
     match between csv files and each word.
     In the case of "constrain_english_train.csv" it would match not only the train file
     to the train dataset, but also the validation and test files (assuming that the
-    validation and test file names are: "constrain_englis_validation.csv" and 
+    validation and test file names are: "constrain_english_validation.csv" and 
     "constrain_english_test.csv").
     Actually, this effect doesn't happen and the function can recognize well which is 
-    the real train, validation and test dataset. 
+    the train, validation and test dataset. 
     '''
     # create fake folder to storage the data
     new_test_folder = Path('test_folder')
@@ -398,10 +396,10 @@ def test_multiple_occurencies(phase):
     "random_valid.csv" as the validation dataset and the "random_test.csv" as the 
     test dataset.
     In another case, for example "english_constrain_train.csv", "english_constrain_val.csv"
-    and "english_constrain_test.csv" the match is not easy, because of the inside 
-    "constrain" there is a "train". In this way we need to take care of this issue
+    and "english_constrain_test.csv" the match is not easy, because of inside 
+    "constrain" there is a "train" string. We need to take care of this issue
     and let the function know which is the real train dataset.
-    handle_multiple_occurencies search inside all the possible matches which is the 
+    handle_multiple_occurencies searches inside all the possible matches which is the 
     file name that contains the higher number of "train" (in this case, but it can
     also be "val" or "test"). We expect, in fact, that the train file name contain
     a "train" word more than the other file names.
@@ -466,7 +464,7 @@ def test_multiple_occurencies_capital_letters(phase):
     test dataset.
     In another case, for example "english_constrain_train.csv", "english_constrain_val.csv"
     and "english_constrain_test.csv" the match is not easy, because of the inside 
-    "constrain" there is a "train". In this way we need to take care of this issue
+    "constrain" there is a "train" string. We need to take care of this issue
     and let the function know which is the real train dataset.
     handle_multiple_occurencies search inside all the possible matches which is the 
     file name that contains the higher number of "train" (in this case, but it can
@@ -508,7 +506,7 @@ def test_write_data():
     This function tests the behaviour of write_data function.
     The list of dataframes to pass to write_data has to be of legth of 3
     and ordered in this way: train dataframe, validation dataframe, test dataframe.
-    In order to do so we will create a "fake" folder and we will write 
+    In order to test the function we will create a "fake" folder and we will write 
     some fake data inside this folder.
     '''
     # create some fake data

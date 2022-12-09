@@ -9,7 +9,6 @@ import string
 import random 
 from hypothesis import strategies as st
 from hypothesis import given
-import unittest
 from text_analysis.cleantext import lower_strip, finalpreprocess
 from text_analysis.cleantext import remove_urls_tags, get_wordnet_pos
 from text_analysis.cleantext import remove_noalphanum, stopword
@@ -122,11 +121,11 @@ def test_remove_tag():
 def test_rm_noalphanumeric():
     '''
     This test function tests the behaviour of remove_noalphanum function.
-    In particular, this test functions tests that all the non alphanumeric
+    In particular, this test function tests that all the non alphanumeric
     characters are removed from the text.
     The non alphanumeric characters could be: punctuation, underscores, emoticons,
     special characters ('#', '@'...) etc.
-    Everything but letters and numbers is removed from remove_noalphanum function.
+    Everything but letters and numbers is removed by remove_noalphanum function.
     '''
     # text with non alphanumeric characters
     text_allchars = ["Hashtag try: #hello world!!",
@@ -153,7 +152,7 @@ def test_rm_noalphanumeric():
 
 def test_clean_text():
     '''
-    This test function test the behaviour of clean_text function.
+    This test function tests the behaviour of clean_text function.
     clean_text function remove all the non alphanumeric characters,
     URLs, HTML tags and useless whitespaces genereated by removing the 
     characters.
@@ -183,7 +182,7 @@ def test_clean_text():
 
 def test_stopword():
     '''
-    This test function test the behaviour of stopword function.
+    This test function tests the behaviour of stopword function.
     The idea is to remove all the words present in the stop list 
     for the english vocabulary.
     The list of the all stop words can be seen with these lines of code.
@@ -237,7 +236,7 @@ def test_lemmatizer():
 
 def test_get_wordnet_pos():
     '''
-    Test function to test how the behaviour of get_wordnet_pos function.
+    Test function to test the behaviour of get_wordnet_pos function.
     The idea is to match all the words from the sentences with the wordnet tags,
     in order to lemmatize correctly the words after this process.
     In this way the lemmatizer understand if the word is a noun, verb, adverb
@@ -309,8 +308,6 @@ def test_rename_columns(column_names):
     Test function to test the behaviour of rename_columns function.
     The rename_columns function takes as input the dataframe that the user wants
     to change the column names and the text's and labels' original column names. 
-    The list of the original column names as input to rename_columns has to be 
-    ordered in that way: 1) text column name; 2) label column name.
     The output is a new dataframe composed by just two columns with the names:
     "text", "label".
 
@@ -344,7 +341,6 @@ def test_rename_columns(column_names):
                              list(df_correct_col_names['label']).count('fake') > 0 )
 
     # THE ORDER OF THE COLUMNS IN THE DATAFRAME IS NOT IMPORTANT
-    # THE IMPORTANT IS THE ORDER OF THE COLUMN NAMES IN THE rename_columns FUNCTION
     df_fake_inverted_order = pd.DataFrame({label_column_name: labels,
                                            text_column_name: sentences})
     df_inverted_order_colnames = rename_columns(df_fake_inverted_order,
@@ -366,7 +362,7 @@ def test_drop_empty(all_sentences):
     The initial dataset can be composed of empty cells, or cells with
     no text inside (only ''). This kind of data are not so meaningful,
     so drop_empty_rows cares to remove these rows.
-    The final dataset contain only rows with text.
+    The final dataset contains only rows with text.
 
     @given:
     ========

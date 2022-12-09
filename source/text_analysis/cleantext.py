@@ -26,7 +26,7 @@ def drop_empty_rows(df_to_clean: pd.DataFrame) -> pd.DataFrame:
     Parameters:
     ===========
     df_to_clean: pd.DataFrame
-        Dataframe that needs to be cleaned from empty cells.
+                 Dataframe that needs to be cleaned from empty cells.
     
     Returns:
     =========
@@ -47,8 +47,7 @@ def rename_columns(df: pd.DataFrame,
     '''
     Function used for renaming the dataframe columns.
     The inital dataframe can have multiple columns, while after
-    this function the dataframe only two columns are kept:
-    "text" and "label" columns.
+    this function only two columns are kept: "text" and "label" columns.
 
     Parameters:
     ===========
@@ -75,7 +74,6 @@ def rename_columns(df: pd.DataFrame,
     '''
 
     df_new_column_names = df.copy()
-    # COLUMN NUMBER 0: TEXT, COLUMN NUMBER 1: LABEL
     df_new_column_names = df.loc[:, [text_column_name, label_column_name]]
     df_new_column_names.rename(columns = {text_column_name: 'text',
                                           label_column_name: 'label'}, inplace=True)
@@ -260,8 +258,8 @@ def finalpreprocess(text):
     letters to lowercase and remove unnecessary whitespaces.
     Then it applies the stopword function that removes the stop 
     words inside the text.
-    Finally the application of lemmatizer function,
-    lemmatize the text.
+    Finally the application of lemmatizer function for the 
+    lemmatization of the text.
 
     Parameters:
     text: str

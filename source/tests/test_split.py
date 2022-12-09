@@ -6,8 +6,6 @@ from text_analysis.split_dataframe import split_single_dataframe
 from text_analysis.split_dataframe import split_two_dataframes
 from tests.test_input_output import create_fake_data
 import pandas as pd
-import random
-import string
 from hypothesis import strategies as st
 from hypothesis import given
 import unittest
@@ -42,45 +40,6 @@ def test_split_df_single_dataset():
     assert(len(df_split[1]) == 
                 nr_of_tot_rows - len(df_split[0]) - len(df_split[2]))
 
-
-def test_split_df_two_df_correct():
-    '''
-    Test function to test the behaviour of split_dataframe function for
-    two datasets.
-    The function takes as input a list of two dataframes.
-    The first one is assumed to be the train dataset and it will be split
-    in train and validation dataset.
-    The second one is assumed to be the test dataset and it won't be modified.
-    The split dataframes are returned in this orderd: train, validation and test
-    dataframe.    
-    The size of the train dataset will be equal to the train fraction times the 
-    total number of samples inside the first dataframe from the list.
-    The remaining samples from the first dataframe will be stored inside 
-    the validation dataset.
-    '''
-    # create fake data
-    phases = ('train_val', 'test')
-    nr_of_rows = 200
-    df_fakes = create_fake_data(phases, (nr_of_rows, nr_of_rows))
-
-    assert(len(df_fakes) == 2) # two dataframes
-
-    # this time we need only the train fraction
-    # because the test dataset is already given
-    train_frac = 0.8
-    # need to create a tuple, because split_dataframe takes a tuple as input
-    fractions = (train_frac,)
-
-    df_split = split_dataframe(df_fakes, fractions, seed = 42)
-    
-    # df_split[0] == df_train, df_split[1] == df_valid, df_split[2] == df_test
-    assert(len(df_split) == 3) # split in three dataframes
-    # verify the dimensionality:
-    assert(len(df_split[0]) == round(train_frac * (len(df_split[0]) + len(df_split[1]))) )
-    assert(len(df_split[1]) == nr_of_rows - len(df_split[0]))
-    assert(df_split[2].equals(df_fakes[1]) )
-
-
 @given(number_of_rows = st.integers(min_value = 5, max_value = 10000))
 def test_split_single_df(number_of_rows):
     '''
@@ -114,6 +73,115 @@ def test_split_single_df(number_of_rows):
     assert(len(df_train) == round(train_frac*number_of_rows))
     assert(len(df_test) == round(test_frac*number_of_rows))
     assert(len(df_valid) == number_of_rows - len(df_train) - len(df_test))
+
+
+@given(train_fract = st.floats(min_value=0.01, max_value=0.45),
+       test_fract = st.floats(min_value=0.01, max_value=0.45))
+def test_split_single_df_fractions(train_fract, test_fract):
+    '''
+    Test function to test the behaviour of split_singe_dataframe function.
+    The function takes as input a sequence of one single dataframe.
+    Two fraction are needed: the train and test fractions.
+    The split dataframes are returned in this orderd: train, validation and test
+    dataframe.
+
+    @given:
+    =========
+    train_fract: float
+                 Train fraction
+    
+    test_frac: float
+               Test fraction
+    '''
+    number_of_rows = 5000
+    # generate fake date
+    phases = ('single')
+    df_fakes = create_fake_data(phases, [number_of_rows])
+
+    assert(len(df_fakes) == 1) # one single dataframe
+    df_split = split_single_dataframe(df_fakes[0], (train_fract, test_fract), seed = 42)
+
+    # check the splitting
+    assert(len(df_split) == 3) # three dataframes
+    df_train, df_valid, df_test = df_split
+
+    # check the dimensionality of the dataframes
+    assert(len(df_train) == round(train_fract*number_of_rows))
+    assert(len(df_test) == round(test_fract*number_of_rows))
+    assert(len(df_valid) == number_of_rows - len(df_train) - len(df_test))
+
+
+
+def test_split_df_two_df_correct():
+    '''
+    Test function to test the behaviour of split_dataframe function for
+    two datasets.
+    The function takes as input a list of two dataframes.
+    The first one is assumed to be the train dataset and it will be split
+    in train and validation dataset.
+    The second one is assumed to be the test dataset and it won't be modified.
+    The split dataframes are returned in this orderd: train, validation and test
+    dataframe.    
+    The size of the train dataset will be equal to the train fraction times the 
+    total number of samples inside the first dataframe from the list.
+    The remaining samples from the first dataframe will be stored inside 
+    the validation dataset.
+    '''
+    # create fake data
+    phases = ('train_val', 'test')
+    nr_of_rows = 200
+    df_fakes = create_fake_data(phases, (nr_of_rows, nr_of_rows))
+
+    assert(len(df_fakes) == 2) # two dataframes
+
+    # we need only the train fraction
+    # because the test dataset is already given
+    train_frac = 0.8
+    # need to create a tuple, because split_dataframe takes a tuple as input
+    fractions = (train_frac,)
+
+    df_split = split_dataframe(df_fakes, fractions, seed = 42)
+    
+    # df_split[0] == df_train, df_split[1] == df_valid, df_split[2] == df_test
+    assert(len(df_split) == 3) # split in three dataframes
+    # verify the dimensionality:
+    assert(len(df_split[0]) == round(train_frac * (len(df_split[0]) + len(df_split[1]))) )
+    assert(len(df_split[1]) == nr_of_rows - len(df_split[0]))
+    assert(df_split[2].equals(df_fakes[1]) )
+
+
+@given(number_of_rows = st.integers(min_value = 5, max_value = 10000))
+def test_split_two_dfs_rows(number_of_rows):
+    '''
+    Test function to test the behaviour of split_two_dataframes function.
+    The function takes as input a sequence of two dataframes.
+    One fraction is needed: the train fraction.
+    The split dataframes are returned in this orderd: train, validation and test
+    dataframe.
+
+    @given:
+    =======
+    number_of_rows: int
+                    Number of rows for the single dataframe.
+    '''
+    # crate some fake data
+    phases = ('train', 'test')
+    df_fakes = create_fake_data(phases, (number_of_rows, number_of_rows))
+   
+    # initialize the train fraction
+    train_frac = 0.70
+    assert(len(df_fakes) == 2) # two dataframes
+    
+    # split dataframe
+    df_split = split_two_dataframes(df_fakes, train_frac, seed = 42)
+
+    assert(len(df_split) == 3) # three dataframes
+    
+    # verify that each dataframe has the correct dimensionality.
+    df_train, df_valid, df_test = df_split
+    assert(len(df_train) == round(train_frac*number_of_rows))
+    assert(df_test.equals(df_fakes[1]))
+    assert(len(df_valid) == number_of_rows - len(df_train))
 
 
 @given(train_fract = st.floats(min_value=0.01, max_value=0.45),

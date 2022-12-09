@@ -1,6 +1,6 @@
 '''
 In this file there are different test functions to test the 
-preanalysis module.
+functions inside the preanalysis module.
 '''
 from text_analysis.preanalysis import average_word_or_chars
 from text_analysis.preanalysis import word_count_text, char_count_text
@@ -13,7 +13,7 @@ import unittest
 
 def test_word_count():
     '''
-    Test function to test word_count_text.
+    Test function to test word_count_text behaviour.
     We can see how the counting of the words is done.
     '''
 
@@ -31,7 +31,7 @@ def test_word_count():
 
 def test_word_count_input_type():
     '''
-    This function is used to test if ifferent input type
+    This function is used to test if different input type
     for the word count function can work (word_count_text).
     '''
 
@@ -115,7 +115,7 @@ def test_char_count_input_type():
 def test_char_count(text):
     '''
     This function tests the correct working of the counting function 
-    for random characaters (char_count_text).
+    for random characters (char_count_text).
 
     @given:
     ========
