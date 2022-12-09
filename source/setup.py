@@ -15,9 +15,7 @@ setup(
                       'scikit-learn',
                       'seaborn',
                       'matplotlib',
-                      'pathlib'],
-    setup_requires=['pytest-runner'],
-    tests_require=['pytest',
-    		       'hypothesis'],
-    test_suite='tests',
+                      'pathlib',
+                      'hypothesis',
+                      'pytest']
 )
