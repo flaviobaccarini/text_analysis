@@ -17,7 +17,7 @@ def split_dataframe(dataframes_list: tuple[pd.DataFrame],
     a list of length one or two (one single dataframe, or
     two already split dataframes in train and test data);
     the fractions to split the dataframes; the seed in order 
-    to have a determinitic behaviour.
+    to have a reproducible behaviour.
     The dataframes are returned in this order: train, validation
     and test dataset.
 
@@ -29,17 +29,17 @@ def split_dataframe(dataframes_list: tuple[pd.DataFrame],
     
     fractions: 1-D array-like[float]
                Fractions that determines how the data have
-               to be split in the different dataset.
+               to be split in the different datasets.
                The sequence needs to have two values.
                They have to be float number between 0 and 1.
     
     seed: number
-          Number to set the seed in order to have not a completely 
-          randomic behaviour.
+          Number to set the seed in order to have a reproducible 
+          behaviour.
     
     Raises:
     ========
-    ValueErorr: if one fractions is composed by numbers not in the interval [0, 1]
+    ValueErorr: if one fractions is composed by numbers not in the interval (0, 1)
 
     Returns:
     =========
@@ -84,7 +84,7 @@ def split_single_dataframe(single_df: pd.DataFrame,
     This function takes as input one single dataframe and the fractions
     to divide the single initial dataset in the three final datasets.
     The dataframes are returned in this order: train, validation
-    and test dataset.
+    and test dataframe.
 
     Parameters:
     ============
@@ -92,13 +92,13 @@ def split_single_dataframe(single_df: pd.DataFrame,
                Dataframe that contains all the data.
 
     fractions: 1-D array-like[float]
-               Divide the data in the three final dataset
+               Divide the data in the three final datasets
                accordingly these fraction numbers.
                Sequence of length two (train and test fractions).
     
     seed: number
-          Number to set the seed in order to have not a completely 
-          randomic behaviour.
+          Number to set the seed in order to have not a reproducibile 
+          behaviour.
 
     returns:
     ==========
@@ -126,9 +126,9 @@ def split_two_dataframes(dataframes: tuple[pd.DataFrame],
     case where two different dataframes are provided.
     This function takes as input a list containing two different
     dataframes. The first one is considered as the train dataset
-    and so it will split in train and validation. The second one
+    and so it will be split in train and validation. The second one
     is considered as the test dataset.
-    The other important input parameter is the train_frac,
+    The other important input parameter is train_frac,
     which represents the train fraction. The train dataframe will
     have a number of samples equal to the train fraction times 
     the total number of samples inside the original dataframe (first
@@ -139,7 +139,7 @@ def split_two_dataframes(dataframes: tuple[pd.DataFrame],
     Parameters:
     ============
     dataframes: tuple(pd.DataFrame)
-                Tuple that contains two dataframes.
+                Sequence that contains two dataframes.
                 The first dataframe corresponds to the train dataset,
                 while the second dataframe corresponds to the test dataset.
 
@@ -151,8 +151,8 @@ def split_two_dataframes(dataframes: tuple[pd.DataFrame],
                 the remaining 10% of the data.
                 
     seed: number
-          Number to set the seed in order to have not a completely 
-          randomic behaviour.
+          Number to set the seed in order to have reproducibile 
+          behaviour.
 
     returns:
     ==========

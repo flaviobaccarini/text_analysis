@@ -4,7 +4,6 @@ READING AND WRITING MODULE
 This module is dedicated for the reading of the input data files 
 and the writing of the processed data after the preproccessing step.
 '''
-
 from pathlib import Path
 import pandas as pd
 import numpy as np
@@ -12,13 +11,13 @@ import numpy as np
 def read_data(input_folder: str) -> tuple[pd.DataFrame]:
     '''
     This function reads the data in csv files 
-    from the input folder given as parameter to this function.
+    from the input folder path given as parameter to this function.
 
     If inside the folder there are three different files, this
     function assumes that data are already split. For that reason
     the train dataset file must contain the string "train",
     while the validation dataset must contain the string "val"
-    and the test dataset has to contain "test".
+    and the test dataset has to contain "test" string.
 
     If inside the folder there are only two different files, this function
     assumes that data are already split between train and test.
@@ -29,7 +28,7 @@ def read_data(input_folder: str) -> tuple[pd.DataFrame]:
     assumes that data are not alread split.
     No request on the name of the file.
 
-    The strings "train", "val", "test" that have to be in the filenames
+    The strings "train", "val", "test" that have to be in the file names
     are not case sensitive.
 
     Parameters:
@@ -119,6 +118,7 @@ def read_three_dataframes(datasets_path: Path,
     path_dict = {'train': None, 'val': None, 'test': None}
     for phase in path_dict:
         path_dict[phase] = [csv_path for csv_path in csv_paths_stem if phase in str(csv_path).lower()]
+        # if multiple matching: choose the rigth one with handle_multiple_occurencies
         if len(path_dict[phase]) > 1:
             path_dict[phase] = handle_multiple_occurencies(path_dict[phase], phase)
         else:
@@ -149,7 +149,7 @@ def read_two_dataframes(datasets_path: Path,
     
     csv_paths_stem: list[str]
                     This sequence contains only the file names.
-                    The length of this sequence has to be equal to three.
+                    The length of this sequence has to be equal to two.
 
     Returns:
     =========
@@ -167,6 +167,7 @@ def read_two_dataframes(datasets_path: Path,
     path_dict = {'train': None, 'test': None}
     
     path_dict['train'] = [csv_path for csv_path in csv_paths_stem if 'train' in str(csv_path).lower()]
+    # if multiple matching: choose the rigth one with handle_multiple_occurencies
     if len(path_dict['train']) > 1:
             path_dict['train'] = handle_multiple_occurencies(path_dict['train'], 'train')
     else:
@@ -179,7 +180,7 @@ def read_two_dataframes(datasets_path: Path,
 
     return train_ds, test_ds
 
-def handle_multiple_occurencies(paths_list: list[str],
+def handle_multiple_occurencies(suitable_names: list[str],
                                 word_to_count: str) -> str:
     '''
     Helper function for correctly mapping each single dataframe
@@ -190,7 +191,7 @@ def handle_multiple_occurencies(paths_list: list[str],
     Imagine that we have three different files inside a folder.
     This means that one file is for the training dataset, one for the validation
     dataset and the other one for the test dataset. When the user uses the read_data
-    function, this function search inside the file names the words "train", "val"
+    function, this function searches inside the file names the words "train", "val"
     and "test" in order to initialize three different dataframes corresponding to
     the three different files. If the names are: "random_train.csv", "random_val.csv"
     and "random_test.csv" the train dataset corresponds to "random_train.csv", the
@@ -198,28 +199,28 @@ def handle_multiple_occurencies(paths_list: list[str],
     to "random_test.csv". 
     But what if inside the file names is there another "train" word (or could be "val"
     "test")? For example, if the file names are: "constrain_train.csv",
-    "constrain_val.csv", "constrain_test.csv", the only read_data function may can't
+    "constrain_val.csv", "constrain_test.csv", the read_data function may can't
     understand which one is the train dataset (because in each file name there
     is a "train" word). Basically handle_multiple_occurencies helps to understand which
     is the real train dataset, looking for the matched file name that contains the highest
     number of occurencies for the "train" word (we can expect that in the train dataset
-    file name there is one "train" word more than the other file names.)
+    file name there is one "train" word more than the other matched file names.)
     The example is made with the "train" word, but handle_multiple_occurencies works 
     also with "val"/"validation" and "test".
 
     Parameters:
     ============
-    paths_list: list[str]
-                List that contains all the possible suitable
-                file names for one dataset.
+    suitable_names: list[str]
+                    List that contains all the possible suitable
+                    file names for one dataset.
     
     word_to_count: str
                    This is the word that we want to count in the 
-                   file names list (paths_list).
+                   file names list (suitable_names).
                    It could be "train", "val"/"validation" or "test".
                    The handle_multiple_occurencies
                    is going to search inside all the file names
-                   contained in the paths_list the
+                   contained in the suitable_names the
                    number of occurencies for 
                    the word_to_count.
 
@@ -227,13 +228,13 @@ def handle_multiple_occurencies(paths_list: list[str],
     =========
     filename_for_word: str
                        It represents the file name inside the 
-                       paths_list, in which the word_to_count has the 
+                       suitable_names, in which the word_to_count has the 
                        maximum number of occurencies.
     '''
 
-    paths_dict = dict.fromkeys(paths_list, None)
+    paths_dict = dict.fromkeys(suitable_names, None)
     for index, key in enumerate(paths_dict):
-        paths_dict[key] = paths_list[index].lower().count(word_to_count)
+        paths_dict[key] = suitable_names[index].lower().count(word_to_count)
 
     filename_max_occurencies_word = max(paths_dict, key = paths_dict.get)
     return filename_max_occurencies_word
@@ -244,7 +245,7 @@ def write_data(dataframes: tuple[pd.DataFrame],
     '''
     This function writes the preprocessed data in csv files, divided between 
     train, validation and test, in the output folder passed as parameter.
-    It is important that dataframes tuple (or list) contains three different 
+    It is important that dataframes sequence contains three different 
     dataframes in this order: train, validation and test. 
     The name of the new files will be the analysis name followed by;
     "train_preprocessed.csv" or "val_preprocessed.csv" or "test_preprocessed.csv".
@@ -252,15 +253,15 @@ def write_data(dataframes: tuple[pd.DataFrame],
     Parameters:
     ===========
     dataframes: tuple[pandas.DataFrame] 
-                This tuple contains all the preprocessed dataframes 
-                (train, validation, test) ready to be written in a csv file.
+                This sequence contains all the preprocessed dataframes 
+                (train, validation, test) ready to be written in csv files.
 
     output_folder: Path-like or str
                    The output folder path.
 
     analysis: str
               Name of the analysis the user is doing.
-              For example, if data regarding COVID-19 are analyzed, the 
+              For example, if data regarding COVID-19 tweets are analyzed, the 
               analysis name could be "covid".
     '''
 

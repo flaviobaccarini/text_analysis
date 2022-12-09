@@ -64,13 +64,13 @@ def plot_label_distribution(label_train: pd.Series,
     Parameters:
     ============
     label_train: pandas.Series
-              The labels from the train dataset.
+                 The labels from the train dataset.
 
     label_val: pandas.Series
-              The labels from the validation dataset.
+               The labels from the validation dataset.
     
     label_test: pandas.Series
-              The labels from the test dataset.
+                The labels from the test dataset.
     '''
     sns.set(font_scale=1.4)
     fig, ax = plt.subplots()
@@ -138,13 +138,13 @@ def printer_word_chars(all_dicts_avg_labels: list[dict],
     all_dicts_avg_labels: list[dict]
                           This list contain three different dictionaries
                           (training, validation, test).
-                          Dictionary keys represent the unique labels 
+                          Dictionary keys represent unique labels 
                           and each key is mapped to the number of
                           words/chars average for that label.
     
     unit_of_measure: str 
                      This string could be "chars" or "words" and it represents
-                     what the average number inside the dictionary are referred to.
+                     the "unit of measure" for the average number inside the dictionary.
     '''
     train_word_char_mean_dict, val_word_char_mean_dict, test_word_char_mean_dict = all_dicts_avg_labels
     for key in train_word_char_mean_dict:
@@ -154,7 +154,7 @@ def printer_word_chars(all_dicts_avg_labels: list[dict],
               f'test {test_word_char_mean_dict[key]:.1f}')
 
 def average_word_or_chars(labels: ArrayLike, 
-                          word_or_char_count: list[int]) -> dict:
+                          word_or_char_count: ArrayLike) -> dict:
     '''
     This function computes the average number of words/chars
     for each different label.
@@ -238,7 +238,7 @@ def plotting_word_char_count(labels: ArrayLike,
             Sequence that contains all the labels for the data.
     
     word_char_count: 1-D array-like[int]
-                     Sequence that containt all the word/character
+                     Sequence that contains all the word/character
                      counts for each single text data.
 
     unit_of_measure: str
