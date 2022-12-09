@@ -21,14 +21,14 @@ In order to install the library some other libraries are necessary, so we can in
 
 Now we can run the commands for installing the library:
 ```
-python setup.py bdist_wheel
+python3 setup.py bdist_wheel
 pip install ./dist/text_analysis-0.1.0-py3-none-any.whl
 ```
 
 Now the library should be installed.  
 Running:\
-`python setup.py pytest`\
-will execute all tests stored in the ‘tests’ folder.
+`pytest tests`\
+will execute all test functions inside the `tests` folder.
 
 ## Library structure
 The aim of the library is to make an initial exploration data analysis in order to better understand the data, then the library is aimed to preprocess the data: both cleaning and vectorization of the text data. The library is also composed by functions for plotting the results coming from the evaluation of the models. The selection, training and evaluation of the machine or deep learning model is up to the user. 
