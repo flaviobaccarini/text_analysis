@@ -14,7 +14,7 @@ from gensim.models import Word2Vec
 def vectorize_X_data_lr(text_data: ArrayLike,
                         model: Word2Vec) -> np.ndarray:
     '''
-    Function for vectorizing data for the logistic regressor.
+    Function for vectorizing data for the logistic regressor model.
     It takes as input text_data, which is 1-D array-like of 
     strings. This array contains all the sentences, that will
     be vectorized by this function thank to a Word2Vec model.
@@ -25,11 +25,11 @@ def vectorize_X_data_lr(text_data: ArrayLike,
     Parameters:
     ===========
     text_data: 1-D array-like[str]
-               Sequence that contains all the text and sentences.
+               Sequence that contains all the sentences.
     
     model: gensim.models.Word2Vec
            Word2Vec model already trained.
-           This is useful, because it maps each single word, present
+           It maps each single word, present
            in the vocabulary of the model, to a vector of floats.
 
     Returns:
@@ -58,7 +58,7 @@ def tocat_encode_labels(labels: ArrayLike,
     Parameters:
     ============
     labels: 1-D array-like
-            Sequence of the labels that have to be 
+            Sequence of labels that have to be 
             categorical encoded.
     
     classes: bool default: False
@@ -73,8 +73,7 @@ def tocat_encode_labels(labels: ArrayLike,
                           Labels categorical encoded
     
     uniq_labels: 1-D np.array
-                 It is returned only if the classes bool 
-                 variable is True.
+                 It is returned only if the bool classes is True.
                  It is a sequence contained the original 
                  unique labels.
     '''
@@ -115,7 +114,7 @@ def get_vocabulary(sentences: ArrayLike) -> list[list[str]]:
     vocabulary = [nltk.word_tokenize(words) for words in sentences]
     return vocabulary
 
-def flatten_unique_voc(vocabulary_lists: list[list[str]]) -> ArrayLike:
+def flatten_unique_voc(vocabulary_lists: list[list[str]]) -> np.ndarray:
     '''
     Function for flattening and getting the unique words
     from a list of words which represents the initial
@@ -124,8 +123,7 @@ def flatten_unique_voc(vocabulary_lists: list[list[str]]) -> ArrayLike:
     Parameters:
     ===========
     vocabulary_lists: list[list[str]]
-                      The list contains a number of lists.
-                      Each single sublist corresponds to an
+                      Each single sub-list corresponds to an
                       one tokenized sentence.
                      
     Returns:
@@ -146,36 +144,36 @@ def flatten_unique_voc(vocabulary_lists: list[list[str]]) -> ArrayLike:
     return voc_unique
     
 
-#building Word2Vec model
 class MeanEmbeddingVectorizer():
     '''
     Class for the vectorization of the text data
-    for the lostic regressor train/test.
+    for the lostic regressor model.
     '''
     def __init__(self, word2vec: dict):
         '''
-        Initialize function for the class.
+        Initi function for the class.
         Two main parameters are initialized: 
         1) the vocabulary, where each single word
            is mapped to the corresponding vector.
-        2) the dimension of the final vector.
+        2) the dimension of the final float vector.
 
         Parameters:
         ============
         word2vec: dict
                   Dictionary that maps each word to each
-                  float vector. This dictionary could be 
-                  the result of a Word2Vec trained model.  
+                  float vector. This dictionary is the 
+                  result of a trained Word2Vec model.  
 
         Initialize:
         ============
         word2vec: dict
                   This dictionary is initialized with the
                   one given as input. His job is to map
-                  all the single word to their corresponding 
-                  vector.
+                  all the single words to their corresponding 
+                  vectors.
+        
         dim: int
-             Length of the final output vector. 
+             Length of the final output float vector. 
         '''
         self.word2vec = word2vec
         # if a text is empty we should return a vector of zeros
@@ -189,13 +187,13 @@ class MeanEmbeddingVectorizer():
         logistic regressor model.
         The function takes as input X_text, which is a 1-D array-like
         of strings, that contains all the sentences. For each sentence
-        this function computes the average for the words of sentence 
-        present in the dictionary (word2vec). 
+        this function computes the average for the words of the sentence 
+        present in the dictionary (self.word2vec). 
         If a sentence contains words with no mapping in the dictionary,
         the function returns a vector of zeros with the same dimensionality
         as all the other vectors.
         In the end the shape of the vector is: (len(X_text), self.dim), where
-        self.dim is the dimensionality of all the vectors (to understand better
+        self.dim is the dimensionality of the vector (to understand better
         what is the value of self.dim, please see the function vectorize_X_data_lr).
 
         Parameters:
@@ -208,7 +206,7 @@ class MeanEmbeddingVectorizer():
         ========
         X_vector: 2-D np.array[floats]
                   The vectorized text.
-                  The text is converted to float numbers thanksì
+                  The text is converted to float numbers thanks
                   to the self.word2vec dictionary, that maps each 
                   single word present in the dictionary to a vector
                   of floats.
@@ -242,13 +240,15 @@ def calculate_max_len(text: ArrayLike) -> int:
     Returns:
     =========
     maxlen: int
-            It represents the maximum length for the vector
-            sequence. It is computed from the average number
+            It represents the maximum length for the vector.
+            Each single sentence will be vectorized in a vector
+            with dimensionality equal to maxlen.
+            maxlen is computed from the average number
             and the standard deviation of the number of words
-            in the sentences (average + 2*std).
+            in all the sentences (average + 2*std).
     '''
-    helper_vocabulary = get_vocabulary(text)
-    word_count = [len(sentence) for sentence in helper_vocabulary]
+    tokenized_sentences = get_vocabulary(text)
+    word_count = [len(sentence) for sentence in tokenized_sentences]
     maxlen = int(np.round(np.mean(word_count) + 2*np.std(word_count)))
     return maxlen
 
@@ -290,18 +290,17 @@ def init_vector_layer(maxlen: int,
 def vectorize_X_data_tf(text: ArrayLike,
                         vector_layer: tf.keras.layers.TextVectorization) -> tf.Tensor:
     '''
-    Function for vectorization of text data for the neural network.
-    It converts the text, which could be a single string (a single sentence)
-    or a 1-D array-like string (all the sentences) into vectors of integers
+    Function for vectorizing the text data for the neural network.
+    It converts the text, which it is a 1-D array-like string 
+    (all the sentences) into vectors of integers
     according to the vocabulary from the vector_layer.
     vector_layer is a TextVectorization layer ready for the vectorization
     of the text.
 
     Parameters:
     ============
-    text: 1-D array-like[str] or str
-          If it is 1-D array-like[str] it is a sequence of all the sentences.
-          If instead it is a simple string, it is a single sentence.
+    text: 1-D array-like[str]
+          It is a sequence containing all the sentences.
 
     vector_layer: tf.keras.layers.TextVectorization
                   TextVectorization layer ready for the vectorization.
@@ -310,11 +309,9 @@ def vectorize_X_data_tf(text: ArrayLike,
     ========
     vectorized_text: tf.Tensor
                      The vectorized text.
-                     The shape is (len(text), maxlen) if text
-                     is a 1-D array-like (to understand what maxlen
-                     stands for, see functions calculate_max_len and
-                     init_vector_layer).
-                     The shape is (1, maxlen) if text is a single string.
+                     The shape is (len(text), maxlen) (to understand
+                     what maxlen stands for, see functions
+                     calculate_max_len and init_vector_layer).
                      The tensor is composed by 32 bit integers.
     '''
     text = tf.convert_to_tensor(text)

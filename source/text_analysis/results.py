@@ -2,7 +2,7 @@
 RESULTS MODULE
 ===============
 In this module there are some functions to visualize and plotting 
-the test of results (both for the neural network or the logistic regressor)
+the test of results (both for the neural network or the machine learning model)
 '''
 from sklearn.metrics import classification_report, confusion_matrix
 from sklearn.metrics import roc_curve, auc
@@ -23,11 +23,11 @@ def visualize_results(y_test: np.ndarray,
     '''
     Function to visualize the results after the predict process.
     It takes as input the test y, the predicted y and the probability
-    for y (probability to belong to a specific class or to another one).
+    for y (probability to belong to a specific class).
     The function computes the confusion matrix, the roc curve and it prints 
     out the classification report. It also plots the confusion matrix thank to
     the make_confusion_matrix function and in the case of the neural network
-    it plots also the history.
+    it plots also the training history.
     If the user provides a folder path, the plots are saved inside this folder.
 
     Parameters:
@@ -47,7 +47,7 @@ def visualize_results(y_test: np.ndarray,
             classes for the labels.
 
     name_model: str
-           The name of the model.
+                The name of the model.
     
     metrics: list[str]
              Sequence of metrics used for the neural network. Default is None,
@@ -55,8 +55,8 @@ def visualize_results(y_test: np.ndarray,
 
     history: dict default: None
              If provided, dictionary that contains all
-            the information about the training of the
-            neural network model.
+             the information about the training of the
+             neural network model.
     
     folder_path: Path-like or str default: None
                  If provided, the path where to save
@@ -72,7 +72,9 @@ def visualize_results(y_test: np.ndarray,
     print('AUC:', roc_auc)
     
     if folder_path is not None:
-       cm_plot_path = Path(folder_path) / (name_model + '.svg')
+       if type(folder_path) == 'str':
+            folder_path = Path(folder_path)
+       cm_plot_path = folder_path / (name_model + '.svg')
        make_confusion_matrix(cm, classes, title = name_model, filepath=cm_plot_path)
     else:
     	make_confusion_matrix(cm, classes, title = name_model)
@@ -122,10 +124,10 @@ def make_confusion_matrix(cm: np.ndarray,
           Default is 'Blues'
           See http://matplotlib.org/examples/color/colormaps_reference.html
                    
-    title: str
+    title: str default: None
            Title for the heatmap. Default is None.
     
-    filepath: Path-like or str
+    filepath: Path-like or str default: None
               File path where to save the figure. Default is None.
     '''
     # CODE TO GENERATE TEXT INSIDE EACH SQUARE
@@ -180,20 +182,19 @@ def plot_history(history: dict,
                  filepath: str=None) -> None:
     '''
     This function will make a plot of the history for the training of 
-    the neural network. In particular, loss and validation loss will be 
-    plot and metrics used for training the model are plotted.
+    the neural network. In particular, losses and metrics will be 
+    plot.
     
     Parametes:
     ==========
     history: dict
              Dictionary that contains values for the 
-             accuracy, val_accuracy, loss and val_loss 
-             during the neural network train.
+             losses and metrics used during the neural network train.
     
     metrics_name: list[str]
-    		      Sequence of metrics used for training the model.
+    		      Sequence of metric names used for training the model.
     
-    filepath: Path-like or str
+    filepath: Path-like or str default: None
               File path where to save the figure. Default is None.
     '''
     sns.set(font_scale=1.2)
