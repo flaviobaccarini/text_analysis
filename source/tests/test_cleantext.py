@@ -23,7 +23,7 @@ def test_lower():
     '''
     # some text with capital letters
     capital_texts = ['HELLO WORLD',
-                     'Hello World',
+                     'HellO WoRld',
                      'hello world']
     lower_texts = []
     # lower the text
@@ -184,7 +184,7 @@ def test_stopword():
     '''
     This test function tests the behaviour of stopword function.
     The idea is to remove all the words present in the stop list 
-    for the english vocabulary.
+    for the english vocabulary, because they are meaningless.
     The list of the all stop words can be seen with these lines of code.
     import nltk
     nltk.download('stopwords')
@@ -259,6 +259,7 @@ def test_get_wordnet_pos():
   
     assert(wordnet_pos_tags[0] == ['n', 'v', 'n', 'n']) # NOUN, VERB, NOUN, NOUN
     assert(wordnet_pos_tags[1] == ['n', 'v', 'r', 'a']) # NOUN, VERB, ADVERB, ADJECTIVE
+    # NOUN, VERB, NOUN, NOUN, NOUN, NOUN, VERB, ADVERB, ADJECTIVE
     assert(wordnet_pos_tags[2] == ['n', 'v', 'n', 'n', 'n', 'n', 'v', 'r', 'a'])
     
 
@@ -269,7 +270,7 @@ def test_final_preprocess():
     finalpreprocess is the function that applies all the functions
     for cleaning the text (clean_text, stopword and lemmatize)
     The output of this function should be only some meaningful lemmatized words
-    for the analyzed text.
+    for the text.
     '''
     # some random text to preprocess
     text_example = ['Some random text to use',
@@ -340,7 +341,7 @@ def test_rename_columns(column_names):
         assert(list(df_correct_col_names['label']).count('real') > 0 or
                              list(df_correct_col_names['label']).count('fake') > 0 )
 
-    # THE ORDER OF THE COLUMNS IN THE DATAFRAME IS NOT IMPORTANT
+    # THE ORDER OF THE COLUMNS IN THE INITIAL DATAFRAME IS NOT IMPORTANT
     df_fake_inverted_order = pd.DataFrame({label_column_name: labels,
                                            text_column_name: sentences})
     df_inverted_order_colnames = rename_columns(df_fake_inverted_order,
@@ -390,7 +391,7 @@ def test_drop_empty(all_sentences):
 
     # if the dataframe is not empty
     # control that text is composed at least of one character
-    if len(df_no_empty_rows )> 0:
+    if len(df_no_empty_rows) > 0:
         text_count = map(len, df_no_empty_rows['text'])
         assert(min(text_count) >= 1)
 

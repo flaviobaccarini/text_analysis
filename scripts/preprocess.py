@@ -1,3 +1,10 @@
+'''
+PREPROCESS SCRIPT
+============================
+Script for prepreocessing of the data: cleaning of the data.
+Remove from the text data everything that is not wanted (URLs, tags,
+special characters...)
+'''
 from text_analysis.read_write_data import read_data, write_data
 from text_analysis.split_dataframe import split_dataframe
 from text_analysis.cleantext import drop_empty_rows, rename_columns
@@ -27,7 +34,7 @@ def find_initial_columns(analysis_name: str) -> tuple[str]:
     =========
     column_names: tuple[str]
                   Sequence that contains the column names (for text and labels)
-                  for the dataset selected to analyze.
+                  for the selected dataset to analyze.
     '''
     if analysis_name not in ("covid", "spam", "disaster"):
         raise ValueError("Wrong analyis name."+
@@ -57,6 +64,8 @@ def main():
     dataset_folder = Path('../datasets') / analysis_folder
 
     dfs_raw = read_data(dataset_folder)
+
+    # split dataframe:
     if len(dfs_raw) != 3:
 
         fractions =    (float(config_parse.get('PREPROCESS', 'train_fraction')),
@@ -67,21 +76,26 @@ def main():
 
     dfs_processed = []
     for df in dfs_raw:
+        # standardize column names: 'text', 'label':
         df_cleaned = rename_columns(df, text_col_name, label_col_name)
+        # no empty cells:
         df_cleaned = drop_empty_rows(df_cleaned)
 
         df_cleaned['clean_text'] = df_cleaned['text']
+        # clean the text:
         cleaned_text = [finalpreprocess(text_to_clean) for text_to_clean in tqdm(df_cleaned['clean_text'])]
         df_cleaned['clean_text'] = cleaned_text
+        # remove eventually empty cells:
         df_cleaned = drop_empty_rows(df_cleaned)
         dfs_processed.append(df_cleaned)
     
-
+    # write preprocessed data in output folder
     output_folder = Path('preprocessed_datasets') / analysis_folder
     output_folder.mkdir(parents=True, exist_ok=True)
 
     write_data(dfs_processed, output_folder = output_folder, analysis = analysis_folder)
 
+    # let's see some cleaned text
     df_train, df_valid, df_test = dfs_processed
     print(df_train['clean_text'].head())
     print("="*40)

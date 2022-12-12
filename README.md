@@ -3,7 +3,7 @@
 ## Introduction
 The aim of this project is to build a little library for text analysis: in particular binary text classifcation. The specific library's aim is to make a pre-analysis of the data, preprocessing of the data and then plotting of the results of the generated models by the user. The model selection, training and evaluation is up to the user. Starting from this library it is possibile to build different machine learning or deep learning models in order to make a binary classification of the text. At this moment three different datasets have been analyzed. The first is a dataset containing COVID-19 tweets: the aim is to classifiy if the tweet corresponds to a real or fake news. The second one is a spam/ham classification of messages. The last one is a classification of disaster tweets: similar to COVID-19 tweet dataset, the aim is a classification for real or fake news about natural disasters. 
 * In the folder [library](https://github.com/flaviobaccarini/text_analysis/tree/main/source) the library can be found with all the test functions.
-* In the folder [datasets](https://github.com/flaviobaccarini/text_analysis/tree/main/datasets) the user can find the three datasets that the user can analyze.
+* In the folder [datasets](https://github.com/flaviobaccarini/text_analysis/tree/main/datasets) the user can find the three datasets that have been analyzed until now.
 * In the folder [scripts](https://github.com/flaviobaccarini/text_analysis/tree/main/scripts) the user can find the scripts used for the text analysis.
 * In the folder [tutorials](https://github.com/flaviobaccarini/text_analysis/tree/main/tutorials) the user can find two tutorials about the text analysis with this library.
 
@@ -29,7 +29,7 @@ Now the library should be installed.
 Running:\
 `pytest tests`\
 will execute all test functions inside the `tests` folder.
-The library was built and tested with python version `3.10.9`.
+The library was built and tested with python version `3.10.6`.
 
 ## Library structure
 The aim of the library is to make an initial exploration data analysis in order to better understand the data, then the library is aimed to preprocess the data: both cleaning and vectorization of the text data. The library is also composed by functions for plotting the results coming from the evaluation of the models. The selection, training and evaluation of the machine or deep learning model is up to the user. 
@@ -43,28 +43,28 @@ The library is composed by different modules:
 
 ## Project structure
 Inside the [scripts](https://github.com/flaviobaccarini/text_analysis/tree/main/scripts) folder the user can find all the useful scripts in order to make a binary text classification. The script files are the following:
-* The [explore](https://github.com/flaviobaccarini/text_analysis/blob/main/scripts/explore.py) file corresponds to the pre-analysis script: some statistical data analysis to understand which kind of data the user is facing.  
-* The [preprocess](https://github.com/flaviobaccarini/text_analysis/blob/main/scripts/preprocess.py) file corresponds to the data preprocessing (in particular cleaning of the text).
-* In the [train_lr](https://github.com/flaviobaccarini/text_analysis/blob/main/scripts/train_lr.py) file the user can find the training of a logistic regressor model for binary text classification.
-* In the [train_nn](https://github.com/flaviobaccarini/text_analysis/blob/main/scripts/train_nn.py) file the user can find the training of a neural network (Bidirectional LSTM) built with the tensorflow library for binary text classification. The model is compiled using a binary cross entropy loss and an accuracy metric.
-* The [evaluate_lr](https://github.com/flaviobaccarini/text_analysis/blob/main/scripts/evaluate_lr.py) file contains the evaluation/test of the trained logistic regressor model. 
-* The [evaluate_nn](https://github.com/flaviobaccarini/text_analysis/blob/main/scripts/evaluate_nn.py) file contains the evaluation/test of the trained neural network (Bidirectional LSTM) model. 
+* [explore](https://github.com/flaviobaccarini/text_analysis/blob/main/scripts/explore.py) corresponds to the pre-analysis script: some statistical data analysis to understand which kind of data the user is facing.  
+* The [preprocess](https://github.com/flaviobaccarini/text_analysis/blob/main/scripts/preprocess.py) corresponds to the data preprocessing (in particular cleaning of the text).
+* In [train_lr](https://github.com/flaviobaccarini/text_analysis/blob/main/scripts/train_lr.py) the user can find the training of a logistic regressor model for binary text classification.
+* In [train_nn](https://github.com/flaviobaccarini/text_analysis/blob/main/scripts/train_nn.py) the user can find the training of a neural network (Bidirectional LSTM) built with the tensorflow library for binary text classification. The model is compiled using a binary cross entropy loss and an accuracy metric.
+* [evaluate_lr](https://github.com/flaviobaccarini/text_analysis/blob/main/scripts/evaluate_lr.py) contains the evaluation/test of the trained logistic regressor model. 
+* [evaluate_nn](https://github.com/flaviobaccarini/text_analysis/blob/main/scripts/evaluate_nn.py) contains the evaluation/test of the trained neural network (Bidirectional LSTM) model. 
 * Each single script file has to be executed with a config file (see [config.ini](https://github.com/flaviobaccarini/text_analysis/blob/main/scripts/config.ini) and [configuration](#configuration-file) section).
 
 For example, if the user wants to train and test a logistic regressor model, the commands needed to be run are the following:\
-(OPTIONAL, BUT RECCOMMENDED) `python explore.py config.ini`
+(OPTIONAL, BUT RECCOMMENDED) `python3 explore.py config.ini`
 ```
-python preprocess.py config.ini
-python train_lr.py config.ini
-python evaluate_lr.py config.ini
+python3 preprocess.py config.ini
+python3 train_lr.py config.ini
+python3 evaluate_lr.py config.ini
 ```
 
 If the user wants to train and test a neural network:\
-(OPTIONAL, BUT RECCOMMENDED) `python explore.py config.ini`
+(OPTIONAL, BUT RECCOMMENDED) `python3 explore.py config.ini`
 ```
-python preprocess.py config.ini
-python train_nn.py config.ini
-python evaluate_nn.py config.ini
+python3 preprocess.py config.ini
+python3 train_nn.py config.ini
+python3 evaluate_nn.py config.ini
 ```
 
 After the execution of `preprocess.py` a new folder will be created (see [preproccessed_datasets](https://github.com/flaviobaccarini/text_analysis/tree/main/scripts/preprocessed_datasets)). In this new folder there will be all the preprocessed datasets. 
@@ -102,7 +102,7 @@ text_analysis
        │...
 
 ```
-This means that the csv files (containing the data) need to be stored inside a sub-folder called as the analysis (to see the [prerequisites for the data](#data-prerequisites). The variable (folder_name) inside the ANALYSIS section of the configuration file has to be initialized with the name of the analysis the user wants to perform.
+This means that the csv files (containing the data) need to be stored inside a sub-folder called as the analysis (for more details on the data format see the [prerequisites for the data](#data-prerequisites) section). The variable (folder_name) inside the ANALYSIS section of the configuration file has to be initialized with the name of the analysis the user wants to perform (at this moment 3 possible options: "covid", "spam", "disaster").
 
 Then, the second section of the configuration file is called PREPROCCESED. In this section the fraction numbers for splitting the dataset (if necessary) are initializated. A random seed is also set in order to have reproducibility.
 
@@ -114,6 +114,7 @@ The third section is called PARAMETERS_TRAIN and it contains the train parameter
 * min_count_words_w2v: is the minimum number of occurencies for each word, so that the word can be counted in the vocabolary for the Word2Vec model
 
 ## Data prerequisites
+Here some basic prerequisites for the data:
 * all the data need to be stored in csv files
 * there could be three different options:
     1) one single csv file: it is assumed that alle data are stored inside this single file
@@ -136,9 +137,9 @@ datasets
     │   random_name_disaster_tweet.csv
 
 ```
-The `spam` dataset presents only one single file: all the data are inside `the_file_name_could_be_everything.csv`.
-The `covid` dataset presents three different csv files: `train_covid_tweet.csv` corresponds to the train data, `val_covid_tweet.csv` corresponds to the validation data and `test_covid_tweet.csv` corresponds to the test data.
+The `spam` dataset presents only one single file: all the data are in `the_file_name_could_be_everything.csv`. \
+The `covid` dataset presents three different csv files: `train_covid_tweet.csv` corresponds to the train data, `val_covid_tweet.csv` corresponds to the validation data and `test_covid_tweet.csv` corresponds to the test data. \
 The `disaster` dataset presents two differnt csv files: `train_disaster_tweet.csv` corresponds to the train data, while `random_name_disaster_tweet.csv` (no request on this file name) will be assumed to correspod to the test data. 
 
 ## Tutorials
-In the [tutorials](https://github.com/flaviobaccarini/text_analysis/tree/main/tutorials) the user can find two tutorials about the text analysis with this library. In one tutorial the train and test of a logistic regressor on spam dataset is shown (see [tutorial logistic regressor](https://github.com/flaviobaccarini/text_analysis/blob/main/tutorials/Tutorial%20Spam%20Logistic%20Regressor.ipynb)), instead in the other tutorial the train and test of a Bidirectional LSTM on covid dataset is presented (see [tutorial bidirectional LSTM](https://github.com/flaviobaccarini/text_analysis/blob/main/tutorials/Tutorial%20Covid%20Bidirectional%20LSTM.ipynb)).
+In the [tutorials](https://github.com/flaviobaccarini/text_analysis/tree/main/tutorials) the user can find two tutorials about text analysis with this library. In one tutorial the train and test of a logistic regressor on spam dataset is shown (see [tutorial logistic regressor](https://github.com/flaviobaccarini/text_analysis/blob/main/tutorials/Tutorial%20Spam%20Logistic%20Regressor.ipynb)), instead in the other tutorial the train and test of a Bidirectional LSTM on covid dataset is presented (see [tutorial bidirectional LSTM](https://github.com/flaviobaccarini/text_analysis/blob/main/tutorials/Tutorial%20Covid%20Bidirectional%20LSTM.ipynb)).

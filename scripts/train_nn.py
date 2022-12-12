@@ -1,3 +1,8 @@
+'''
+BIDIRECTIONAL LSTM TRAIN SCRIPT
+============================
+Script for training a Bidirectional LSTM for binary text classification.
+'''
 from text_analysis.read_write_data import read_data
 from text_analysis.vectorize_data import get_vocabulary, tocat_encode_labels
 from text_analysis.vectorize_data import init_vector_layer, vectorize_X_data_tf, calculate_max_len
@@ -73,12 +78,14 @@ def main():
     checkpoint_path = Path('checkpoint') / analysis_folder
     checkpoint_path.mkdir(parents = True, exist_ok = True)
 
+    # GET VOCABULARY (UNIQUE)
     all_train_words = list(df_train['clean_text']) + list(df_valid['clean_text'])
     vocabulary = get_vocabulary(all_train_words)
     unique_vocabulary = flatten_unique_voc(vocabulary)
+    # GET THE INPUT LENGTH FOR THE SEQUENCES (PADDING/TRUNCATION OPERATION):
     maxlen = calculate_max_len(df_train['clean_text'])
     
-    # VECTORIZE THE TEXT
+    # VECTORIZE THE TEXT:
     vectorize_layer = init_vector_layer(maxlen, unique_vocabulary)
 
     X_train = vectorize_X_data_tf(df_train['clean_text'], vectorize_layer)
@@ -87,13 +94,12 @@ def main():
     y_train = tocat_encode_labels(df_train['label'])
     y_valid = tocat_encode_labels(df_valid['label'])
 
+    # BUILD THE MODEL:
     vocab_size = len(vectorize_layer.get_vocabulary())
-
     model = build_model(vocab_size = vocab_size,
                         embedding_dim = embedding_vector_size,
                         maxlen = maxlen)
     model.summary()
-
     model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=learning_rate),
                 loss='binary_crossentropy',
                 metrics=['accuracy'])
@@ -119,10 +125,9 @@ def main():
     batch_size=batch_size,
     epochs=epochs)
 
+    # SAVE HISTORY AS DATAFRAME
     hist_df = pd.DataFrame(history.history) 
-    # save to csv: 
     hist_csv_file = checkpoint_path / 'history.csv'
-
     hist_df.to_csv(hist_csv_file, index = False)
     
 
