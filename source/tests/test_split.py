@@ -80,7 +80,7 @@ def test_split_single_df(number_of_rows):
 def test_split_single_df_fractions(train_fract, test_fract):
     '''
     Test function to test the behaviour of split_singe_dataframe function.
-    The function takes as input a sequence of one single dataframe.
+    The function takes as input one single dataframe.
     Two fraction are needed: the train and test fractions.
     The split dataframes are returned in this orderd: train, validation and test
     dataframe.
@@ -112,7 +112,7 @@ def test_split_single_df_fractions(train_fract, test_fract):
 
 
 
-def test_split_df_two_df_correct():
+def test_split_df_two():
     '''
     Test function to test the behaviour of split_dataframe function for
     two datasets.
@@ -120,7 +120,7 @@ def test_split_df_two_df_correct():
     The first one is assumed to be the train dataset and it will be split
     in train and validation dataset.
     The second one is assumed to be the test dataset and it won't be modified.
-    The split dataframes are returned in this orderd: train, validation and test
+    The split dataframes are returned in this order: train, validation and test
     dataframe.    
     The size of the train dataset will be equal to the train fraction times the 
     total number of samples inside the first dataframe from the list.
@@ -156,7 +156,7 @@ def test_split_two_dfs_rows(number_of_rows):
     Test function to test the behaviour of split_two_dataframes function.
     The function takes as input a sequence of two dataframes.
     One fraction is needed: the train fraction.
-    The split dataframes are returned in this orderd: train, validation and test
+    The split dataframes are returned in this order: train, validation and test
     dataframe.
 
     @given:
@@ -254,3 +254,67 @@ def test_wrong_frac():
                                         expected_exception = ValueError):
         dfs_error = split_dataframe(df_fakes, fractions, seed)
 
+
+def test_intersection_split_df():
+    '''
+    Test function to test the behaviour of split_dataframe.
+    In particular, in this test function the empty intersection between split dataframes
+    is checked. We expect that the intersection of dataframes is empty (train with 
+    validation, train with test, test with validation), while the union of the split dataframes
+    need to be equal to the initial dataframe(s).
+    '''
+    number_of_rows = 5000
+    train_fract, test_fract = 0.7, 0.15
+    phases = ('single_df')
+    # generate fake date
+    df_fakes = create_fake_data(phases, (number_of_rows,))
+
+    assert(len(df_fakes) == 1) # single dataframes
+    df_split = split_dataframe(df_fakes, (train_fract, test_fract), seed = 42)
+
+    # check the splitting
+    assert(len(df_split) == 3) # three dataframes
+    df_train, df_valid, df_test = df_split
+    
+
+    inter_train_val = pd.merge(df_train, df_valid, how = 'inner')
+    inter_train_test = pd.merge(df_train, df_test, how = 'inner')
+    inter_val_test = pd.merge(df_valid, df_test, how = 'inner')
+ 
+    # check empty intersections:
+    assert(inter_train_val.empty)
+    assert(inter_train_test.empty)
+    assert(inter_val_test.empty)
+
+    # check that union of the dataframes (train, test, validation) is equal to the initial df
+    df_all = pd.merge(df_train, df_valid, how = 'outer')
+    df_all = pd.merge(df_all, df_test, how = 'outer')
+    df_all = df_all.sort_values(by=df_all.columns.tolist()).reset_index(drop=True)
+    df_fakes[0] = df_fakes[0].sort_values(by=df_fakes[0].columns.tolist()).reset_index(drop=True)
+    assert(df_all.equals(df_fakes[0]))
+
+    # now let's do the same with the case of two dataframes:
+    number_of_rows = 5000
+    train_fract = 0.7
+    phases = ('train', 'test')
+    # generate fake date
+    df_fakes = create_fake_data(phases, (number_of_rows, 1000))
+
+    assert(len(df_fakes) == 2) # two initial dataframes
+    df_split = split_dataframe(df_fakes, (train_fract,), seed = 42)
+
+    # check the splitting
+    assert(len(df_split) == 3) # three dataframes
+    df_train, df_valid, df_test = df_split
+
+    inter_train_val = pd.merge(df_train, df_valid, how = 'inner')
+
+    # check empty intersection:
+    assert(inter_train_val.empty)
+    assert(df_test.equals(df_fakes[1]))
+
+    # now check that union between train, validation dataframes is equal to the initial df
+    df_all = pd.merge(df_train, df_valid, how = 'outer')
+    df_all = df_all.sort_values(by=df_all.columns.tolist()).reset_index(drop=True)
+    df_fakes[0] = df_fakes[0].sort_values(by=df_fakes[0].columns.tolist()).reset_index(drop=True)
+    assert(df_all.equals(df_fakes[0]))
