@@ -1,3 +1,8 @@
+'''
+LOGISTIC REGRESSOR TRAIN SCRIPT
+============================
+Script for training a logistic regressor for binary text classification.
+'''
 from text_analysis.read_write_data import read_data
 from text_analysis.vectorize_data import get_vocabulary, tocat_encode_labels, vectorize_X_data_lr
 import configparser
@@ -27,15 +32,15 @@ def main():
     random_state = int(config_parse.get('PREPROCESS', 'seed'))
     checkpoint_path = Path('checkpoint') / analysis_folder
 
-    # LOGISTIC REGRESSION
-
+    # GET THE VOCABULARY:
     all_train_words = list(df_train['clean_text']) + list(df_valid['clean_text'])
     vocabulary = get_vocabulary(all_train_words)
 
+    # Word2Vec MODEL INIT:
     modelw2v = Word2Vec(vocabulary, vector_size=embedding_vector_size, window=5,
                          min_count=min_count_words_w2v, workers=1, seed = random_state)   
 
-    # PREPARE THE DATA:
+    # DATA VECTORIZATION:
     df_train_val = pd.concat([df_train, df_valid], ignore_index = True)
     X_train = vectorize_X_data_lr(df_train_val['clean_text'], modelw2v)
     y_train = tocat_encode_labels(df_train_val['label'])
@@ -43,19 +48,18 @@ def main():
     # CHECKPOINT PATH:
     checkpoint_path.mkdir(parents = True, exist_ok = True)
     file_path_model_w2v = checkpoint_path / 'word2vec.model'
-    modelw2v.save(str(file_path_model_w2v))
-
     file_path_model_lr = checkpoint_path / 'logistic_regression.sav'
 
-    # TRAIN
+    # TRAIN LOGISTIC REGRESSOR
     print("Train logistic regressor...")
     lr_w2v = LogisticRegression(solver = 'liblinear', C=10, penalty = 'l2', max_iter=20)
     lr_w2v.fit(X_train, y_train)
     print("Logistic Regression: training done")
 
-    # SAVING MODEL
+    # SAVING LOGISTIC REGRESSOR AND Word2Vec MODEL
     with open(file_path_model_lr, 'wb') as file:
         pickle.dump(lr_w2v, file)
+    modelw2v.save(str(file_path_model_w2v))
 
 if __name__ == '__main__':
     main()
