@@ -1,5 +1,5 @@
 '''
-In this file there are different test functions to test the 
+In this file there are test functions to test the 
 functions inside the preanalysis module.
 '''
 from text_analysis.preanalysis import average_word_or_chars
@@ -27,7 +27,7 @@ def test_word_count():
     number_of_words = word_count_text(test_string)
 
     assert(len(number_of_words) == 2) # now the list contains two different sentences
-    assert(number_of_words[1] == 9) # the second sentence is composed by 7 words
+    assert(number_of_words[1] == 9) # the second sentence is composed by 9 words
 
 def test_word_count_input_type():
     '''
@@ -42,22 +42,22 @@ def test_word_count_input_type():
 
     number_of_words = word_count_text(list_test_strings) # list
 
-    assert(len(number_of_words) == 2) # contain only one two sentences
+    assert(len(number_of_words) == 2) # it contains two sentences
     assert(number_of_words[1] == 3) # the second sentence contains 3 word
 
     number_of_words = word_count_text(series_test_string) # pd series
 
-    assert(len(number_of_words) == 2) # contain only one two sentences
+    assert(len(number_of_words) == 2) # it contains two sentences
     assert(number_of_words[1] == 3) # the second sentence contains 3 word
 
     number_of_words = word_count_text(tuple_test_string) # tuple
 
-    assert(len(number_of_words) == 2) # contain only one two sentences
+    assert(len(number_of_words) == 2) # it contains two sentences
     assert(number_of_words[1] == 3) # the second sentence contains 3 word
 
     number_of_words = word_count_text(numpy_test_string) # np array
 
-    assert(len(number_of_words) == 2) # contain only one two sentences
+    assert(len(number_of_words) == 2) # it contains two sentences
     assert(number_of_words[1] == 3) # the second sentence contains 3 word
 
 def test_char_count():
@@ -122,12 +122,13 @@ def test_char_count(text):
     text: list[str]
           Random text to use as input to char_count_text.
     '''
-    # test the function
+    # test the function: if text is empty it raises an error
     if len(text) == 0:
         with unittest.TestCase.assertRaises(unittest.TestCase,
                                             expected_exception = ValueError):
             chars_count = char_count_text(text)
     else:
+        # if text is not empty it counts how many chars for the text
         chars_count = char_count_text(text)
         for sentence, char_count in zip(text, chars_count):
             assert(len(sentence) == char_count)
@@ -154,12 +155,13 @@ def test_word_count(num_of_sentences, list_word):
         text = ' '.join(random.choices(list_word, k = len(list_word)))
         all_texts.append(text)
 
-    # test the function
+    # test the function: if all_texts is empty it raises an error
     if len(all_texts) == 0:
         with unittest.TestCase.assertRaises(unittest.TestCase, 
                                             expected_exception = ValueError):
             words_count = word_count_text(all_texts)
     else:        
+        # if all_texts is not empty it counts how many chars for the text
         words_count = word_count_text(all_texts)
         for word_count, text in zip(words_count, all_texts):
             assert(len(text.split()) == word_count)
@@ -197,6 +199,7 @@ def test_average_word_func_two_labels():
     # shuffle the data with pandas
     df = pd.DataFrame({'label': labels_sorted, 'counts': all_counts})
     df = df.sample(frac=1).reset_index(drop=True)
+    # get the labels and the counts
     labels = list(df['label'])
     all_counts = df['counts']
 
@@ -229,17 +232,23 @@ def test_average_word_func_multiple_lab(labels_list):
     for label in unique_labels:
         count_label = labels.count(label)
         count_label_list.append(count_label)
-    
+
+
+    # verify that total number of counts are equal to the total number of labels
     assert(sum(count_label_list) == number_of_tot_labels)
+
+    # count_label_list is the number of occurencies for each label
+    # we should generate randomly some counts for each label
+    # the counts that we are going to generate represent the word/char lengths
     counts_generated = []
-    # generate randomly some counts for each label
     for number_of_count_per_label in count_label_list:
         count_generated = [random.randrange(0, 100) 
                                         for _ in range(number_of_count_per_label)]
         counts_generated.append(count_generated)
 
     all_counts = [item for sublist in counts_generated for item in sublist]
-    # we expect number_of_tot_labels of counts
+    # we expect that all_counts has the same length of number_of_tot_labels 
+    # it means: one word/char counts for each label
     assert(len(all_counts) == number_of_tot_labels)
 
     averages = []
@@ -250,6 +259,7 @@ def test_average_word_func_multiple_lab(labels_list):
     # shuffle labels with pandas
     df = pd.DataFrame({'label': labels_sorted, 'counts': all_counts})
     df = df.sample(frac=1).reset_index(drop=True)
+    # get labels and the counts
     labels = list(df['label'])
     all_counts = (df['counts'])
 

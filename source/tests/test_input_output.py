@@ -14,7 +14,7 @@ from hypothesis import given
 import unittest
 
 def create_fake_data(phases: list[str], 
-                    nr_of_rows_per_phase:list[int] = None) -> list[pd.DataFrame]:
+                    nr_of_rows_per_phase: list[int] = None) -> list[pd.DataFrame]:
     '''
     Helper function for the creation of fake data
 
@@ -25,7 +25,7 @@ def create_fake_data(phases: list[str],
     
     nr_of_rows_per_phase: list[int] default: None
                           This sequence represents how many rows for each phase.
-                          This sequence has to have the same length of phases.
+                          This sequence must have the same length of phases.
 
     Returns:
     ========
@@ -53,7 +53,7 @@ def create_fake_data(phases: list[str],
 def test_read_data():
     '''
     This function tests the read_data function behaviour.
-    In order to do so we will create a "fake" folder and we will place 
+    In order to do so we will create a "fake" folder and we will put 
     some fake text data inside this folder.
     '''
     # create fake folder
@@ -101,9 +101,9 @@ def test_read_data():
 def test_read_data_capital_letters():
     '''
     This function tests the correct reading of the data (read_data function).
-    In particular, in this test function the indipendency of the reading
+    In particular, in this test function the independence of the reading
     from the presence of capital letters in the file names is tested.
-    In order to do so we will create a "fake" folder and we will place 
+    In order to test the function we will create a "fake" folder and we will put 
     some fake text data inside this folder.
     '''
     # create fake folder
@@ -166,7 +166,7 @@ def test_read_three_df():
     This function tests the read_three_dataframe function behaviour.
     The dataset are already split in three different csv files, ready
     to be read from read_three_dataframe function.
-    In order to do so we will create a "fake" folder and we will place 
+    In order to do so we will create a "fake" folder and we will put 
     some fake text data inside this folder.
     '''
     # create fake folder
@@ -199,7 +199,7 @@ def test_read_twodf(name_phase):
     '''
     This function tests the behaviour of read_two_dataframes function.
     Data are already split in two datasets (train dataset and valid/test dataset).
-    Regarding the train dataset: in the filename there must be a 'train' word.
+    Regarding the train dataset: in the file name there must be a 'train' word.
     Instead, regarding the valid/test dataset no requests are needed.
     The name of this dataset, actually, could be everything.
 
@@ -220,7 +220,7 @@ def test_read_twodf(name_phase):
 
     # write data into the fake folder
     # in one file name there must be 'train'
-    # no request on the other file name (here try with 'val', 'test', 'random_name_phase)
+    # no request on the other file name (here try with 'val', 'test', 'random_name_phase')
     csv_path_stem = ['fake_train_dataset.csv',
                     'fake_' + name_phase +'_dataset.csv',]
     df_fake_train.to_csv(new_test_folder / csv_path_stem[0], index=False)
@@ -232,15 +232,14 @@ def test_read_twodf(name_phase):
     assert(len(dfs_read) == 2) # contains 2 different dfs
 
     # test if the dataset are correctly read
-    df_train, df_valid = dfs_read
+    df_train, df_other_one = dfs_read
 
-    for dataframe, phase in zip([df_train, df_valid], ['train', name_phase]):
+    for dataframe, phase in zip([df_train, df_other_one], ['train', name_phase]):
         # check that each dataframe has the same phase word
-        # for df_train 'train', for df_valid 'valid', for df_test 'test'
         # for the whole column
         assert((dataframe['phase'] == dataframe['phase'][0]).all())
         # check that in df_train the phase is 'train'
-        # df_valid 'valid' and df_test 'test'
+        # df_other_one 'val' or df_other_one 'test' or df_other_one 'random_phase_name'
         assert((dataframe['phase'] == phase).all()) 
     
     # remove the data and eliminate the folder
@@ -254,7 +253,7 @@ def test_read_singledf(number_of_rows):
     '''
     This function tests the working of read_data, if the data 
     are given in a single csv file.
-    In order to do so we will create a "fake" folder and we will place 
+    In order to test the function we will create a "fake" folder and we will put 
     some fake text data inside this folder.
 
     @given:
@@ -303,7 +302,7 @@ def test_read_4df():
     csv_path_stem = ['fake_train_dataset.csv',
                     'fake_val_dataset.csv',
                     'fake_test_dataset.csv',
-                    'fakeboh_test_dataset.csv']
+                    'fake_boh_dataset.csv']
     df_fake_train.to_csv(new_test_folder / csv_path_stem[0], index=False)
     df_fake_val.to_csv(new_test_folder / csv_path_stem[1], index=False)
     df_fake_test.to_csv(new_test_folder / csv_path_stem[2], index=False)
@@ -335,10 +334,10 @@ def test_read_3df_multiple_word():
     to the train dataset, but also the validation and test files (assuming that the
     validation and test file names are: "constrain_english_validation.csv" and 
     "constrain_english_test.csv").
-    Actually, this effect doesn't happen and the function can recognize well which is 
+    Actually, it doesn't happen and the function can recognize well which is 
     the train, validation and test dataset. 
     '''
-    # create fake folder to storage the data
+    # create fake folder
     new_test_folder = Path('test_folder')
     new_test_folder.mkdir(parents = True, exist_ok = True)
 
@@ -414,7 +413,7 @@ def test_multiple_occurencies(phase):
     # "trywithtrain_train.csv", "trywithtrain_val.csv" 
     # "triwithtrain_test.csv" 
 
-    # initialize the name with maximum number of count
+    # initialize the file name with maximum number of count
     name_max_count = 'trywith' + phase + '_' + phase + '.csv'
 
     # name of the files
@@ -426,7 +425,7 @@ def test_multiple_occurencies(phase):
     name_with_max_count = handle_multiple_occurencies(list_names, word_to_count)
 
     # verify that the name with maximum count chosen at the beginning
-    # is the same as the word the function finds
+    # is the same as the one the function finds
     assert(name_with_max_count == name_max_count)
 
     # now try with some whitespaces in the file names
@@ -466,12 +465,12 @@ def test_multiple_occurencies_capital_letters(phase):
     and "english_constrain_test.csv" the match is not easy, because of the inside 
     "constrain" there is a "train" string. We need to take care of this issue
     and let the function know which is the real train dataset.
-    handle_multiple_occurencies search inside all the possible matches which is the 
+    handle_multiple_occurencies searches inside all the possible matches which is the 
     file name that contains the higher number of "train" (in this case, but it can
     also be "val" or "test"). We expect, in fact, that the train file name contain
     a "train" word more than the other file names.
 
-    This test function tests in particular the behaviour of the 
+    This test function tests, in particular, the behaviour of the 
     hadle_multiple_occurencies with capital letters inside the file names.
 
     @given:
@@ -486,13 +485,14 @@ def test_multiple_occurencies_capital_letters(phase):
     # "triwithtrain_Test.csv" 
 
     # initialize the name with maximum number of count
-    name_max_count = 'trywith' + phase.lower() + '_' + phase + '.csv'
+    name_max_count = 'trywith' + phase + '_' + phase + '.csv'
 
     # file names
-    list_names = ['trywith' + phase.lower() + '_Train.csv',
-                 'trywith' + phase.lower() + '_Val.csv',
-                 'trywith' + phase.lower() +  '_Test.csv']
+    list_names = ['trywith' + phase + '_Train.csv',
+                 'trywith' + phase + '_Val.csv',
+                 'trywith' + phase +  '_Test.csv']
     
+    # the word to count need to be lower case
     word_to_count = phase.lower()
     name_with_max_count = handle_multiple_occurencies(list_names, word_to_count)
 

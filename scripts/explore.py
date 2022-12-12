@@ -36,7 +36,7 @@ def find_initial_columns(analysis_name: str) -> tuple[str]:
     =========
     column_names: tuple[str]
                   Sequence that contains the column names (for text and labels)
-                  for the dataset selected to analyze.
+                  for the selected dataset to analyze.
     '''
     if analysis_name not in ("covid", "spam", "disaster"):
         raise ValueError("Wrong analyis name."+
@@ -67,23 +67,29 @@ def main():
     
     dfs_raw = read_data(dataset_folder)
 
+    # split dataframe:
     if len(dfs_raw) !=  3:
         fractions = (float(config_parse.get('PREPROCESS', 'train_fraction')), 
                     float(config_parse.get('PREPROCESS', 'test_fraction')))
         dfs_raw = split_dataframe(dfs_raw, fractions, seed)
 
+    # find initial column names:
     text_col_name, label_col_name  = find_initial_columns(analysis_folder)
 
     df_new = []
+    # standardize column names and remove empty cells
     for df in dfs_raw:
         df_new.append(drop_empty_rows(rename_columns(df, text_col_name, label_col_name)))
     
     df_train, df_val, df_test = df_new
 
+    # print some info about data and plot the label distribution
     info_data(df_train, df_val, df_test)
     plot_label_distribution(df_train['label'], df_val['label'], df_test['label'])
     words_mean_list = []
     chars_mean_list = []
+
+    # count the average number of words/chars for each text:
     for dataframe in (df_train, df_val, df_test):
         word_count = word_count_text(dataframe['text'])
         char_count = char_count_text(dataframe['text'])
@@ -91,9 +97,12 @@ def main():
         chars_mean_list.append(average_word_or_chars(dataframe['label'], char_count))
         dataframe['word_count'] = word_count
         dataframe['char_count'] = char_count
+    
+    # print the average number of words/chars for each text and label:
     printer_word_chars(words_mean_list, 'words')
     printer_word_chars(chars_mean_list, 'chars')
 
+    # plot the average words/chars counting distribution
     df_complete = pd.concat([df_train, df_val, df_test], ignore_index=True)
     plotting_word_char_count(df_complete['label'], df_complete['word_count'], 'words')
     plotting_word_char_count(df_complete['label'], df_complete['char_count'], 'chars')
