@@ -24,11 +24,11 @@ def read_data(input_folder: str) -> tuple[pd.DataFrame]:
     The train dataset file must contain the "train" string,
     no request are needed for the other file contained in the folder.
 
-    If inside the folder there is only one single, this function
+    If inside the folder there is only one single file, this function
     assumes that data are not alread split.
     No request on the name of the file.
 
-    The strings "train", "val", "test" that have to be in the file names
+    The strings "train", "val", "test" that have to be within file names
     are not case sensitive.
 
     Parameters:
@@ -84,9 +84,9 @@ def read_three_dataframes(datasets_path: Path,
     In this case, inside the folder there are three different files. 
     The train dataset file must contain the string "train",
     while the validation dataset must contain the string "val"
-    and the test dataset has to contain "test".
+    and the test dataset has to contain "test" string.
 
-    The words "train", "val", "test" that have to be in the filenames
+    The words "train", "val", "test" that have to be within filenames
     are not case sensitive.
 
     Parameters:
@@ -139,7 +139,7 @@ def read_two_dataframes(datasets_path: Path,
     while the other dataset (which the function assumes to be the test
     dataset) has no request at all on the file name.
 
-    The string "train" that has to be in the file name
+    The string "train" that has to be within file name
     is not case sensitive.
 
     Parameters:
@@ -161,7 +161,7 @@ def read_two_dataframes(datasets_path: Path,
     test_ds: pd.DataFrame
              This is the test dataframe.
              The data inside this dataframe are the one
-             stored in the not train csv file.
+             stored in the other csv file (no train csv file).
     '''      
 
     path_dict = {'train': None, 'test': None}
@@ -194,7 +194,7 @@ def handle_multiple_occurencies(suitable_names: list[str],
     function, this function searches inside the file names the words "train", "val"
     and "test" in order to initialize three different dataframes corresponding to
     the three different files. If the names are: "random_train.csv", "random_val.csv"
-    and "random_test.csv" the train dataset corresponds to "random_train.csv", the
+    and "random_test.csv", the train dataset corresponds to "random_train.csv", the
     validation dataset corresponds to "random_val.csv" and the test dataset corresponds
     to "random_test.csv". 
     But what if inside the file names is there another "train" word (or could be "val"
@@ -247,7 +247,7 @@ def write_data(dataframes: tuple[pd.DataFrame],
     train, validation and test, in the output folder passed as parameter.
     It is important that dataframes sequence contains three different 
     dataframes in this order: train, validation and test. 
-    The name of the new files will be the analysis name followed by;
+    The name of the new files will be the analysis string followed by;
     "train_preprocessed.csv" or "val_preprocessed.csv" or "test_preprocessed.csv".
 
     Parameters:
