@@ -140,7 +140,7 @@ def printer_word_chars(all_dicts_avg_labels: list[dict],
                           (training, validation, test).
                           Dictionary keys represent unique labels 
                           and each key is mapped to the number of
-                          words/chars average for that label.
+                          word/char average for that label.
     
     unit_of_measure: str 
                      This string could be "chars" or "words" and it represents
@@ -165,7 +165,7 @@ def average_word_or_chars(labels: ArrayLike,
             Sequence containing the labels for each single text.
     
     word_or_char_count: 1-D array-like[int]
-                        Sequence containing the number of words/chars
+                        Sequence containing word/char counts
                         for each single text.
                      
     Raises:
@@ -178,9 +178,9 @@ def average_word_or_chars(labels: ArrayLike,
     Returns:
     =========
     unique_labels_dict: dict
-                        Each single key of this dictionary is a unique label.
-                        All the labels are mapped to the average number of words/chars
-                        computed on the text referred to that label.
+                        Each key of this dictionary is a unique label.
+                        All the labels are mapped to the average number of word/char
+                        counts computed on texts with that label.
     '''
     if len(labels) == 0:  
         raise ValueError('The labels sequence passed is empty')
@@ -243,9 +243,8 @@ def plotting_word_char_count(labels: ArrayLike,
 
     unit_of_measure: str
                      String that could be "chars"/"characters" or
-                     "words" and represents if the numbers inside 
-                     word_char_count are referred to characters
-                     or words. 
+                     "words" and it represents the "unit of measure"
+                     for the number counts in word_char_count. 
 
     '''  
     word_char_count_df = pd.DataFrame({'label': labels, 'count': word_char_count})

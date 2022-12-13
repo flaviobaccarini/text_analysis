@@ -30,8 +30,9 @@ def split_dataframe(dataframes_list: tuple[pd.DataFrame],
     fractions: 1-D array-like[float]
                Fractions that determines how the data have
                to be split in the different datasets.
-               The sequence needs to have two values.
-               They have to be float number between 0 and 1.
+               The sequence needs to have two values: train and 
+               test fraction.
+               Numbers must be float between 0 and 1.
     
     seed: number
           Number to set the seed in order to have a reproducible 
@@ -39,7 +40,7 @@ def split_dataframe(dataframes_list: tuple[pd.DataFrame],
     
     Raises:
     ========
-    ValueErorr: if one fractions is composed by numbers not in the interval (0, 1)
+    ValueErorr: if one fraction is not within the interval (0, 1).
 
     Returns:
     =========
@@ -93,11 +94,11 @@ def split_single_dataframe(single_df: pd.DataFrame,
 
     fractions: 1-D array-like[float]
                Divide the data in the three final datasets
-               accordingly these fraction numbers.
+               according to these fraction numbers.
                Sequence of length two (train and test fractions).
     
     seed: number
-          Number to set the seed in order to have not a reproducibile 
+          Number to set the seed in order to have a reproducibile 
           behaviour.
 
     returns:
@@ -144,7 +145,7 @@ def split_two_dataframes(dataframes: tuple[pd.DataFrame],
                 while the second dataframe corresponds to the test dataset.
 
     train_frac: float
-                Divide the first dataframe in two dataframes;
+                Train fraction to divide the first dataframe in two dataframes;
                 if train_frac is 0.90, the first new dataframe (train)
                 will have the 90% of the data from the initial
                 dataframe, while the validation dataframe will have
@@ -154,7 +155,7 @@ def split_two_dataframes(dataframes: tuple[pd.DataFrame],
           Number to set the seed in order to have reproducibile 
           behaviour.
 
-    returns:
+    Returns:
     ==========
     df_train: pd.DataFrame
               Train dataframe after splitting operation.

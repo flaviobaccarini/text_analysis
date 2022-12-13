@@ -1,7 +1,7 @@
 '''
 VECTORIZE MODULE
 =================
-Functions for vectorization of the text data.
+Functions for the vectorization of the text data.
 '''
 from nltk import word_tokenize
 import nltk
@@ -15,7 +15,7 @@ def vectorize_X_data_lr(text_data: ArrayLike,
                         model: Word2Vec) -> np.ndarray:
     '''
     Function for vectorizing data for the logistic regressor model.
-    It takes as input text_data, which is 1-D array-like of 
+    The function takes as input text_data, which is 1-D array-like of 
     strings. This array contains all the sentences, that will
     be vectorized by this function thank to a Word2Vec model.
     In the end the vectorized text is a 2-D numpy array with
@@ -64,7 +64,7 @@ def tocat_encode_labels(labels: ArrayLike,
     classes: bool default: False
              If this bool is true the function returns
              both the categorical encoded labels and the
-             classes. If it is false the function returns
+             class names. If it is false the function returns
              only the categorical encoded labels.
     
     Returns:
@@ -94,7 +94,8 @@ def get_vocabulary(sentences: ArrayLike) -> list[list[str]]:
     starting from all the sentences.
     Example: 
     sentences = ['hi, how are you?', 'fine thanks']
-    vocabulary = [ ['hi', 'how', 'are', 'you', '?'],
+    vocabulary = get_vocabulary(sentences)
+    vocabulary == [ ['hi', 'how', 'are', 'you', '?'],
                   ['fine', 'thanks'] ]
 
     Parameters:
@@ -136,7 +137,8 @@ def flatten_unique_voc(vocabulary_lists: list[list[str]]) -> np.ndarray:
     =========
     vocabulary_lists = [ ['hi', 'how', 'are', 'you', '?'],
                   ['fine', 'thanks', 'and', 'how', 'are', 'you', '?'] ]
-    voc_unique = ['hi', 'how', 'are', 'you', '?', 'fine, 'thanks', 'and]
+    voc_unique = flatten_unique_voc(vocabulary_lists)
+    voc_unique == ['hi', 'how', 'are', 'you', '?', 'fine, 'thanks', 'and]
     '''
     vocabulary_flatten = [word for sentence in vocabulary_lists 
                             for word in sentence]
@@ -151,10 +153,10 @@ class MeanEmbeddingVectorizer():
     '''
     def __init__(self, word2vec: dict):
         '''
-        Initi function for the class.
+        Init function for the class.
         Two main parameters are initialized: 
         1) the vocabulary, where each single word
-           is mapped to the corresponding vector.
+           is mapped to the corresponding float vector.
         2) the dimension of the final float vector.
 
         Parameters:
@@ -169,7 +171,7 @@ class MeanEmbeddingVectorizer():
         word2vec: dict
                   This dictionary is initialized with the
                   one given as input. His job is to map
-                  all the single words to their corresponding 
+                  all the words to their corresponding 
                   vectors.
         
         dim: int
@@ -189,7 +191,7 @@ class MeanEmbeddingVectorizer():
         of strings, that contains all the sentences. For each sentence
         this function computes the average for the words of the sentence 
         present in the dictionary (self.word2vec). 
-        If a sentence contains words with no mapping in the dictionary,
+        If a sentence contains only words with no mapping in the dictionary,
         the function returns a vector of zeros with the same dimensionality
         as all the other vectors.
         In the end the shape of the vector is: (len(X_text), self.dim), where
@@ -240,7 +242,7 @@ def calculate_max_len(text: ArrayLike) -> int:
     Returns:
     =========
     maxlen: int
-            It represents the maximum length for the vector.
+            Maximum length for the vector.
             Each single sentence will be vectorized in a vector
             with dimensionality equal to maxlen.
             maxlen is computed from the average number
@@ -300,7 +302,7 @@ def vectorize_X_data_tf(text: ArrayLike,
     Parameters:
     ============
     text: 1-D array-like[str]
-          It is a sequence containing all the sentences.
+          Sequence containing all the sentences.
 
     vector_layer: tf.keras.layers.TextVectorization
                   TextVectorization layer ready for the vectorization.
@@ -310,7 +312,7 @@ def vectorize_X_data_tf(text: ArrayLike,
     vectorized_text: tf.Tensor
                      The vectorized text.
                      The shape is (len(text), maxlen) (to understand
-                     what maxlen stands for, see functions
+                     better what maxlen stands for, see functions
                      calculate_max_len and init_vector_layer).
                      The tensor is composed by 32 bit integers.
     '''
