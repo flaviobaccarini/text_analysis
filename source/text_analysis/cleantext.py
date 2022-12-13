@@ -1,7 +1,7 @@
 '''
 CLEANING TEXT MODULE
 ====================
-In this module there are different functions for cleaning and 
+In this module there are functions for cleaning and 
 preprocessing the text data.
 '''
 import re
@@ -58,13 +58,13 @@ def rename_columns(df: pd.DataFrame,
                       String that corresponds to the 
                       initial text column name
                       This column will be kept in the final dataframe,
-                      changing its names in "text".
+                      changing its name in "text".
 
     label_column_name: str
                        String that corresponds to the 
                        initial label column name
                        This column will be kept in the final dataframe,
-                       changing its names in "label".    
+                       changing its name in "label".    
     
     Returns:
     =========
@@ -98,7 +98,7 @@ def lower_strip(text: str) -> str:
     text_cleaned: str
                   Text with all lowercase letters, without whitespaces
                   at the beginning or at the end of the text and without
-                  big whitespaces inside the text.
+                  big whitespaces within the text.
     '''
     text_cleaned = text.lower() # lowercase
     text_cleaned = text_cleaned.strip()  # strip 
@@ -130,7 +130,7 @@ def remove_noalphanum(text: str) -> str:
     '''
     This function removes from the text everything but
     alphanumeric characters. In this way, all the punctuations,
-    the special characaters (such as '#' '@' '-' etc...), the emoticons
+    the emoticons, the special characaters (such as '#' '@' '-' etc...)
     can be easily removed.
 
     Parameters:
@@ -206,7 +206,7 @@ def get_wordnet_pos(tag: str) -> str:
     If the tag starts with J, it means the word is an adjective,
     if it starts with V the word is a verb,
     if it starts with R the word is an adverb.
-    In the all the other cases the words are considered as nouns.
+    In the all the other cases words are considered as nouns.
 
     Parameters:
     ===========
