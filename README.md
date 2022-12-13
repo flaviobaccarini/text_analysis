@@ -44,7 +44,7 @@ The library is composed by different modules:
 ## Project structure
 Inside the [scripts](https://github.com/flaviobaccarini/text_analysis/tree/main/scripts) folder the user can find all the useful scripts in order to make a binary text classification. The script files are the following:
 * [explore](https://github.com/flaviobaccarini/text_analysis/blob/main/scripts/explore.py) corresponds to the pre-analysis script: some statistical data analysis to understand which kind of data the user is facing.  
-* The [preprocess](https://github.com/flaviobaccarini/text_analysis/blob/main/scripts/preprocess.py) corresponds to the data preprocessing (in particular cleaning of the text).
+* [preprocess](https://github.com/flaviobaccarini/text_analysis/blob/main/scripts/preprocess.py) corresponds to the data preprocessing (in particular cleaning of the text).
 * In [train_lr](https://github.com/flaviobaccarini/text_analysis/blob/main/scripts/train_lr.py) the user can find the training of a logistic regressor model for binary text classification.
 * In [train_nn](https://github.com/flaviobaccarini/text_analysis/blob/main/scripts/train_nn.py) the user can find the training of a neural network (Bidirectional LSTM) built with the tensorflow library for binary text classification. The model is compiled using a binary cross entropy loss and an accuracy metric.
 * [evaluate_lr](https://github.com/flaviobaccarini/text_analysis/blob/main/scripts/evaluate_lr.py) contains the evaluation/test of the trained logistic regressor model. 
@@ -77,7 +77,7 @@ The configuration file [config.ini](https://github.com/flaviobaccarini/text_anal
 2) PREPROCESS 
 3) PARAMETERS TRAIN \
 In the first section (ANALYSIS) the single variable defined in this section specifies the name of the sub-folder (inside the [datasets](https://github.com/flaviobaccarini/text_analysis/tree/main/datasets) folder) where the data are stored. 
-It is assumed that the the folder structure is someting like this:
+It is assumed that the folder structure is something like this:
 ```
 text_analysis
 │   README.md
@@ -139,7 +139,7 @@ datasets
 ```
 The `spam` dataset presents only one single file: all the data are in `the_file_name_could_be_everything.csv`. \
 The `covid` dataset presents three different csv files: `train_covid_tweet.csv` corresponds to the train data, `val_covid_tweet.csv` corresponds to the validation data and `test_covid_tweet.csv` corresponds to the test data. \
-The `disaster` dataset presents two differnt csv files: `train_disaster_tweet.csv` corresponds to the train data, while `random_name_disaster_tweet.csv` (no request on this file name) will be assumed to correspod to the test data. 
+The `disaster` dataset presents two different csv files: `train_disaster_tweet.csv` corresponds to the train data, while `random_name_disaster_tweet.csv` (no request on this file name) will be assumed to correspod to the test data. 
 
 ## Tutorials
 In the [tutorials](https://github.com/flaviobaccarini/text_analysis/tree/main/tutorials) the user can find two tutorials about text analysis with this library. In one tutorial the train and test of a logistic regressor on spam dataset is shown (see [tutorial logistic regressor](https://github.com/flaviobaccarini/text_analysis/blob/main/tutorials/Tutorial%20Spam%20Logistic%20Regressor.ipynb)), instead in the other tutorial the train and test of a Bidirectional LSTM on covid dataset is presented (see [tutorial bidirectional LSTM](https://github.com/flaviobaccarini/text_analysis/blob/main/tutorials/Tutorial%20Covid%20Bidirectional%20LSTM.ipynb)).
