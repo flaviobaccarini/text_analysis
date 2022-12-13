@@ -1,7 +1,7 @@
 '''
 RESULTS MODULE
 ===============
-In this module there are some functions to visualize and plotting 
+In this module there are functions to visualize and plotting 
 the test of results (both for the neural network or the machine learning model)
 '''
 from sklearn.metrics import classification_report, confusion_matrix
@@ -40,16 +40,16 @@ def visualize_results(y_test: np.ndarray,
 
     y_prob: 1-D np.ndarray
             The probability for each single y to belong
-            to one class or the other one.
+            to a specific class.
     
     classes: 1-D array-like
             This sequence represents the original unique 
-            classes for the labels.
+            class names for the labels.
 
     name_model: str
                 The name of the model.
     
-    metrics: list[str]
+    metrics: list[str] default: None
              Sequence of metrics used for the neural network. Default is None,
              necessary for neural network history.
 
@@ -70,21 +70,22 @@ def visualize_results(y_test: np.ndarray,
     fpr, tpr, thresholds = roc_curve(y_test, y_prob)
     roc_auc = auc(fpr, tpr)
     print('AUC:', roc_auc)
-    
+
     if folder_path is not None:
-       if type(folder_path) == 'str':
+        if type(folder_path) == 'str':
             folder_path = Path(folder_path)
-       cm_plot_path = folder_path / (name_model + '.svg')
-       make_confusion_matrix(cm, classes, title = name_model, filepath=cm_plot_path)
+        cm_plot_path = folder_path / (name_model + '.svg')
+        make_confusion_matrix(cm, classes, title = name_model, filepath=cm_plot_path)
     else:
-    	make_confusion_matrix(cm, classes, title = name_model)
+        make_confusion_matrix(cm, classes, title = name_model)
     
     if history is not None:
         if folder_path is not None:
             history_plot_path = folder_path / 'history.svg'
             plot_history(history, metrics_name = metrics, filepath = history_plot_path)
         else:
-            plot_history(history, metrics_name = metrics)
+            plot_history(history, metrics_name = metrics)      
+
 
 def make_confusion_matrix(cm: np.ndarray,
                           group_names: ArrayLike,
@@ -115,11 +116,11 @@ def make_confusion_matrix(cm: np.ndarray,
              If True, show the percent number in the confusion matrix.
              Default is True.
 
-    figsize: tuple[number]      
+    figsize: tuple[number] default: None
              Tuple representing the figure size.
              Default will be the matplotlib rcParams value.
 
-    cmap: str          
+    cmap: str default: 'Blues'
           Colormap of the values displayed from matplotlib.pyplot.cm.
           Default is 'Blues'
           See http://matplotlib.org/examples/color/colormaps_reference.html
