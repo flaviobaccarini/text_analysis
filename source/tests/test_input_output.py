@@ -1,541 +1,493 @@
 '''
 Test functions for the reading and writing functions.
 '''
-from text_analysis.read_write_data import read_data, write_data
-from text_analysis.read_write_data import read_three_dataframes
-from text_analysis.read_write_data import read_two_dataframes
 from text_analysis.read_write_data import handle_multiple_occurencies
-import pandas as pd
-from pathlib import Path
-import string    
-import random
-from hypothesis import strategies as st
-from hypothesis import given
-import unittest
+from text_analysis.read_write_data import get_paths, remove_none_from_dict
 
-def create_fake_data(phases: list[str], 
-                    nr_of_rows_per_phase: list[int] = None) -> list[pd.DataFrame]:
+def test_train_name():
     '''
-    Helper function for the creation of fake data
+    Test function for the function get_paths.
+    In this test function it is tested that
+    file name for 'train' is correctly matched.
 
-    Parameters:
-    ===========
-    phases: list[str]
-            This sequence represents the phases for the data (train/val/test).
-    
-    nr_of_rows_per_phase: list[int] default: None
-                          This sequence represents how many rows for each phase.
-                          This sequence must have the same length of phases.
+    Given:
+    ======
+    filenames: list[str]
+               Sequence of possible file names.
 
-    Returns:
-    ========
-    df_fakes: list[pd.DataFrame]
-              pandas Dataframe with some fake random data.
+    Tests:
+    ======
+            If the match between the dictionary key
+            'train' and the file name is correct.
     '''
+    filenames = ['random_train.csv',
+                 'random_val.csv',
+                 'random_test.csv']
+    dict_file_name = get_paths(filenames)
+    assert(dict_file_name['train'] == 'random_train.csv')
 
-    df_fakes = [] 
-    # if number of rows per phase is not defined
-    # the number of rows per each phase is equal to 100
-    if nr_of_rows_per_phase is None:
-        nr_of_rows_per_phase = [100 for _ in range(len(phases))]
-    for phase, nr_rows in  zip(phases, nr_of_rows_per_phase): 
-            fake_data = ({'phase': [phase for _ in range(nr_rows)], 
-                         'tweet': [ ''.join(random.choices(string.ascii_uppercase
-                                                 + string.digits, k = 10)) 
-                                                 for _ in range(nr_rows)], 
-                         'id': [int(index) for index in range(nr_rows)], 
-                         'label': [random.choice(['real', 'fake']) 
-                                                 for _ in range(nr_rows)]}) 
-            fake_data_dataframe = pd.DataFrame(fake_data)
-            df_fakes.append(fake_data_dataframe) 
-    return df_fakes
-
-def test_read_data():
+def test_val_name():
     '''
-    This function tests the read_data function behaviour.
-    In order to do so we will create a "fake" folder and we will put 
-    some fake text data inside this folder.
+    Test function for the function get_paths.
+    In this test function it is tested that
+    file name for 'val' is correctly matched.
+
+    Given:
+    ======
+    filenames: list[str]
+               Sequence of possible file names.
+
+    Tests:
+    ======
+            If the match between the dictionary key
+            'val' and the file name is correct.
     '''
-    # create fake folder
-    new_test_folder = Path('test_folder')
-    new_test_folder.mkdir(parents = True, exist_ok = True)
+    filenames = ['random_train.csv',
+                 'random_val.csv',
+                 'random_test.csv']
+    dict_file_name = get_paths(filenames)
+    assert(dict_file_name['val'] == 'random_val.csv')
 
-    # create fake data
-    phases = ('train', 'val', 'test')
-    df_fake_train, df_fake_val, df_fake_test = create_fake_data(phases)
-
-    # write data inside the folder
-    csv_path_stem = ['fake_train_dataset.csv',
-                    'fake_val_dataset.csv',
-                    'fake_test_dataset.csv']
-    df_fake_train.to_csv(new_test_folder / csv_path_stem[0], index=False)
-    df_fake_val.to_csv(new_test_folder / csv_path_stem[1], index=False)
-    df_fake_test.to_csv(new_test_folder / csv_path_stem[2], index=False)
-
-    # read the data
-    dfs_read = read_data(new_test_folder)
-
-    assert(len(dfs_read) == 3) # contains 3 different dfs
-
-    df_train, df_val, df_test = dfs_read
-    assert(df_train['phase'][0] == 'train') # the dataframe "train" is the one for train
-    assert(df_val['phase'][0] == 'val') # the dataframe "val" is the one for validation
-    assert(df_test['phase'][0] == 'test') # the dataframe "test" is the one for test
-
-    # 4 columns: phase, tweet, id, label
-    assert(len(df_train.columns) == 4) 
-    assert(len(df_val.columns) == 4)
-    assert(len(df_test.columns) == 4)   
-
-    assert(df_train.columns[0] == 'phase') # the first column is phase 
-    assert(df_val.columns[1] == 'tweet') # the second column is the text
-    assert(df_val.columns[2] == 'id') # the third column is the id
-    assert(df_test.columns[3] == 'label') # the fourth column is the label
-
-    # ELIMINATE THE CREATED FILES AND THE FOLDER
-    for csv_path in csv_path_stem:   
-        (new_test_folder / csv_path).unlink()
- 
-    new_test_folder.rmdir()
-
-def test_read_data_capital_letters():
+def test_test_name():
     '''
-    This function tests the correct reading of the data (read_data function).
-    In particular, in this test function the independence of the reading
-    from the presence of capital letters in the file names is tested.
-    In order to test the function we will create a "fake" folder and we will put 
-    some fake text data inside this folder.
+    Test function for the function get_paths.
+    In this test function it is tested that
+    file name for 'test' is correctly matched.
+
+    Given:
+    ======
+    filenames: list[str]
+               Sequence of possible file names.
+
+    Tests:
+    ======
+            If the match between the dictionary key
+            'test' and the file name is correct.
     '''
-    # create fake folder
-    new_test_folder = Path('test_folder')
-    new_test_folder.mkdir(parents = True, exist_ok = True)
+    filenames = ['random_train.csv',
+                 'random_val.csv',
+                 'random_test.csv']
+    dict_file_name = get_paths(filenames)
+    assert(dict_file_name['test'] == 'random_test.csv')
 
-    # create fake data
-    phase = ('train', 'val', 'test')
-    df_fake_train, df_fake_val, df_fake_test = create_fake_data(phase)
-
-    # write fake data in the fake folder
-    csv_path_stem = ['fake Train dataset.csv',
-                    'fake_Val_dataset.csv',
-                    'fake_Test_dataset.csv']
-    df_fake_train.to_csv(new_test_folder / csv_path_stem[0], index=False)
-    df_fake_val.to_csv(new_test_folder / csv_path_stem[1], index=False)
-    df_fake_test.to_csv(new_test_folder / csv_path_stem[2], index=False)
-
-    # read the data
-    dfs_read = read_data(new_test_folder)
-
-    assert(len(dfs_read) == 3) # contains 3 different dfs
-
-    df_train, df_val, df_test = dfs_read
-    assert(df_train['phase'][0] == 'train') # the dataframe "train" is the one for train
-    assert(df_val['phase'][0] == 'val') # the dataframe "val" is the one for validation
-    assert(df_test['phase'][0] == 'test') # the dataframe "test" is the one for test
-
-    # ELIMINATE THE CREATED FILES AND THE FOLDER
-    for csv_path in csv_path_stem:   
-        (new_test_folder / csv_path).unlink()
-    
-    # rewrite the data with different names inside the folder
-    csv_path_stem = ['FaKe trAin_dataset.csv',
-                    'Fake val Dataset.csv',
-                    'Fake_Test_Dataset.csv']
-    df_fake_train.to_csv(new_test_folder / csv_path_stem[0], index=False)
-    df_fake_val.to_csv(new_test_folder / csv_path_stem[1], index=False)
-    df_fake_test.to_csv(new_test_folder / csv_path_stem[2], index=False)
-
-    # read the data
-    dfs_read = read_data(new_test_folder)
-
-    assert(len(dfs_read) == 3) # contains 3 different dfs
-
-    df_train, df_val, df_test = dfs_read
-    assert(df_train['phase'][0] == 'train') # the dataframe "train" is the one for train
-    assert(df_val['phase'][0] == 'val') # the dataframe "val" is the one for validation
-    assert(df_test['phase'][0] == 'test') # the dataframe "test" is the one for test
-
-    # ELIMINATE THE CREATED FILES AND THE FOLDER
-    for csv_path in csv_path_stem:   
-        (new_test_folder / csv_path).unlink()
-    
-    new_test_folder.rmdir()
-
-
-def test_read_three_df():
+def test_no_match():
     '''
-    This function tests the read_three_dataframe function behaviour.
-    The dataset are already split in three different csv files, ready
-    to be read from read_three_dataframe function.
-    In order to do so we will create a "fake" folder and we will put 
-    some fake text data inside this folder.
+    Test function for the function get_paths.
+    In this test function it is tested what's 
+    happening when there is no match between
+    file names and "special" words ('train', 'test',
+    'val').
+
+    Given:
+    ======
+    filenames: list[str]
+               File names for csv files 
+               containing only one single name
+               without "special" words.
+
+    Tests:
+    ======
+            If there is no match between the dictionary 
+            keys and the file name, it is 
+            returned only an empty list.
     '''
-    # create fake folder
-    new_test_folder = Path('test_folder')
-    new_test_folder.mkdir(parents = True, exist_ok = True)
+    filenames = ['random.csv']
+    dict_file_name = get_paths(filenames)
+    assert(dict_file_name['train'] == [])
 
-    # create fake data
-    phase = ('train', 'val', 'test')
-    df_fake_train, df_fake_val, df_fake_test = create_fake_data(phase)
-
-    # write the created data in the folder
-    csv_path_stem = ['fake_train_dataset.csv',
-                    'fake_val_dataset.csv',
-                    'fake_test_dataset.csv']
-    df_fake_train.to_csv(new_test_folder / csv_path_stem[0], index=False)
-    df_fake_val.to_csv(new_test_folder / csv_path_stem[1], index=False)
-    df_fake_test.to_csv(new_test_folder / csv_path_stem[2], index=False)
-
-    # read the data
-    dfs_read = read_three_dataframes(new_test_folder, csv_path_stem)
-
-    assert(len(dfs_read) == 3) # contains 3 different dfs
-
-    for csv_path in csv_path_stem:
-        (new_test_folder / csv_path).unlink()
-    new_test_folder.rmdir()
-
-@given(name_phase = st.sampled_from(('val', 'test', 'random_name_phase')))
-def test_read_twodf(name_phase):
+def test_get_paths_len_dict():
     '''
-    This function tests the behaviour of read_two_dataframes function.
-    Data are already split in two datasets (train dataset and valid/test dataset).
-    Regarding the train dataset: in the file name there must be a 'train' word.
-    Instead, regarding the valid/test dataset no requests are needed.
-    The name of this dataset, actually, could be everything.
+    Test function for the function get_paths.
+    In this test function it is tested that there
+    are always three keys inside the dictionary,
+    also if there is no match at all.
 
-    @given:
+    Given:
+    ======
+    filenames: list[str]
+               File names for csv files 
+               containing only one single name
+               without "special" words.
+
+    Tests:
+    ======
+            If there is no match between the dictionary 
+            keys and the file name, the dictionary keys
+            are always three.
+    '''
+    filenames = ['random.csv']
+    dict_file_name = get_paths(filenames)
+    assert(len(dict_file_name) == 3)
+
+def test_get_paths_len_dict():
+    '''
+    Test function for the function get_paths.
+    In this test function it is tested that there
+    are always these keys: 'train', 'test', 'val'.
+
+    Given:
+    ======
+    filenames: list[str]
+               File names for csv files 
+               containing only one single name
+               without "special" words.
+
+    Tests:
+    ======
+            If there is no match between the dictionary 
+            keys and the file name, the dictionary keys
+            are always: 'train', 'val', 'test'.
+    '''
+    filenames = ['random.csv']
+    dict_file_name = get_paths(filenames)
+    assert(list(dict_file_name.keys()) == ['train', 'val', 'test'])
+
+def test_train_name_twofilenames():
+    '''
+    Test function for the function get_paths.
+    In this test function it is tested what's
+    the result if a list of two file names is passed.
+    In one file name there is 'train' string, while in the 
+    other there isn't a special word. The function 
+    matches the second name as test file.
+
+    Given:
+    ======
+    filenames: list[str]
+               Sequence of two file names: one for
+               train ('train' word), the other without
+               special word.
+
+    Tests:
+    ======
+            if the 'train' file is correctly matched.
+    '''
+    filenames = ['random_train.csv',
+                 'random.csv']
+    dict_file_name=get_paths(filenames)
+    assert(dict_file_name['train'] == 'random_train.csv')
+
+def test_test_name_twofilenames():
+    '''
+    Test function for the function get_paths.
+    In this test function it is tested what's
+    the result if a list of two file names is passed.
+    In one file name there is 'train' string, while in the 
+    other there isn't a special word. The function 
+    matches the second name as test file.
+
+    Given:
+    ======
+    filenames: list[str]
+               Sequence of two file names: one for
+               train ('train' word), the other without
+               special word.
+
+    Tests:
+    ======
+            if the 'test' file is correctly matched with the 
+            file that has not special word in its name.
+    '''
+    filenames = ['random_train.csv',
+                 'random.csv']
+    dict_file_name=get_paths(filenames)
+    assert(dict_file_name['test'] == 'random.csv')
+
+def test_train_name_capital_letter():
+    '''
+    Test function for the function get_paths.
+    In this test function it's tested what's 
+    the result if inside the file name there
+    are capital letters in 'train'.
+
+    Given:
+    ======
+    filenames: list[str]
+               Sequence of file names.
+               The train file name contains some
+               capital letters within 'train' string.
+    Tests:
+    ======
+            if there is a good match between the dictionary
+            key 'train' and the file name given. 
+    '''
+    filenames = ['random_TrAiN.csv',
+                 'random_val.csv',
+                 'random_test.csv']
+    dict_file_name = get_paths(filenames)
+    assert(dict_file_name['train'] == 'random_TrAiN.csv')
+
+def test_val_name_capital_letter():
+    '''
+    Test function for the function get_paths.
+    In this test function it's tested what's 
+    the result if inside the file name there
+    are capital letters in 'val'.
+
+    Given:
+    ======
+    filenames: list[str]
+               Sequence of file names.
+               The validation file name contains some
+               capital letters within 'val' string.
+
+    Tests:
+    ======
+            if there is a good match between the dictionary
+            key 'val' and the file name given. 
+    '''
+    filenames = ['random_train.csv',
+                 'random_VaL.csv',
+                 'random_test.csv']
+    dict_file_name = get_paths(filenames)
+    assert(dict_file_name['val'] == 'random_VaL.csv')
+
+def test_test_name_capital_letter():
+    '''
+    Test function for the function get_paths.
+    In this test function it's tested what's 
+    the result if inside the file name there
+    are capital letters in 'test'.
+
+    Given:
+    ======
+    filenames: list[str]
+               Sequence of file names.
+               The test file name contains some
+               capital letters within 'test' string.
+
+    Tests:
+    ======
+            if there is a good match between the dictionary
+            key 'test' and the file name given. 
+    '''
+    filenames = ['random_train.csv',
+                 'random_val.csv',
+                 'random_TeST.csv']
+    dict_file_name = get_paths(filenames)
+    assert(dict_file_name['test'] == 'random_TeST.csv')
+
+def test_remove_emptylist_from_dict():
+    '''
+    Test function for remove_none_from_dict.
+    In this test function it is tested what's the result 
+    if the input dictionary contain an empty list ([]).
+
+    Given:
     =======
-    name_phase: str
-                Name of the phase that we are considering.
-                It could be 'val', 'test', 'random_name_phase'.
+    dict_with_empty_list: dict
+                          Dictionary with empty a list.
+
+    Tests:
+    =======
+            The output dictionary should be empty.
     '''
-    # create fake folder
-    new_test_folder = Path('test_folder')
-    new_test_folder.mkdir(parents = True, exist_ok = True)
+    dict_with_empty_list = {'empty list': []}
+    dict_no_empty_list = remove_none_from_dict(dict_with_empty_list)
+    assert(dict_no_empty_list == {})
 
-    # create fake data
-    # train is always requested, the other could be everything
-    phases = ('train', name_phase)
-    df_fake_train, df_fake_val = create_fake_data(phases)
+def test_remove_emptylist_from_dict_with_other_keys():
+    '''
+    Test function for remove_none_from_dict.
+    In this test function it is tested what's the result 
+    if the input dictionary contain an empty list ([]) and
+    other keys mapped not to empty list.
 
-    # write data into the fake folder
-    # in one file name there must be 'train'
-    # no request on the other file name (here try with 'val', 'test', 'random_name_phase')
-    csv_path_stem = ['fake_train_dataset.csv',
-                    'fake_' + name_phase +'_dataset.csv',]
-    df_fake_train.to_csv(new_test_folder / csv_path_stem[0], index=False)
-    df_fake_val.to_csv(new_test_folder / csv_path_stem[1], index=False)
+    Given:
+    =======
+    dict_with_empty_list: dict
+                          Dictionary with a key mapped to an empty list
+                          and other keys mapped not to empty list.
+
+    Tests:
+    =======
+            The output dictionary should be composed only by keys mapped 
+            not to empty list.
+    '''
+    dict_with_empty_list = {'empty list': [], 'other': 1, 'a': 'a'}
+    dict_no_empty_list = remove_none_from_dict(dict_with_empty_list)
+    print(dict_no_empty_list)
+    assert(dict_no_empty_list == {'other': 1, 'a': 'a'})
+
+def test_remove_none_from_dict():
+    '''
+    Test function for remove_none_from_dict.
+    In this test function it is tested what's the result 
+    if the input dictionary contain a key mapped to None.
+
+    Given:
+    =======
+    dict_with_None: dict
+                    Dictionary with a key mapped to a None value.
+
+    Tests:
+    =======
+            The output dictionary should be an empty dictionary.
+    '''
+    dict_with_empty_list = {'none': None}
+    dict_no_empty_list = remove_none_from_dict(dict_with_empty_list)
+    assert(dict_no_empty_list == {})
+
+def test_remove_zeros_from_dict():
+    '''
+    Test function for remove_none_from_dict.
+    In this test function it is tested what's the result 
+    if the input dictionary contain a key mapped to 0.
+
+    Given:
+    =======
+    dict_with_None: dict
+                    Dictionary with a key mapped to a 0 value.
+
+    Tests:
+    =======
+            The output dictionary should be an empty dictionary.
+    '''
+    dict_with_empty_list = {'zero': 0}
+    dict_no_empty_list = remove_none_from_dict(dict_with_empty_list)
+    assert(dict_no_empty_list == {})
+
+def test_train_multiple_occurencies():
+    '''
+    Test function for handle_multiple_occurencies.
+    In this test function it's tested what's the result
+    if there are multiple matches for the 'train' word.
+
+    Given:
+    ======
+    multiple_matches: list[str]
+                      Sequence of string that contains at least
+                      one time the 'train' word within the string.
     
-    # read data
-    dfs_read = read_two_dataframes(new_test_folder, csv_path_stem)
+    Tests:
+    ======
+            The output of the function should be the string with the
+            maximum number of 'train' within the string.
+    '''
+    multiple_matches = ['constrain_train',
+                        'constrain_val',
+                        'constrain_test']
+    train_name = handle_multiple_occurencies(multiple_matches, 'train')
+    assert(train_name == 'constrain_train')
 
-    assert(len(dfs_read) == 2) # contains 2 different dfs
+def test_val_multiple_occurencies():
+    '''
+    Test function for handle_multiple_occurencies.
+    In this test function it's tested what's the result
+    if there are multiple matches for the 'val' word.
 
-    # test if the dataset are correctly read
-    df_train, df_other_one = dfs_read
-
-    for dataframe, phase in zip([df_train, df_other_one], ['train', name_phase]):
-        # check that each dataframe has the same phase word
-        # for the whole column
-        assert((dataframe['phase'] == dataframe['phase'][0]).all())
-        # check that in df_train the phase is 'train'
-        # df_other_one 'val' or df_other_one 'test' or df_other_one 'random_phase_name'
-        assert((dataframe['phase'] == phase).all()) 
+    Given:
+    ======
+    multiple_matches: list[str]
+                      Sequence of string that contains at least
+                      one time the 'val' word within the string.
     
-    # remove the data and eliminate the folder
-    for csv_path in csv_path_stem:
-        (new_test_folder / csv_path).unlink()
-    new_test_folder.rmdir()
-
-
-@given(number_of_rows = st.integers(min_value = 0, max_value = 100))
-def test_read_singledf(number_of_rows):
+    Tests:
+    ======
+            The output of the function should be the string with the
+            maximum number of 'val' within the string.
     '''
-    This function tests the working of read_data, if the data 
-    are given in a single csv file.
-    In order to test the function we will create a "fake" folder and we will put 
-    some fake text data inside this folder.
+    multiple_matches = ['eigenvalue_train',
+                        'eigenvalue_val',
+                        'eigenvalue_test']
+    val_name = handle_multiple_occurencies(multiple_matches, 'val')
+    assert(val_name == 'eigenvalue_val')
 
-    @given:
-    ========
-    number_of_rows: int
-                    Number of rows for the generated csv file.
+def test_val_multiple_occurencies():
     '''
-    # create fake folder
-    new_test_folder = Path('test_folder')
-    new_test_folder.mkdir(parents = True, exist_ok = True)
+    Test function for handle_multiple_occurencies.
+    In this test function it's tested what's the result
+    if there are multiple matches for the 'test' word.
 
-    # create fake data
-    phases = ('single_csv')
-    df_complete = create_fake_data(phases, (number_of_rows,))[0]
-
-    # write the csv into the created folder
-    csv_path_stem = ['Dataset_With_Random_Name.csv']
-    df_complete.to_csv(new_test_folder / csv_path_stem[0], index=False)
-
-    # read the data
-    dfs_fake = read_data(new_test_folder)
-    assert(len(dfs_fake) == 1) # contains one single dataframe
-
-    # remove the files and eliminate the folder
-    for csv_path in csv_path_stem:
-        (new_test_folder / csv_path).unlink()
-    new_test_folder.rmdir()
-
-def test_read_4df():
-    '''
-    Test function to test the behaviour of the read_data function
-    if inside the input folder there are more than three different files.
-
-    If inside the input folder there are more than three files
-    a ValueError is raised.
-    '''
-    # create fake folder
-    new_test_folder = Path('test_folder')
-    new_test_folder.mkdir(parents = True, exist_ok = True)
-
-    # create fake data
-    phases = ('train', 'val', 'test', 'anotherone')
-    df_fake_train, df_fake_val, df_fake_test, df_newone = create_fake_data(phases)
-
-    # write data into the created folder
-    csv_path_stem = ['fake_train_dataset.csv',
-                    'fake_val_dataset.csv',
-                    'fake_test_dataset.csv',
-                    'fake_boh_dataset.csv']
-    df_fake_train.to_csv(new_test_folder / csv_path_stem[0], index=False)
-    df_fake_val.to_csv(new_test_folder / csv_path_stem[1], index=False)
-    df_fake_test.to_csv(new_test_folder / csv_path_stem[2], index=False)
-    df_newone.to_csv(new_test_folder / csv_path_stem[3], index=False)
-
-    # we expect that a ValueError is raised:
-    with unittest.TestCase.assertRaises(unittest.TestCase, 
-                                        expected_exception = ValueError):
-        dfs_read = read_data(new_test_folder)
-
-    # remove the created files and folder
-    for csv_path in csv_path_stem:
-        (new_test_folder / csv_path).unlink()    
-    new_test_folder.rmdir()
-
-
-def test_read_3df_multiple_word():
-    '''
-    This function tests the behaviour of read_three_dataframes.
-    In particular, this test function prove the correct reading of the data
-    also if in the analysis name there is a 'train' word.
-    Example: if a file name is "constrain_english_train.csv" inside "constrain"
-    word there is a "train" word. This could be an issue for the read_three_dataframes
-    function, because the function search inside each file names the words "train", "val"
-    and "test". When the function finds a match it initializes a pandas dataframe with 
-    the content of the matched csv file. Obviously this works well if there is a single
-    match between csv files and each word.
-    In the case of "constrain_english_train.csv" it would match not only the train file
-    to the train dataset, but also the validation and test files (assuming that the
-    validation and test file names are: "constrain_english_validation.csv" and 
-    "constrain_english_test.csv").
-    Actually, it doesn't happen and the function can recognize well which is 
-    the train, validation and test dataset. 
-    '''
-    # create fake folder
-    new_test_folder = Path('test_folder')
-    new_test_folder.mkdir(parents = True, exist_ok = True)
-
-    # create fake data
-    phases = ('train', 'val', 'test')
-    df_fake_train, df_fake_val, df_fake_test = create_fake_data(phases)
-
-    # try if in the analysis name there is a "train" word
-    csv_path_stem = ['constrain_train_dataset.csv',
-                    'constrain_val_dataset.csv',
-                    'constrain_test_dataset.csv']
-
-    df_fake_train.to_csv(new_test_folder / csv_path_stem[0], index=False)
-    df_fake_val.to_csv(new_test_folder / csv_path_stem[1], index=False)
-    df_fake_test.to_csv(new_test_folder / csv_path_stem[2], index=False)
-
-    # read data
-    dfs_read = read_three_dataframes(new_test_folder, csv_path_stem)
-
-    assert(len(dfs_read) == 3) # contains 3 different dfs
-
-    # test if the dataset are correctly read
-    df_train, df_valid, df_test = dfs_read
-
-    for dataframe, phase in zip([df_train, df_valid, df_test], phases):
-        # check that each dataframe has the same phase word
-        # for df_train 'train', for df_valid 'valid', for df_test 'test'
-        # for the whole column
-        assert((dataframe['phase'] == dataframe['phase'][0]).all())
-        # check that in df_train the phase is 'train',
-        # df_valid 'valid' and df_test 'test'
-        assert((dataframe['phase'] == phase).all()) 
-
-    # remove data and eliminate the folder
-    for csv_path in csv_path_stem:
-        (new_test_folder / csv_path).unlink()
-    new_test_folder.rmdir()
-
-
-@given(phase = st.sampled_from(('train', 'val', 'test')))
-def test_multiple_occurencies(phase):
-    '''
-    This function tests the behaviour of handle_multiple_occurencies function.
-    handle_multiple_occurencies is the function that correctly matches the dataframes
-    to their corresponding csv files.
-    The reading functions (read_three_dataframes or read_two_dataframes) work searching
-    some "special" words inside the file names in order to convert the csv files content
-    into a pandas dataframe. The special words are:
-    for the read_three_dataframes:
-        "train", "val", "test"
-    for the read_two_dataframes:
-        "train"
-    Example: "random_train.csv", "random_valid.csv", "random_test.csv", the
-    read_three_dataframes matches the "random_train.csv" as the train dataset,
-    "random_valid.csv" as the validation dataset and the "random_test.csv" as the 
-    test dataset.
-    In another case, for example "english_constrain_train.csv", "english_constrain_val.csv"
-    and "english_constrain_test.csv" the match is not easy, because of inside 
-    "constrain" there is a "train" string. We need to take care of this issue
-    and let the function know which is the real train dataset.
-    handle_multiple_occurencies searches inside all the possible matches which is the 
-    file name that contains the higher number of "train" (in this case, but it can
-    also be "val" or "test"). We expect, in fact, that the train file name contain
-    a "train" word more than the other file names.
-
-    @given:
-    ========
-    phase: str
-           It represents the phase of the data.
-           The value could be: "train", "val", "test"
-    '''
-    # the file names would be something like:
-    # "trywithtrain_train.csv", "trywithtrain_val.csv" 
-    # "triwithtrain_test.csv" 
-
-    # initialize the file name with maximum number of count
-    name_max_count = 'trywith' + phase + '_' + phase + '.csv'
-
-    # name of the files
-    list_names = ['trywith' + phase + '_train.csv',
-                 'trywith' + phase + '_val.csv',
-                 'trywith' + phase +  '_test.csv']
+    Given:
+    ======
+    multiple_matches: list[str]
+                      Sequence of string that contains at least
+                      one time the 'test' word within the string.
     
-    word_to_count = phase
-    name_with_max_count = handle_multiple_occurencies(list_names, word_to_count)
-
-    # verify that the name with maximum count chosen at the beginning
-    # is the same as the one the function finds
-    assert(name_with_max_count == name_max_count)
-
-    # now try with some whitespaces in the file names
-    name_max_count = 'trywith ' + phase + ' ' + phase + '.csv'
-
-    # name of the files
-    list_names = ['trywith ' + phase + ' train.csv',
-                 'trywith ' + phase + ' val.csv',
-                 'trywith ' + phase +  ' test.csv']
-
-    word_to_count = phase
-    name_with_max_count = handle_multiple_occurencies(list_names, word_to_count)
-
-    # verify that the name with maximum count chosen at the beginning
-    # is the same as the name the function finds
-    assert(name_with_max_count == name_max_count)
-
-
-@given(phase = st.sampled_from(('Train', 'Val', 'Test')))
-def test_multiple_occurencies_capital_letters(phase):
+    Tests:
+    ======
+            The output of the function should be the string with the
+            maximum number of 'test' within the string.
     '''
-    This function tests the behaviour of handle_multiple_occurencies function.
-    handle_multiple_occurencies is the function that correctly matches the dataframes
-    to their corresponding csv files.
-    The reading functions (read_three_dataframes or read_two_dataframes) work searching
-    some "special" words inside the file names in order to convert the csv files content
-    into a pandas dataframe. The special words are:
-    for the read_three_dataframes:
-        "train", "val", "test"
-    for the read_two_dataframes:
-        "train"
-    Example: "random_train.csv", "random_valid.csv", "random_test.csv", the
-    read_three_dataframes matches the "random_train.csv" as the train dataset,
-    "random_valid.csv" as the validation dataset and the "random_test.csv" as the 
-    test dataset.
-    In another case, for example "english_constrain_train.csv", "english_constrain_val.csv"
-    and "english_constrain_test.csv" the match is not easy, because of the inside 
-    "constrain" there is a "train" string. We need to take care of this issue
-    and let the function know which is the real train dataset.
-    handle_multiple_occurencies searches inside all the possible matches which is the 
-    file name that contains the higher number of "train" (in this case, but it can
-    also be "val" or "test"). We expect, in fact, that the train file name contain
-    a "train" word more than the other file names.
+    multiple_matches = ['protest_train',
+                        'protest_val',
+                        'protest_test']
+    test_name = handle_multiple_occurencies(multiple_matches, 'test')
+    assert(test_name == 'protest_test')
 
-    This test function tests, in particular, the behaviour of the 
-    hadle_multiple_occurencies with capital letters inside the file names.
-
-    @given:
-    ========
-    phase: str
-           It represents the phase of the data.
-           The value could be: "Train", "Val", "Test"
-
+def test_train_multiple_occurencies_cap_letters():
     '''
-    # the file names would be something like:
-    # "trywithtrain_Train.csv", "trywithtrain_Val.csv",
-    # "triwithtrain_Test.csv" 
+    Test function for handle_multiple_occurencies.
+    In this test function it's tested what's the result
+    if there are multiple matches for the 'train' word 
+    considering capital letters.
 
-    # initialize the name with maximum number of count
-    name_max_count = 'trywith' + phase + '_' + phase + '.csv'
-
-    # file names
-    list_names = ['trywith' + phase + '_Train.csv',
-                 'trywith' + phase + '_Val.csv',
-                 'trywith' + phase +  '_Test.csv']
+    Given:
+    ======
+    multiple_matches: list[str]
+                      Sequence of string that contains at least
+                      one time the 'train' word within the string 
+                      with some capital letters.
     
-    # the word to count need to be lower case
-    word_to_count = phase.lower()
-    name_with_max_count = handle_multiple_occurencies(list_names, word_to_count)
-
-    # verify that the name with maximum count chosen at the beginning
-    # is the same as the name the function finds
-    assert(name_with_max_count == name_max_count)
-
-
-def test_write_data():
+    Tests:
+    ======
+            The output of the function should be the string with the
+            maximum number of 'train' within the string.
     '''
-    This function tests the behaviour of write_data function.
-    The list of dataframes to pass to write_data has to be of legth of 3
-    and ordered in this way: train dataframe, validation dataframe, test dataframe.
-    In order to test the function we will create a "fake" folder and we will write 
-    some fake data inside this folder.
+    multiple_matches = ['consTrain_train',
+                        'consTrain_val',
+                        'consTrain_test']
+    train_name = handle_multiple_occurencies(multiple_matches, 'train')
+    assert(train_name == 'consTrain_train')
+
+
+def test_val_multiple_occurencies_cap_letters():
     '''
-    # create some fake data
-    phases = ('train', 'val', 'test')
-    df_fakes_list = create_fake_data(phases) 
+    Test function for handle_multiple_occurencies.
+    In this test function it's tested what's the result
+    if there are multiple matches for the 'val' word 
+    considering capital letters.
+
+    Given:
+    ======
+    multiple_matches: list[str]
+                      Sequence of string that contains at least
+                      one time the 'val' word within the string 
+                      with some capital letters.
     
-    # create fake folder for writing
-    name_folder = 'test_writing'
-    path_output = Path(name_folder)
-    path_output.mkdir(parents = True, exist_ok = True)
-    analysis = 'test_write_function'
+    Tests:
+    ======
+            The output of the function should be the string with the
+            maximum number of 'val' within the string.
+    '''
+    multiple_matches = ['eigenValue_train',
+                        'eigenValue_val',
+                        'eigenValue_test']
+    val_name = handle_multiple_occurencies(multiple_matches, 'val')
+    assert(val_name == 'eigenValue_val')
 
-    # write the data into the folder
-    write_data(df_fakes_list, name_folder, analysis)
+def test_val_multiple_occurencies_cap_letters():
+    '''
+    Test function for handle_multiple_occurencies.
+    In this test function it's tested what's the result
+    if there are multiple matches for the 'test' word 
+    considering capital letters.
 
-    csv_paths = list(path_output.glob('**/*.csv'))
-
-    # writing function writes the three different csv files containing the datasets
-    assert(len(csv_paths) == 3) 
-
-    df_train, df_val, df_test = read_data(path_output)
-    assert(df_train['phase'][0] == 'train') # the dataframe "train" is the one for train
-    assert(df_val['phase'][0] == 'val') # the dataframe "val" is the one for validation
-    assert(df_test['phase'][0] == 'test') # the dataframe "test" is the one for test
-
-    # remove files and folder
-    for csv_path in csv_paths:
-        csv_path.unlink()    
-    path_output.rmdir()
-
-
-
+    Given:
+    ======
+    multiple_matches: list[str]
+                      Sequence of string that contains at least
+                      one time the 'test' word within the string 
+                      with some capital letters.
+    
+    Tests:
+    ======
+            The output of the function should be the string with the
+            maximum number of 'test' within the string.
+    '''
+    multiple_matches = ['proTest_train',
+                        'proTest_val',
+                        'proTest_test']
+    test_name = handle_multiple_occurencies(multiple_matches, 'test')
+    assert(test_name == 'proTest_test')
