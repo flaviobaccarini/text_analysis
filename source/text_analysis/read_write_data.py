@@ -8,6 +8,79 @@ from pathlib import Path
 import pandas as pd
 import numpy as np
 
+def get_paths(filenames: list[str]) -> dict:
+    '''
+    Function for getting the correcting file names match if
+    in the input folder there are two or three files. 
+    The basic idea of this function is to correctly match
+    the csv file name with the pandas dataframe that will 
+    be created from the csv. 
+    Case with 3 files: each file needs to contain a special string
+    ('train', 'val', 'test') and this function matches the 
+    correct csv path to a dictionary (for the reading of the csv files).
+    Case with 2 files: the train file need to be named with 'train' string
+    within the file name. The other file could not contain any special string,
+    it will be assumed to be the test dataset.
+
+    Parameters:
+    ===========
+    filenames: list[str]
+               Sequence that contains all the file names from the input folder.
+
+    Returns:
+    ========
+    path_dict: dict
+               Dictionary that maps each key to the corresponding file name.
+               The key 'val' could be not initialized if inside the folder there
+               are only two files.
+    '''
+    path_dict = {'train': None, 'val': None, 'test': None}
+    filenames_remaining = filenames
+
+    for phase in path_dict:
+        path_dict[phase] = [csv_path for csv_path in filenames if phase in str(csv_path).lower()]
+        # if multiple matching: choose the rigth one with handle_multiple_occurencies
+        if len(path_dict[phase]) > 1:
+            path_dict[phase] = handle_multiple_occurencies(path_dict[phase], phase)
+            filenames_remaining.remove(path_dict[phase])
+        
+        # if only one match: flatten the list
+        if len(path_dict[phase]) == 1:
+            path_dict[phase] = path_dict[phase][0]
+            filenames_remaining.remove(path_dict[phase])
+
+    # if in the filenames_remaining there is one element: initialize the  
+    # path_dict['test'] with this file name
+    if len(filenames_remaining) == 1:
+        path_dict['test'] = filenames_remaining[0]
+
+    return path_dict
+
+def remove_none_from_dict(original_dict: dict) -> dict:
+    '''
+    Function for removing from a dictionary an empty list.
+    This is useful in the case when we have only two different
+    csv files in a folder. After the execution of the function
+    get_paths we will find a dictionary with three keys, but
+    one key is useless (it's just an empty list). 
+    With this function we are able to remove this useless key.
+
+    Parameters:
+    ===========
+    original_dict: dict
+                   Original dictionary that can contains 
+                   keys mapped to empty list ([]).
+    
+    Returns:
+    ========
+    no_empty_list_dict: dict
+                        The original dictionary without keys
+                        mapped to empty list ([]).
+    '''
+    no_empty_list_dict = {k: v for k, v in original_dict.items() if v}
+    return no_empty_list_dict
+
+
 def read_data(input_folder: str) -> tuple[pd.DataFrame]:
     '''
     This function reads the data in csv files 
@@ -36,11 +109,6 @@ def read_data(input_folder: str) -> tuple[pd.DataFrame]:
     input_folder: Path-like or str
                   The input folder path to the files.
 
-    Raises:
-    ========
-    ValueError: if the number of files inside the folder are greater
-                than 3.
-
     Returns:
     =========
                  tuple[pd.DataFrame]
@@ -57,128 +125,21 @@ def read_data(input_folder: str) -> tuple[pd.DataFrame]:
         input_folder = Path(input_folder) 
 
     csv_paths = list(input_folder.glob('**/*.csv'))
-    csv_paths_stem = [str(path.stem + path.suffix) for path in csv_paths]
+    filenames = [str(path.stem + path.suffix) for path in csv_paths]
     
-    if len(csv_paths_stem) == 1:
-        complete_dataframe = pd.read_csv(input_folder / csv_paths_stem[0], index_col=False)
+    if len(filenames) == 1:
+        complete_dataframe = pd.read_csv(input_folder / filenames[0], index_col=False)
         return complete_dataframe,
 
-    elif len(csv_paths_stem) == 2:
-        train_dataframe, test_dataframe = read_two_dataframes(input_folder, csv_paths_stem)
-        return train_dataframe, test_dataframe
-
-    elif len(csv_paths_stem) == 3:
-        train_dataframe, valid_dataframe, test_dataframe = read_three_dataframes(input_folder, csv_paths_stem)
-        return train_dataframe, valid_dataframe, test_dataframe
-
-    else: 
-        raise ValueError("Too many files inside the input folder." + 
-                        f'\nIn {input_folder} there are {len(csv_paths_stem)} files' +
-                        '\nExpected at maximum three (train,validation,test).')
-
-def read_three_dataframes(datasets_path: Path, 
-                         csv_paths_stem: list[str]) -> tuple[pd.DataFrame]:
-    '''
-    Helper function for reading data; case of three different files.
-
-    In this case, inside the folder there are three different files. 
-    The train dataset file must contain the string "train",
-    while the validation dataset must contain the string "val"
-    and the test dataset has to contain "test" string.
-
-    The words "train", "val", "test" that have to be within filenames
-    are not case sensitive.
-
-    Parameters:
-    ===========
-    datasets_path: Path-like 
-                   The input folder path to the files.
-    
-    csv_paths_stem: list[str]
-                    This sequence contains only the file names.
-                    The length of this sequence has to be equal to three.
-
-    Returns:
-    =========
-    train_ds: pd.DataFrame
-              This is the train dataframe.
-              The data inside this dataframe are the one
-              stored in the train csv file.
-
-    val_ds: pd.DataFrame
-            This is the validation dataframe.
-            The data inside this dataframe are the one
-            stored in the validation csv file.
-
-    test_ds: pd.DataFrame
-             This is the test dataframe.
-             The data inside this dataframe are the one
-             stored in the test csv file.
-    '''                     
-    path_dict = {'train': None, 'val': None, 'test': None}
-    for phase in path_dict:
-        path_dict[phase] = [csv_path for csv_path in csv_paths_stem if phase in str(csv_path).lower()]
-        # if multiple matching: choose the rigth one with handle_multiple_occurencies
-        if len(path_dict[phase]) > 1:
-            path_dict[phase] = handle_multiple_occurencies(path_dict[phase], phase)
-        else:
-            path_dict[phase] = path_dict[phase][0]
-
-    train_ds = pd.read_csv(datasets_path / path_dict['train'], index_col=False)
-    val_ds = pd.read_csv(datasets_path / path_dict['val'], index_col=False)
-    test_ds = pd.read_csv(datasets_path / path_dict['test'], index_col=False)
-    return train_ds, val_ds, test_ds
-
-def read_two_dataframes(datasets_path: Path,
-                        csv_paths_stem: list[str]):
-    '''
-    Helper function for reading data; case of two different files.
-
-    In this case, inside the folder there are two different files. 
-    The train dataset file must contain the string "train",
-    while the other dataset (which the function assumes to be the test
-    dataset) has no request at all on the file name.
-
-    The string "train" that has to be within file name
-    is not case sensitive.
-
-    Parameters:
-    ===========
-    datasets_path: Path-like 
-                   The input folder path to the files.
-    
-    csv_paths_stem: list[str]
-                    This sequence contains only the file names.
-                    The length of this sequence has to be equal to two.
-
-    Returns:
-    =========
-    train_ds: pd.DataFrame
-              This is the train dataframe.
-              The data inside this dataframe are the one
-              stored in the train csv file.
-
-    test_ds: pd.DataFrame
-             This is the test dataframe.
-             The data inside this dataframe are the one
-             stored in the other csv file (no train csv file).
-    '''      
-
-    path_dict = {'train': None, 'test': None}
-    
-    path_dict['train'] = [csv_path for csv_path in csv_paths_stem if 'train' in str(csv_path).lower()]
-    # if multiple matching: choose the rigth one with handle_multiple_occurencies
-    if len(path_dict['train']) > 1:
-            path_dict['train'] = handle_multiple_occurencies(path_dict['train'], 'train')
     else:
-            path_dict['train'] = path_dict['train'][0]
+        path_dict = get_paths(filenames)
+        correct_path_dict = remove_none_from_dict(path_dict)
+        dataframes = []
+        for phase, filename in correct_path_dict.items():
+            df = pd.read_csv(input_folder / filename)
+            dataframes.append(df)
 
-    test_name = [csv_path for csv_path in csv_paths_stem if not path_dict['train'] in str(csv_path).lower()][0]
-
-    train_ds = pd.read_csv(datasets_path / path_dict['train'], index_col=False)
-    test_ds = pd.read_csv(datasets_path / test_name, index_col=False)
-
-    return train_ds, test_ds
+        return tuple(dataframes)
 
 def handle_multiple_occurencies(suitable_names: list[str],
                                 word_to_count: str) -> str:
