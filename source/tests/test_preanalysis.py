@@ -4,268 +4,370 @@ functions inside the preanalysis module.
 '''
 from text_analysis.preanalysis import average_word_or_chars
 from text_analysis.preanalysis import word_count_text, char_count_text
-from hypothesis import strategies as st
-from hypothesis import given
 import pandas as pd
-import random
 import numpy as np 
 import unittest
+
+def test_word_count_number_of_sentences():
+    '''
+    Test function to test word_count_text behaviour.
+    In this test function it's tested how many sentences
+    there are inside the input list.
+
+    Given:
+    ======
+    test_strings: list[str]
+                  Sequence of text for testing.
+
+    Tests:
+    =======
+            How many sentences there are inside the 
+            initial list (test_strings).                
+    '''
+
+    test_strings = ['Hello, this is a test string', 'My name is FLavio']
+    number_of_words = word_count_text(test_strings)
+    assert(len(number_of_words) == 2) # two sentences
 
 def test_word_count():
     '''
     Test function to test word_count_text behaviour.
-    We can see how the counting of the words is done.
+    In this test function it's tested how many words
+    there are inside the input string.
+
+    Given:
+    ======
+    test_string: list[str]
+                 Input text string.
+
+    Tests:
+    =======
+            How many words there are inside the 
+            initial string (test_string).                
     '''
 
     test_string = ['Hello, this is a test string']
     number_of_words = word_count_text(test_string)
+    assert(number_of_words[0] == 6) # 6 words
 
-    assert(len(number_of_words) == 1) # contain only one single sentence
-    assert(number_of_words[0] == 6) # the first sentence contains 6 word
+def test_word_count_tuple_input():
+    '''
+    Test function to test word_count_text behaviour.
+    This function is used to test if a tuple 
+    for the word_count_text function can work.
+        
+    Given:
+    ======
+    test_string: tuple[str]
+                 Tuple of text for testing.
 
-    test_string.append('Hello world, this is the number 2 #test string.')
+    Tests:
+    =======
+            If the word_count_text can work with
+            tuple as input.           
+    '''
+    test_string = ('Test string',)
     number_of_words = word_count_text(test_string)
+    assert(number_of_words[0] == 2)
 
-    assert(len(number_of_words) == 2) # now the list contains two different sentences
-    assert(number_of_words[1] == 9) # the second sentence is composed by 9 words
-
-def test_word_count_input_type():
+def test_word_count_series_input():
     '''
-    This function is used to test if different input type
-    for the word count function can work (word_count_text).
+    Test function to test word_count_text behaviour.
+    This function is used to test if a pandas Series 
+    for the word_count_text function can work.
+        
+    Given:
+    ======
+    test_string: pd.Series[str]
+                 Pandas Series of text for testing.
+
+    Tests:
+    =======
+            If the word_count_text can work with
+            pd.Series as input.           
     '''
 
-    list_test_strings = ['Test string', 'Test pandas series']
-    series_test_string = pd.Series(list_test_strings)
-    tuple_test_string = tuple(list_test_strings)
-    numpy_test_string = np.array(list_test_strings)
+    test_string = pd.Series(['Test string'])
+    number_of_words = word_count_text(test_string)
+    assert(number_of_words[0] == 2)
+    
+def test_word_count_nparray_input():
+    '''
+    Test function to test word_count_text behaviour.
+    This function is used to test if a numpy array 
+    for the word_count_text function can work.
+        
+    Given:
+    ======
+    test_string: np.array[str]
+                 Numpy Array of text for testing.
 
-    number_of_words = word_count_text(list_test_strings) # list
+    Tests:
+    =======
+            If the word_count_text can work with
+            np.array as input.           
+    '''
 
-    assert(len(number_of_words) == 2) # it contains two sentences
-    assert(number_of_words[1] == 3) # the second sentence contains 3 word
+    test_string = np.array(['Test string'])
+    number_of_words = word_count_text(test_string)
+    assert(number_of_words[0] == 2)
 
-    number_of_words = word_count_text(series_test_string) # pd series
+def test_char_count_number_of_sentences():
+    '''
+    Test function to test char_count_text.
+    In this test function it's tested how many sentences
+    there are inside the input list.
 
-    assert(len(number_of_words) == 2) # it contains two sentences
-    assert(number_of_words[1] == 3) # the second sentence contains 3 word
+    Given:
+    ======
+    test_strings: list[str]
+                  Sequence of text for testing.
 
-    number_of_words = word_count_text(tuple_test_string) # tuple
-
-    assert(len(number_of_words) == 2) # it contains two sentences
-    assert(number_of_words[1] == 3) # the second sentence contains 3 word
-
-    number_of_words = word_count_text(numpy_test_string) # np array
-
-    assert(len(number_of_words) == 2) # it contains two sentences
-    assert(number_of_words[1] == 3) # the second sentence contains 3 word
-
+    Tests:
+    =======
+            How many sentences there are inside the 
+            initial list (test_strings).                
+    '''
+    test_string = ['Hello, this is a test string',
+                   'Hello world',
+                   'Another string']
+    number_of_chars = char_count_text(test_string)
+    assert(len(number_of_chars) == 3) # three sentences
+ 
 def test_char_count():
     '''
     Test function to test char_count_text.
-    We can see how the counting of the characters is done.
+    In this test function it's tested how many characters
+    there are inside the input string.
+
+    Given:
+    ======
+    test_string: list[str]
+                 Input text string.
+
+    Tests:
+    =======
+            How many characters there are inside the 
+            initial input string (test_string).                
     '''
-    test_string = ['Hello, this is a test string']
+    test_string = ['Hello world!']
     number_of_chars = char_count_text(test_string)
+    assert(number_of_chars[0] == 12) # 12 characters
 
-    assert(len(number_of_chars) == 1) # contain only one single sentence
-    assert(number_of_chars[0] == 28) # the first sentence contains 28 characters
-
-    test_string.append('Hello world, this is another test string.')
+def test_char_count_tuple_input():
+    '''
+    Test function to test char_count_text.
+    In this test function it's tested if a tuple of string
+    can work as input to char_count_text function.
+    
+    Given:
+    ======
+    test_string: tuple[str]
+                 Tuple of text for testing.
+    
+    Tests:
+    =======
+            if the char_count_text can work with tuple
+            of string as input.
+    '''
+    test_string = ('#testing',)
     number_of_chars = char_count_text(test_string)
+    assert(number_of_chars[0] == 8)
 
-    assert(len(number_of_chars) == 2) # now the list contains two different sentences
-    assert(number_of_chars[1] == 41) # the second sentence is composed by 41 characters
-
-def test_char_count_input_type():
+def test_char_count_series_input():
     '''
-    This function is used to test if different input type
-    for the characters count function can work (char_count_text).
+    Test function to test char_count_text.
+    In this test function it's tested if a pandas Series
+    of string can work as input to char_count_text function.
+    
+    Given:
+    ======
+    test_string: pd.Series[str]
+                 Pandas Series of text for testing.
+    
+    Tests:
+    =======
+            if the char_count_text can work with pandas
+            Series of string as input.
     '''
+    test_string = pd.Series(['#testing'])
+    number_of_chars = char_count_text(test_string)
+    assert(number_of_chars[0] == 8)
 
-    list_test_strings = ['1st test string', '#Test pandas series', 
-                         '#Wikipedia site: https://wikipedia.org']
-    series_test_string = pd.Series(list_test_strings)
-    tuple_test_string = tuple(list_test_strings)
-    numpy_test_string = np.array(list_test_strings)
+def test_char_count_nparray_input():
+    '''
+    Test function to test char_count_text.
+    In this test function it's tested if a numpy array
+    of string can work as input to char_count_text function.
+    
+    Given:
+    ======
+    test_string: np.array[str]
+                 Pandas Series of text for testing.
+    
+    Tests:
+    =======
+            if the char_count_text can work with numpy
+            array of string as input.
+    '''
+    test_string = np.array(['#testing'])
+    number_of_chars = char_count_text(test_string)
+    assert(number_of_chars[0] == 8)
 
-    number_of_chars = char_count_text(list_test_strings) # list
-
-    assert(len(number_of_chars) == 3) # contain 3 sentences
-    assert(number_of_chars[0] == 15) # the first sentence contains 15 chars
-
-    number_of_chars = char_count_text(series_test_string) # pd series
-
-    assert(len(number_of_chars) == 3) # contain 3 sentences
-    assert(number_of_chars[1] == 19) # the second sentence contains 19 chars
-
-    number_of_chars = char_count_text(tuple_test_string) # tuple
-
-    assert(len(number_of_chars) == 3) # contain 3 sentences
-    assert(number_of_chars[2] == 38) # the third sentence contains 38 chars
-
-    number_of_chars = char_count_text(numpy_test_string) # np array
-
-    assert(len(number_of_chars) == 3) # contain 3 sentences
-    assert(number_of_chars[2] == 38) # the third sentence contains 38 chars
-
-
-
-@given(text = st.lists(st.text(max_size = 20)))
-def test_char_count(text):
+def test_char_count_empty_list():
     '''
     This function tests the correct working of the counting function 
-    for random characters (char_count_text).
+    for characters (char_count_text), when an empty list
+    is passed as input to the function.
 
-    @given:
-    ========
-    text: list[str]
-          Random text to use as input to char_count_text.
-    '''
-    # test the function: if text is empty it raises an error
-    if len(text) == 0:
-        with unittest.TestCase.assertRaises(unittest.TestCase,
-                                            expected_exception = ValueError):
-            chars_count = char_count_text(text)
-    else:
-        # if text is not empty it counts how many chars for the text
-        chars_count = char_count_text(text)
-        for sentence, char_count in zip(text, chars_count):
-            assert(len(sentence) == char_count)
-
+    Given:
+    ======
+    empty_list_string: list
+                       Empty list that will be passed to the function.
     
-@given(num_of_sentences = st.integers(min_value=0, max_value=10),
-       list_word = st.lists(st.text(max_size = 20)))
-def test_word_count(num_of_sentences, list_word):
+    Tests:
+    ======
+            We expect that a ValueError is raised by the function,
+            because the list passed as input is empty.
     '''
-    This function tests the correct working of the counting function
-    word_count_text for random words.
-
-    @given:
-    ========
-    num_of_sentences: int
-                      Total number of sentences.
-    
-    list_word: list[str]
-               The vocabulary to create some random sentences.
-    ''' 
-    all_texts = []
-    # generate some random text
-    for _ in range(num_of_sentences):
-        text = ' '.join(random.choices(list_word, k = len(list_word)))
-        all_texts.append(text)
-
-    # test the function: if all_texts is empty it raises an error
-    if len(all_texts) == 0:
-        with unittest.TestCase.assertRaises(unittest.TestCase, 
+    empty_list_string = []
+    with unittest.TestCase.assertRaises(unittest.TestCase,
                                             expected_exception = ValueError):
-            words_count = word_count_text(all_texts)
-    else:        
-        # if all_texts is not empty it counts how many chars for the text
-        words_count = word_count_text(all_texts)
-        for word_count, text in zip(words_count, all_texts):
-            assert(len(text.split()) == word_count)
+            chars_count = char_count_text(empty_list_string)
 
-def test_average_word_func_two_labels():
+def test_char_count_empty_list():
+    '''
+    This function tests the correct working of the counting function 
+    for words (word_count_text), when an empty list
+    is passed as input to the function.
+
+    Given:
+    ======
+    empty_list_string: list
+                       Empty list that will be passed to the function.
+    
+    Tests:
+    ======
+            We expect that a ValueError is raised by the function,
+            because the list passed as input is empty.
+    '''
+    empty_list_string = []
+    with unittest.TestCase.assertRaises(unittest.TestCase,
+                                            expected_exception = ValueError):
+            words_count = word_count_text(empty_list_string)
+
+def test_avg_word_single_label():
     '''
     This function test the correct working of the 
     average function for two string labels (average_word_or_chars).
-    '''
-    # two labels
-    unique_labels = ['real', 'fake']
+    average_word_or_chars takes as input the labels and the counts
+    and the output is a dict with keys mapped to the average counts
+    for each single label. 
 
-    # generate some random labels
-    labels = [unique_labels[random.randrange(len(unique_labels))] for _ in range(100)]
-    # sorting labels makes the average computation easier
-    labels_sorted = sorted(labels)
-
-    # count how many occurencies for each label
-    real_count = labels.count('real')
-    fake_count = labels.count('fake')
-
-    # we expect that the total occurencies for labels is equal to 100
-    assert(real_count + fake_count == 100)
-
-    # generate some random counts for the occurencies we computed before for each label
-    counts_real = [random.randrange(0, 100) for _ in range(real_count)]
-    counts_fake = [random.randrange(0, 100) for _ in range(fake_count)]
-    all_counts = counts_fake + counts_real
-    assert(len(all_counts) == 100)
-
-    # compute the mean for each label
-    mean_real = np.mean(counts_real)
-    mean_fake = np.mean(counts_fake)
-
-    # shuffle the data with pandas
-    df = pd.DataFrame({'label': labels_sorted, 'counts': all_counts})
-    df = df.sample(frac=1).reset_index(drop=True)
-    # get the labels and the counts
-    labels = list(df['label'])
-    all_counts = df['counts']
-
-    # test the function
-    avg_from_funct = average_word_or_chars(labels, all_counts)
-
-    assert(avg_from_funct['real'] == mean_real)
-    assert(avg_from_funct['fake'] == mean_fake)
-
-@given(labels_list = st.lists(st.integers(), min_size=3, max_size=20))   
-def test_average_word_func_multiple_lab(labels_list):
-    '''
-    This function test the correct working of
-    the average function for multiple integer labels (average_word_or_chars).
-
-    @given:
-    ========
-    labels_list: list[int]
-                 List of all the possible labels.
-    '''
-    unique_labels = np.unique(labels_list)
-    number_of_tot_labels = 500
-    # generate randomly some labels
-    labels = [unique_labels[random.randrange(len(unique_labels))]
-                                         for _ in range(number_of_tot_labels)]
-    # sorting labels makes average computation easier
-    labels_sorted = sorted(labels)
-    count_label_list = []
-    # compute how many occurencies for each label
-    for label in unique_labels:
-        count_label = labels.count(label)
-        count_label_list.append(count_label)
-
-
-    # verify that total number of counts are equal to the total number of labels
-    assert(sum(count_label_list) == number_of_tot_labels)
-
-    # count_label_list is the number of occurencies for each label
-    # we should generate randomly some counts for each label
-    # the counts that we are going to generate represent the word/char lengths
-    counts_generated = []
-    for number_of_count_per_label in count_label_list:
-        count_generated = [random.randrange(0, 100) 
-                                        for _ in range(number_of_count_per_label)]
-        counts_generated.append(count_generated)
-
-    all_counts = [item for sublist in counts_generated for item in sublist]
-    # we expect that all_counts has the same length of number_of_tot_labels 
-    # it means: one word/char counts for each label
-    assert(len(all_counts) == number_of_tot_labels)
-
-    averages = []
-    # compute the average for each label
-    for count_generated in counts_generated:
-        averages.append(np.mean(count_generated))
-
-    # shuffle labels with pandas
-    df = pd.DataFrame({'label': labels_sorted, 'counts': all_counts})
-    df = df.sample(frac=1).reset_index(drop=True)
-    # get labels and the counts
-    labels = list(df['label'])
-    all_counts = (df['counts'])
-
-    # test the function
-    avg_from_funct = average_word_or_chars(labels, all_counts)
+    Given:
+    =======
+    labels: list[str]
+            The sequence of the labels. In this test function
+            only one single label.
     
-    for label, average in zip(unique_labels, averages):
-        assert(avg_from_funct[label] == average)
+    counts: list[int]
+            Sequence of counts. In our case, it represents
+            the count number of words or characters.
+    
+    Tests:
+    ======
+            Test if the average for the counts is correct
+    '''
+    labels = ['A', 'A', 'A']
+    counts = [10, 15, 20]
+    avg = average_word_or_chars(labels, counts)
+    assert(avg['A'] == 15)
 
+def test_avg_word_twolabels():
+    '''
+    This function test the correct working of the 
+    average function for two string labels (average_word_or_chars).
+    average_word_or_chars takes as input the labels and the counts
+    and the output is a dict with keys mapped to the average counts
+    for each single label. 
+
+    Given:
+    =======
+    labels: list[str]
+            The sequence of the labels. In this test function
+            only two labels.
+    
+    counts: list[int]
+            Sequence of counts. In our case, it represents
+            the count number of words or characters.
+    
+    Tests:
+    ======
+            Test if the average for the counts is correct for
+            each label.
+    '''
+    labels = ['A', 'B', 'B', 'A']
+    counts = [10, 40, 20, 20]
+    avg = average_word_or_chars(labels, counts)
+    assert(avg['A'] == 15)
+    assert(avg['B'] == 30)
+
+def test_avg_word_threelabels():
+    '''
+    This function test the correct working of the 
+    average function for two string labels (average_word_or_chars).
+    average_word_or_chars takes as input the labels and the counts
+    and the output is a dict with keys mapped to the average counts
+    for each single label. 
+
+    Given:
+    =======
+    labels: list[str]
+            The sequence of the labels. In this test function
+            only three labels.
+    
+    counts: list[int]
+            Sequence of counts. In our case, it represents
+            the count number of words or characters.
+    
+    Tests:
+    ======
+            Test if the average for the counts is correct for
+            each label.
+    '''
+    labels = ['A', 'B', 'C', 'C', 'B', 'A']
+    counts = [10, 40, 50, 70, 20, 20]
+    avg = average_word_or_chars(labels, counts)
+    assert(avg['A'] == 15)
+    assert(avg['B'] == 30)
+    assert(avg['C'] == 60)
+
+def test_avg_floats():
+    '''
+    This function test the correct working of the 
+    average function for two string labels (average_word_or_chars).
+    average_word_or_chars takes as input the labels and the counts
+    and the output is a dict with keys mapped to the average counts
+    for each single label. 
+
+    In this particular test function it's tested if the function
+    can properly work also with float numbers.
+
+    Given:
+    =======
+    labels: list[str]
+            The sequence of the labels. In this test function
+            only one single label.
+    
+    counts: list[float]
+            Sequence of float numbers. 
+    
+    Tests:
+    ======
+            Test if the average for the counts is correct,
+            even though the counts are float numbers.
+    '''
+    labels = ['A', 'A', 'A']
+    counts = [2.25, 2.75, 2.50]
+    avg = average_word_or_chars(labels, counts)
+    assert(avg['A'] == 2.5)
