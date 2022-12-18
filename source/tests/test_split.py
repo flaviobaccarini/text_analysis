@@ -1,320 +1,775 @@
 '''
 Test functions for the splitting module.
 '''
-from text_analysis.split_dataframe import split_dataframe
+from hypothesis.extra.pandas import column, data_frames
 from text_analysis.split_dataframe import split_single_dataframe
 from text_analysis.split_dataframe import split_two_dataframes
-from tests.test_input_output import create_fake_data
 import pandas as pd
 from hypothesis import strategies as st
 from hypothesis import given
 import unittest
 
-
-def test_split_df_single_dataset():
-    '''
-    Test function to test the behaviour of split_dataframe function.
-    The function takes as input a single dataframe.
-    The split dataframes are returned in this orderd: train, validation and test
-    dataframe.    
-    '''
-    # create some fake data:
-    phases = ('single_dataframe')
-    nr_of_tot_rows = 500
-    df_fakes = create_fake_data(phases, (nr_of_tot_rows,))
-
-    assert(len(df_fakes) == 1) # one dataframe 
-
-    # initialize the train and test fraction
-    train_frac, test_frac = 0.70, 0.15
-    # split
-    df_split = split_dataframe(df_fakes, (train_frac, test_frac), seed = 42)
-    
-    #df_split[0] == df_train, df_split[1] == df_valid, df_split[2] == df_test
-    # verify that each dataframe has the correct dimensionality.    
-    assert(len(df_split) == 3) # split in three dataframes
-    assert(len(df_split[0]) == 
-                round(train_frac * (len(df_split[0]) + len(df_split[1]) + len(df_split[2]))))
-    assert(len(df_split[2]) == 
-                round(test_frac * (len(df_split[0]) + len(df_split[1]) + len(df_split[2]))))
-    assert(len(df_split[1]) == 
-                nr_of_tot_rows - len(df_split[0]) - len(df_split[2]))
-
-@given(number_of_rows = st.integers(min_value = 5, max_value = 10000))
-def test_split_single_df(number_of_rows):
+@given(singledataframe = data_frames([column('label', dtype = str), column('text', dtype = 'str')]))
+def test_split_df_single_dataset(singledataframe):
     '''
     Test function to test the behaviour of split_single_dataframe function.
-    The function takes as input a single dataframe.
-    Two fractions are needed: the train and test fraction (then the validation 
-    fraction is simply 1 - (train_frac + test_frac)).
-    The split dataframes are returned in this orderd: train, validation and test
-    dataframe.
+    In this test function is tested that the function returns three elements.
 
-    @given:
+    Given:
     =======
-    number_of_rows: int
-                    Number of rows for the single dataframe.
+    train_frac, test_frac: floats
+                           Float numbers that represent the fractions in which
+                           the user wants to split the dataset.
+    
+    singledataframe: pd.DataFrame
+                     The single dataset that will be split in three dataframes.
+    
+    Tests:
+    ======
+            if the output of the function is composed by three elements
+            (train, validation, test dataframe).
     '''
-    # crate some fake data
-    phases = ('alldata')
-    df_fakes = create_fake_data(phases, (number_of_rows, ))
-   
     # initialize the train and test fraction
-    train_frac, test_frac = 0.70, 0.15
-    assert(len(df_fakes) == 1) # one single dataframe
-    
-    # split dataframe
-    df_split = split_single_dataframe(df_fakes[0], (train_frac, test_frac), seed = 42)
-
-    assert(len(df_split) == 3) # three dataframes
-    
-    # verify that each dataframe has the correct dimensionality.
-    df_train, df_valid, df_test = df_split
-    assert(len(df_train) == round(train_frac*number_of_rows))
-    assert(len(df_test) == round(test_frac*number_of_rows))
-    assert(len(df_valid) == number_of_rows - len(df_train) - len(df_test))
+    train_frac, test_frac = 0.80, 0.10
+    # split
+    df_split = split_single_dataframe(singledataframe, (train_frac, test_frac), seed = 42)
+    # verify that df_split is composed by three elements:
+    assert(len(df_split) == 3) 
 
 
-@given(train_fract = st.floats(min_value=0.01, max_value=0.45),
-       test_fract = st.floats(min_value=0.01, max_value=0.45))
-def test_split_single_df_fractions(train_fract, test_fract):
+@given(singledataframe = data_frames([column('label', dtype = str), column('text', dtype = 'str')]))
+def test_split_df_single_dataset_dimension_train_df(singledataframe):
     '''
-    Test function to test the behaviour of split_singe_dataframe function.
-    The function takes as input one single dataframe.
-    Two fraction are needed: the train and test fractions.
-    The split dataframes are returned in this orderd: train, validation and test
-    dataframe.
+    Test function to test the behaviour of split_single_dataframe function.
+    In this test function is tested that the df_train has the correct 
+    dimension given by the train fraction number.
 
-    @given:
-    =========
-    train_fract: float
-                 Train fraction
-    
-    test_frac: float
-               Test fraction
-    '''
-    number_of_rows = 5000
-    # generate fake date
-    phases = ('single')
-    df_fakes = create_fake_data(phases, [number_of_rows])
-
-    assert(len(df_fakes) == 1) # one single dataframe
-    df_split = split_single_dataframe(df_fakes[0], (train_fract, test_fract), seed = 42)
-
-    # check the splitting
-    assert(len(df_split) == 3) # three dataframes
-    df_train, df_valid, df_test = df_split
-
-    # check the dimensionality of the dataframes
-    assert(len(df_train) == round(train_fract*number_of_rows))
-    assert(len(df_test) == round(test_fract*number_of_rows))
-    assert(len(df_valid) == number_of_rows - len(df_train) - len(df_test))
-
-
-
-def test_split_df_two():
-    '''
-    Test function to test the behaviour of split_dataframe function for
-    two datasets.
-    The function takes as input a list of two dataframes.
-    The first one is assumed to be the train dataset and it will be split
-    in train and validation dataset.
-    The second one is assumed to be the test dataset and it won't be modified.
-    The split dataframes are returned in this order: train, validation and test
-    dataframe.    
-    The size of the train dataset will be equal to the train fraction times the 
-    total number of samples inside the first dataframe from the list.
-    The remaining samples from the first dataframe will be stored inside 
-    the validation dataset.
-    '''
-    # create fake data
-    phases = ('train_val', 'test')
-    nr_of_rows = 200
-    df_fakes = create_fake_data(phases, (nr_of_rows, nr_of_rows))
-
-    assert(len(df_fakes) == 2) # two dataframes
-
-    # we need only the train fraction
-    # because the test dataset is already given
-    train_frac = 0.8
-    # need to create a tuple, because split_dataframe takes a tuple as input
-    fractions = (train_frac,)
-
-    df_split = split_dataframe(df_fakes, fractions, seed = 42)
-    
-    # df_split[0] == df_train, df_split[1] == df_valid, df_split[2] == df_test
-    assert(len(df_split) == 3) # split in three dataframes
-    # verify the dimensionality:
-    assert(len(df_split[0]) == round(train_frac * (len(df_split[0]) + len(df_split[1]))) )
-    assert(len(df_split[1]) == nr_of_rows - len(df_split[0]))
-    assert(df_split[2].equals(df_fakes[1]) )
-
-
-@given(number_of_rows = st.integers(min_value = 5, max_value = 10000))
-def test_split_two_dfs_rows(number_of_rows):
-    '''
-    Test function to test the behaviour of split_two_dataframes function.
-    The function takes as input a sequence of two dataframes.
-    One fraction is needed: the train fraction.
-    The split dataframes are returned in this order: train, validation and test
-    dataframe.
-
-    @given:
+    Given:
     =======
-    number_of_rows: int
-                    Number of rows for the single dataframe.
-    '''
-    # crate some fake data
-    phases = ('train', 'test')
-    df_fakes = create_fake_data(phases, (number_of_rows, number_of_rows))
-   
-    # initialize the train fraction
-    train_frac = 0.70
-    assert(len(df_fakes) == 2) # two dataframes
+    train_frac, test_frac: floats
+                           Float numbers that represent the fractions in which
+                           the user wants to split the dataset.
+
+    singledataframe: pd.DataFrame
+                     The single dataset that will be split in three dataframes.
     
-    # split dataframe
-    df_split = split_two_dataframes(df_fakes, train_frac, seed = 42)
+    Tests:
+    ======
+            if the df_train (train dataframe) has the correct dimension
+            (given by the train fraction).
+    '''
+    # initialize the train and test fraction
+    train_frac, test_frac = 0.80, 0.10
+    # split
+    df_train, df_val, df_test = split_single_dataframe(singledataframe, (train_frac, test_frac), seed = 42)
+    # verify that train dataframe has the correct dimensionality.    
+    assert(len(df_train) == 
+                round(train_frac * (len(df_train) + len(df_val) + len(df_test))))
 
-    assert(len(df_split) == 3) # three dataframes
+@given(singledataframe = data_frames([column('label', dtype = str), column('text', dtype = 'str')]))
+def test_split_df_single_dataset_dimension_test_df(singledataframe):
+    '''
+    Test function to test the behaviour of split_single_dataframe function.
+    In this test function is tested that the df_test has the correct 
+    dimension given by the test fraction number.
+
+    Given:
+    =======
+    train_frac, test_frac: floats
+                           Float numbers that represent the fractions in which
+                           the user wants to split the dataset.
+
+    singledataframe: pd.DataFrame
+                     The single dataset that will be split in three dataframes.
     
-    # verify that each dataframe has the correct dimensionality.
-    df_train, df_valid, df_test = df_split
-    assert(len(df_train) == round(train_frac*number_of_rows))
-    assert(df_test.equals(df_fakes[1]))
-    assert(len(df_valid) == number_of_rows - len(df_train))
-
-
-@given(train_fract = st.floats(min_value=0.01, max_value=0.45),
-       test_fract = st.floats(min_value=0.01, max_value=0.45))
-def test_split_two_df(train_fract, test_fract):
+    Tests:
+    ======
+            if the df_test (test dataframe) has the correct dimension
+            (given by the test fraction).
     '''
-    Test function to test the behaviour of split_two_dataframes function.
-    The function takes as input a sequence of two dataframes.
-    One fraction is needed: the train fraction.
-    The second dataframe from the list will not be split (it is assumed to be
-    the test dataset). The first dataframe of the list will be split in two dataframes:
-    the first one is the train dataframe with train fraction of samples from the 
-    original dataframe, while the second one is the validation dataframe with the 
-    remaining samples from the original dataframe.
-    The split dataframes are returned in this orderd: train, validation and test
-    dataframe.
+    # initialize the train and test fraction
+    train_frac, test_frac = 0.80, 0.10
+    # split
+    df_train, df_val, df_test = split_single_dataframe(singledataframe, (train_frac, test_frac), seed = 42)
+    # verify that test dataframe has the correct dimensionality.    
+    assert(len(df_test) == 
+                round(test_frac * (len(df_train) + len(df_val) + len(df_test))))
 
-    @given:
-    =========
-    train_fract: float
-                 Train fraction
+@given(singledataframe = data_frames([column('label', dtype = str), column('text', dtype = 'str')]))
+def test_split_df_single_dataset_dimension_val_df(singledataframe):
+    '''
+    Test function to test the behaviour of split_single_dataframe function.
+    In this test function is tested that the df_val has the correct 
+    dimension.
+
+    Given:
+    =======
+    train_frac, test_frac: floats
+                           Float numbers that represent the fractions in which
+                           the user wants to split the dataset.
+
+    singledataframe: pd.DataFrame
+                     The single dataset that will be split in three dataframes.
     
-    test_frac: float
-               Test fraction
+    Tests:
+    ======
+            if the df_val (validation dataframe) has the correct dimension:
+            which is the length of the initial dataframe minus the length
+            of the train and test dataframe.
     '''
-    number_of_rows = 5000
-    valid_fract = 1. - train_fract - test_fract
-    # divide number of rows between train/valid dataset and test dataset
-    number_of_rows_trainval = round((train_fract+valid_fract)*number_of_rows)
-    number_of_rows_test = number_of_rows - number_of_rows_trainval
-    # generate fake date
-    phases = ('trainval', 'test')
-    rows = (number_of_rows_trainval, number_of_rows_test)
-    df_fakes = create_fake_data(phases, rows)
+    # initialize the train and test fraction
+    train_frac, test_frac = 0.80, 0.10
+    # split
+    df_train, df_val, df_test = split_single_dataframe(singledataframe, (train_frac, test_frac), seed = 42)
+    # verify that validation dataframe has the correct dimensionality.    
+    assert(len(df_val) == 
+                len(singledataframe) - len(df_train) - len(df_test))
 
-    assert(len(df_fakes) == 2) # two dataframes
-    df_split = split_two_dataframes(df_fakes, train_fract, seed = 42)
-
-    # check the splitting
-    assert(len(df_split) == 3) # three dataframes
-    df_train, df_valid, df_test = df_split
-
-    # check the dimensionality of the dataframes
-    assert(len(df_train) == round(train_fract*number_of_rows_trainval))
-    assert(len(df_valid) == number_of_rows_trainval - len(df_train))
-    assert(df_test.equals(df_fakes[1]))
-
-def test_wrong_frac():
+def test_intersection_split_singldf_train_test():
     '''
-    Test function to test the behaviour of split_dataframe when a negative
-    fraction or a fraction greather than one is passed as input.
-    The function raises a ValueError. 
-    Fractions must be two numbers within the interval (0, 1).
-    '''
-    # try with negative value:
-    fractions = (-0.2, 0.2)
-    df_fakes = [pd.DataFrame(), pd.DataFrame()]
-    seed = 42
-
-    # we expect an ValueError
-    with unittest.TestCase.assertRaises(unittest.TestCase,
-                                        expected_exception = ValueError):
-        dfs_error = split_dataframe(df_fakes, fractions, seed)
-
-    # try with fraction greater than 1
-    fractions = (0.2, 1.2)
-
-    # we expect a ValueError
-    with unittest.TestCase.assertRaises(unittest.TestCase,
-                                        expected_exception = ValueError):
-        dfs_error = split_dataframe(df_fakes, fractions, seed)
-
-
-def test_intersection_split_df():
-    '''
-    Test function to test the behaviour of split_dataframe.
+    Test function to test the behaviour of split_single_dataframe.
     In particular, in this test function the empty intersection between split dataframes
-    is checked. We expect that the intersection of dataframes is empty (train with 
-    validation, train with test, test with validation), while the union of the split dataframes
-    need to be equal to the initial dataframe(s).
-    '''
-    number_of_rows = 5000
-    train_fract, test_fract = 0.7, 0.15
-    phases = ('single_df')
-    # generate fake date
-    df_fakes = create_fake_data(phases, (number_of_rows,))
+    is checked. We expect that the intersection between train and test dataframe is empty.
 
-    assert(len(df_fakes) == 1) # single dataframes
-    df_split = split_dataframe(df_fakes, (train_fract, test_fract), seed = 42)
+    Given:
+    =======
+    train_frac, test_frac: floats
+                           Float numbers that represent the fractions in which
+                           the user wants to split the dataset.
 
-    # check the splitting
-    assert(len(df_split) == 3) # three dataframes
-    df_train, df_valid, df_test = df_split
+    singledataframe: pd.DataFrame
+                     The single dataset that will be split in three dataframes.
     
+    Tests:
+    ======
+            if the intersection between train and test dataframe is empty.
+    '''
+    singledataframe = pd.DataFrame({'label': ['A', 'A', 'A', 'B', 'B'],
+                                    'text': ['random', 'try', 'test', 'well', 'good']})
+    train_fract, test_fract = 0.80, 0.10
+    df_train, _, df_test = split_single_dataframe(singledataframe, (train_fract, test_fract), seed = 42)
+    intersection_train_test = pd.merge(df_train, df_test, how = 'inner')
+    assert(intersection_train_test.empty)
 
-    inter_train_val = pd.merge(df_train, df_valid, how = 'inner')
-    inter_train_test = pd.merge(df_train, df_test, how = 'inner')
-    inter_val_test = pd.merge(df_valid, df_test, how = 'inner')
- 
-    # check empty intersections:
-    assert(inter_train_val.empty)
-    assert(inter_train_test.empty)
-    assert(inter_val_test.empty)
+def test_intersection_split_singldf_train_val():
+    '''
+    Test function to test the behaviour of split_single_dataframe.
+    In particular, in this test function the empty intersection between split dataframes
+    is checked. We expect that the intersection between train and validation dataframe is empty.
 
-    # check that union of the dataframes (train, test, validation) is equal to the initial df
-    df_all = pd.merge(df_train, df_valid, how = 'outer')
-    df_all = pd.merge(df_all, df_test, how = 'outer')
+    Given:
+    =======
+    train_frac, test_frac: floats
+                           Float numbers that represent the fractions in which
+                           the user wants to split the dataset.
+
+    singledataframe: pd.DataFrame
+                     The single dataset that will be split in three dataframes.
+    
+    Tests:
+    ======
+            if the intersection between train and validation dataframe is empty.
+    '''
+    singledataframe = pd.DataFrame({'label': ['A', 'A', 'A', 'B', 'B'],
+                                    'text': ['random', 'try', 'test', 'well', 'good']})
+    train_fract, test_fract = 0.80, 0.10
+    df_train, df_valid, _ = split_single_dataframe(singledataframe, (train_fract, test_fract), seed = 42)
+    intersection_train_val = pd.merge(df_train, df_valid, how = 'inner')
+    assert(intersection_train_val.empty)
+
+def test_intersection_split_singldf_test_val():
+    '''
+    Test function to test the behaviour of split_single_dataframe.
+    In particular, in this test function the empty intersection between split dataframes
+    is checked. We expect that the intersection between test and validation dataframe is empty.
+
+    Given:
+    =======
+    train_frac, test_frac: floats
+                           Float numbers that represent the fractions in which
+                           the user wants to split the dataset.
+
+    singledataframe: pd.DataFrame
+                     The single dataset that will be split in three dataframes.
+    
+    Tests:
+    ======
+            if the intersection between validation and test dataframe is empty.
+    '''
+    singledataframe = pd.DataFrame({'label': ['A', 'A', 'A', 'B', 'B'],
+                                    'text': ['random', 'try', 'test', 'well', 'good']})
+    train_fract, test_fract = 0.80, 0.10
+    _, df_valid, df_test = split_single_dataframe(singledataframe, (train_fract, test_fract), seed = 42)
+    intersection_test_val = pd.merge(df_test, df_valid, how = 'inner')
+    assert(intersection_test_val.empty)
+
+def test_union_train_val_test_equal_singledf():
+    '''
+    Test function to test the behaviour of split_single_dataframe.
+    In particular, in this test function the empty intersection between split dataframes
+    is checked. We expect that the union of the split dataframes
+    need to be equal to the initial dataframe.
+
+    Given:
+    =======
+    train_frac, test_frac: floats
+                           Float numbers that represent the fractions in which
+                           the user wants to split the dataset.
+
+    singledataframe: pd.DataFrame
+                     The single dataset that will be split in three dataframes.
+    
+    Tests:
+    ======
+            if the union between the split dataframes (train, validation, test) is equal
+            to the original dataframe.
+    '''
+    singledataframe = pd.DataFrame({'label': ['A', 'A', 'A', 'B', 'B'],
+                                    'text': ['random', 'try', 'test', 'well', 'good']})
+    train_fract, test_fract = 0.80, 0.10
+    df_train, df_valid, df_test = split_single_dataframe(singledataframe, (train_fract, test_fract), seed = 42)
+    df_all = pd.merge(pd.merge(df_train, df_valid, how = 'outer'), df_test, how = 'outer')
+    # resort the value: both for union and the original dataframe
     df_all = df_all.sort_values(by=df_all.columns.tolist()).reset_index(drop=True)
-    df_fakes[0] = df_fakes[0].sort_values(by=df_fakes[0].columns.tolist()).reset_index(drop=True)
-    assert(df_all.equals(df_fakes[0]))
+    singledataframe = singledataframe.sort_values(by=singledataframe.columns.tolist()).reset_index(drop=True)
+    assert(df_all.equals(singledataframe))
 
-    # now let's do the same with the case of two dataframes:
-    number_of_rows = 5000
-    train_fract = 0.7
-    phases = ('train', 'test')
-    # generate fake date
-    df_fakes = create_fake_data(phases, (number_of_rows, 1000))
+@given(train_fract = st.floats(min_value = 0.01, max_value = 0.40),
+       test_fract = st.floats(min_value = 0.01, max_value = 0.49))
+def test_dimension_traindf_from_singledf_with_different_fract(train_fract, test_fract):
+    '''
+    Test function for split_single_dataframe. 
+    In this test function it's tested if the dimension of df_train
+    (train dataframe) is correct testing different values for the fractions
+    (the train and test fractions can vary from 0.01 to 0.49).
 
-    assert(len(df_fakes) == 2) # two initial dataframes
-    df_split = split_dataframe(df_fakes, (train_fract,), seed = 42)
+    Given:
+    =======
+    train_frac, test_frac: floats
+                           Float numbers that represent the fractions in which
+                           the user wants to split the dataset generated by 
+                           a strategy.
 
-    # check the splitting
-    assert(len(df_split) == 3) # three dataframes
-    df_train, df_valid, df_test = df_split
+    singledataframe: pd.DataFrame
+                     The single dataset that will be split in three dataframes.
+    
+    Tests:
+    ======
+            if the df_train (train dataframe) has the correct dimension
+            given by train fraction with different fraction values.
+    '''
+    singledataframe = pd.DataFrame({'text': ['a', 'b', 'c', 'd', 'e',
+                                             'f', 'g', 'h', 'i', 'l']})
+    df_train, df_val, df_test = split_single_dataframe(singledataframe, (train_fract, test_fract), seed = 42)                                                
+    assert(len(df_train) == 
+                round(train_fract * (len(df_train) + len(df_val) + len(df_test))))
 
-    inter_train_val = pd.merge(df_train, df_valid, how = 'inner')
+@given(train_fract = st.floats(min_value = 0.01, max_value = 0.49),
+       test_fract = st.floats(min_value = 0.01, max_value = 0.49))
+def test_dimension_testdf_from_singledf_with_different_fract(train_fract, test_fract):
+    '''
+    Test function for split_single_dataframe. 
+    In this test function it's tested if the dimension of df_test
+    (test dataframe) is correct testing different values for the fractions
+    (the train and test fractions can vary from 0.01 to 0.49).
 
-    # check empty intersection:
-    assert(inter_train_val.empty)
-    assert(df_test.equals(df_fakes[1]))
+    Given:
+    =======
+    train_frac, test_frac: floats
+                           Float numbers that represent the fractions in which
+                           the user wants to split the dataset generated by 
+                           a strategy.
 
-    # now check that union between train, validation dataframes is equal to the initial df
-    df_all = pd.merge(df_train, df_valid, how = 'outer')
-    df_all = df_all.sort_values(by=df_all.columns.tolist()).reset_index(drop=True)
-    df_fakes[0] = df_fakes[0].sort_values(by=df_fakes[0].columns.tolist()).reset_index(drop=True)
-    assert(df_all.equals(df_fakes[0]))
+    singledataframe: pd.DataFrame
+                     The single dataset that will be split in three dataframes.
+    
+    Tests:
+    ======
+            if the df_test (test dataframe) has the correct dimension given
+            by the test fraction with different fraction values.
+    '''
+    singledataframe = pd.DataFrame({'text': ['a', 'b', 'c', 'd', 'e',
+                                             'f', 'g', 'h', 'i', 'l']})
+    df_train, df_val, df_test = split_single_dataframe(singledataframe, (train_fract, test_fract), seed = 42)                                                
+    assert(len(df_test) == 
+                round(test_fract * (len(df_train) + len(df_val) + len(df_test))))
+
+@given(train_fract = st.floats(min_value = 0.01, max_value = 0.49),
+       test_fract = st.floats(min_value = 0.01, max_value = 0.49))
+def test_dimension_valdf_from_singledf_with_different_fract(train_fract, test_fract):
+    '''
+    Test function for split_single_dataframe. 
+    In this test function it's tested if the dimension of df_val
+    (validation dataframe) is correct testing different values for the fractions
+    (the train and test fractions can vary from 0.01 to 0.49).
+
+    Given:
+    =======
+    train_frac, test_frac: floats
+                           Float numbers that represent the fractions in which
+                           the user wants to split the dataset generated by 
+                           a strategy.
+
+    singledataframe: pd.DataFrame
+                     The single dataset that will be split in three dataframes.
+    
+    Tests:
+    ======
+            if the df_val (validation dataframe) has the correct dimension 
+            with different fraction values. The dimension of df_val
+            is equal to the length of the original dataframe minus the
+            length of the train and test dataframe.
+    '''
+    singledataframe = pd.DataFrame({'text': ['a', 'b', 'c', 'd', 'e',
+                                             'f', 'g', 'h', 'i', 'l']})
+    df_train, df_val, df_test = split_single_dataframe(singledataframe, (train_fract, test_fract), seed = 42)                                                
+    assert(len(df_val) == 
+                len(singledataframe) - (len(df_train) + len(df_test)))
+
+def test_negative_fraction_singledf():
+    '''
+    Test function for split_single_dataframe. 
+    In this test function it's tested what's the result when 
+    to the function is passed a negative number as an input fraction.
+
+    Given:
+    ======
+    negative_fract: negative number
+                    Negative float number that will pass as
+                    fraction to the function.
+    
+    singledataframe: pd.DataFrame
+                     The single dataset that will be split in three dataframes.
+    
+    Tests:
+    ======
+            if a negative fraction is passed to the function we expect
+            a ValueError is raised.
+    '''
+    negative_fract = -0.2
+    singledataframe = pd.DataFrame({'text': ['a', 'b', 'c', 'd', 'e',
+                                             'f', 'g', 'h', 'i', 'l']})
+    with unittest.TestCase.assertRaises(unittest.TestCase,
+                                        expected_exception = ValueError):
+        dfs_error = split_single_dataframe(singledataframe, (negative_fract, 0.2), seed = 42)
+
+def test_fraction_greater_than_one_singledf():
+    '''
+    Test function for split_single_dataframe. 
+    In this test function it's tested what's the result when 
+    to the function is passed a fraction number greater than one
+    as an input fraction.
+
+    Given:
+    ======
+    fract_greater_than_one: number greater than 1
+                            Number greater than one that will pass as
+                            input fraction to the function.
+    
+    singledataframe: pd.DataFrame
+                     The single dataset that will be split in three dataframes.
+    
+    Tests:
+    ======
+            if a fraction greater than one is passed to the 
+            function we expect that a ValueError is raised.
+    '''
+    fract_greater_than_one = 1.2
+    singledataframe = pd.DataFrame({'text': ['a', 'b', 'c', 'd', 'e',
+                                             'f', 'g', 'h', 'i', 'l']})
+    with unittest.TestCase.assertRaises(unittest.TestCase,
+                                        expected_exception = ValueError):
+        dfs_error = split_single_dataframe(singledataframe, (fract_greater_than_one, 0.2), seed = 42)
+
+
+@given(df_train_valid = data_frames([column('col', dtype = str)]),
+       df_only_test = data_frames([column('col', dtype = str)]))
+def test_split_two_datasets_in_three(df_train_valid, df_only_test):
+    '''
+    Test function for split_two_dataframes.
+    In this test function it's tested that the output of the function
+    is composed by three elements.
+
+    Given:
+    ======
+    train_frac: float
+                Train fraction number that will be used as train fraction
+                for the function.
+
+    df_train_valid, df_only_test: pd.DataFrame
+                                  Two dataframes that represent the data
+                                  and will be split by the function in 
+                                  three different dataframes (train, 
+                                  validation and test).
+
+    Tests:
+    =======
+            if the function output is a sequence of three elements.  
+    '''
+    # initialize the train and test fraction
+    train_frac = 0.80
+    # split
+    df_split = split_two_dataframes([df_train_valid, df_only_test], train_frac, seed = 42)
+    # verify that df_split is composed by three elements:
+    assert(len(df_split) == 3) 
+
+
+@given(df_train_valid = data_frames([column('col', dtype = str)]),
+       df_original_test = data_frames([column('col', dtype = str)]))
+def test_dimension_train_df_splitting_two_datasets(df_train_valid, df_original_test):
+    '''
+    Test function for split_two_dataframes.
+    In this test function it's tested that the train dataframe
+    df_train has the correct dimension given by the train fraction.
+
+    Given:
+    ======
+    train_frac: float
+                Train fraction number that will be used as train fraction
+                for the function.
+
+    df_train_valid, df_only_test: pd.DataFrame
+                                  Two dataframes that represent the data
+                                  and will be split by the function in 
+                                  three different dataframes (train, 
+                                  validation and test).
+
+    Tests:
+    =======
+            if the df_train has the correct dimension given by the train fraction.  
+    '''
+    # initialize the train and test fraction
+    train_frac = 0.80
+    # split
+    df_train, _, _ = split_two_dataframes([df_train_valid, df_original_test], train_frac, seed = 42)
+    # verify that df_train has the correct dimensionality
+    assert(len(df_train) == round(train_frac*len(df_train_valid)))
+
+@given(df_train_valid = data_frames([column('col', dtype = str)]),
+       df_original_test = data_frames([column('col', dtype = str)]))
+def test_testdf_splitting_two_datasets(df_train_valid, df_original_test):
+    '''
+    Test function for split_two_dataframes.
+    In this test function it's tested that the test dataframe
+    df_test is equal to the second dataset passed as parameter 
+    to the function (in this case: df_only_test).
+
+    Given:
+    ======
+    train_frac: float
+                Train fraction number that will be used as train fraction
+                for the function.
+
+    df_train_valid, df_only_test: pd.DataFrame
+                                  Two dataframes that represent the data
+                                  and will be split by the function in 
+                                  three different dataframes (train, 
+                                  validation and test).
+
+    Tests:
+    =======
+            if the df_test is equal to the original test dataframe df_original_test.  
+    '''
+    # initialize the train and test fraction
+    train_frac = 0.80
+    # split
+    _, _, df_test = split_two_dataframes([df_train_valid, df_original_test], train_frac, seed = 42)
+    # verify that df_test is equal to df_original_test 
+    assert(df_test.equals(df_original_test))
+
+
+@given(df_train_valid = data_frames([column('col', dtype = str)]),
+       df_original_test = data_frames([column('col', dtype = str)]))
+def test_dimension_valdf_splitting_two_datasets(df_train_valid, df_original_test):
+    '''  
+    Test function for split_two_dataframes.
+    In this test function it's tested that the validation dataframe
+    df_val has the correct dimension, which is the length of the 
+    first dataframe minus the length of the train dataframe (df_train).
+
+    Given:
+    ======
+    train_frac: float
+                Train fraction number that will be used as train fraction
+                for the function.
+
+    df_train_valid, df_only_test: pd.DataFrame
+                                  Two dataframes that represent the data
+                                  and will be split by the function in 
+                                  three different dataframes (train, 
+                                  validation and test).
+
+    Tests:
+    =======
+            if the df_val has the correct dimension (length of df_train_valid
+            minus the length of train dataframe).  
+    '''
+    # initialize the train and test fraction
+    train_frac = 0.80
+    # split
+    df_train, df_val, _ = split_two_dataframes([df_train_valid, df_original_test], train_frac, seed = 42)
+    # verify that df_val has the correct dimension 
+    assert(len(df_val) == len(df_train_valid) - len(df_train))
+
+def test_intersection_split_twodfs_train_test():
+    '''
+    Test function for split_two_dataframes.
+    In this test function it's tested that the intersection, 
+    after the splitting, of the datasets between train and test 
+    dataframe is empty.
+
+    Given:
+    ======
+    train_frac: float
+                Train fraction number that will be used as train fraction
+                for the function.
+
+    df_train_valid, df_only_test: pd.DataFrame
+                                  Two dataframes that represent the data
+                                  and will be split by the function in 
+                                  three different dataframes (train, 
+                                  validation and test).
+
+    Tests:
+    =======
+            if the intersection between df_train and df_test is empty.
+    '''
+    df_original_trainval = pd.DataFrame({'label': ['A', 'A', 'B'],
+                                    'text': ['random', 'try', 'test']})
+    df_original_test = pd.DataFrame({'label': ['B', 'A', 'B'],
+                              'text': ['good', 'well', 'great']})
+    train_fract = 0.80
+    df_train, _, df_test = split_two_dataframes([df_original_trainval, df_original_test], train_fract, seed = 42)
+    intersection_train_test = pd.merge(df_train, df_test, how = 'inner')
+    assert(intersection_train_test.empty)
+
+def test_intersection_split_twodfs_train_val():
+    '''
+    Test function for split_two_dataframes.
+    In this test function it's tested that the intersection, 
+    after the splitting, of the datasets between train and validation 
+    dataframe is empty.
+
+    Given:
+    ======
+    train_frac: float
+                Train fraction number that will be used as train fraction
+                for the function.
+
+    df_train_valid, df_only_test: pd.DataFrame
+                                  Two dataframes that represent the data
+                                  and will be split by the function in 
+                                  three different dataframes (train, 
+                                  validation and test).
+
+    Tests:
+    =======
+            if the intersection between df_train and df_val is empty.
+    '''
+    df_original_trainval = pd.DataFrame({'label': ['A', 'A', 'B'],
+                                    'text': ['random', 'try', 'test']})
+    df_original_test = pd.DataFrame({'label': ['B', 'A', 'B'],
+                              'text': ['good', 'well', 'great']})
+    train_fract = 0.80
+    df_train, df_val, _ = split_two_dataframes([df_original_trainval, df_original_test], train_fract, seed = 42)
+    intersection_train_val = pd.merge(df_train, df_val, how = 'inner')
+    assert(intersection_train_val.empty)
+
+def test_intersection_split_twodfs_val_test():
+    '''
+    Test function for split_two_dataframes.
+    In this test function it's tested that the intersection, 
+    after the splitting, of the datasets between test and validation 
+    dataframe is empty.
+
+    Given:
+    ======
+    train_frac: float
+                Train fraction number that will be used as train fraction
+                for the function.
+
+    df_train_valid, df_only_test: pd.DataFrame
+                                  Two dataframes that represent the data
+                                  and will be split by the function in 
+                                  three different dataframes (train, 
+                                  validation and test).
+
+    Tests:
+    =======
+            if the intersection between df_test and df_val is empty.
+    '''
+    df_original_trainval = pd.DataFrame({'label': ['A', 'A', 'B'],
+                                    'text': ['random', 'try', 'test']})
+    df_original_test = pd.DataFrame({'label': ['B', 'A', 'B'],
+                              'text': ['good', 'well', 'great']})
+    train_fract = 0.80
+    _, df_val, df_test = split_two_dataframes([df_original_trainval, df_original_test], train_fract, seed = 42)
+    intersection_val_test = pd.merge(df_val, df_test, how = 'inner')
+    assert(intersection_val_test.empty)
+
+def test_union_trainval_equal_firstdataframe():
+    '''
+    Test function for split_two_dataframes.
+    In this test function it's tested that the union, 
+    after the splitting, of the train and validation 
+    dataframe is equal to the df_train_valid dataframe.
+
+    Given:
+    ======
+    train_frac: float
+                Train fraction number that will be used as train fraction
+                for the function.
+
+    df_train_valid, df_only_test: pd.DataFrame
+                                  Two dataframes that represent the data
+                                  and will be split by the function in 
+                                  three different dataframes (train, 
+                                  validation and test).
+
+    Tests:
+    =======
+            if the union of the train and validation dataframe is 
+            equal to df_train_valid.
+    '''
+    df_original_trainval = pd.DataFrame({'label': ['A', 'A', 'B'],
+                                    'text': ['random', 'try', 'test']})
+    df_original_test = pd.DataFrame({'label': ['B', 'A', 'B'],
+                              'text': ['good', 'well', 'great']})
+    train_fract = 0.80
+    df_train, df_valid, _ = split_two_dataframes([df_original_trainval, df_original_test], train_fract, seed = 42)
+    df_trainval = pd.merge(df_train, df_valid, how = 'outer')
+    # resort the value: both for union and the original dataframe
+    df_trainval = df_trainval.sort_values(by=df_trainval.columns.tolist()).reset_index(drop=True)
+    df_original_trainval = df_original_trainval.sort_values(by=df_original_trainval.columns.tolist()).reset_index(drop=True)
+    assert(df_trainval.equals(df_original_trainval))
+
+
+@given(train_fract = st.floats(min_value = 0.01, max_value = 0.99))
+def test_dimension_traindf_from_twodfs_with_different_fract(train_fract):
+    '''
+    Test function for split_two_dataframes.
+    In this test function it's tested that the train dataframe (df_train)
+    has the correct dimension given by the train fraction, which is 
+    generated by a strategy with value between 0.01 and 0.99.
+
+    Given:
+    ======
+    train_frac: float
+                Train fraction number that will be used as train fraction
+                for the function.
+
+    df_train_valid, df_only_test: pd.DataFrame
+                                  Two dataframes that represent the data
+                                  and will be split by the function in 
+                                  three different dataframes (train, 
+                                  validation and test).
+
+    Tests:
+    =======
+            if the dimension of df_train (train dataframe) is correct 
+            (given by train fraction).
+    '''
+    df_original_trainval = pd.DataFrame({'text': ['a', 'b', 'c', 'd', 'e']})
+    df_original_test = pd.DataFrame({'text': ['f', 'g', 'h', 'i', 'l']})
+
+    df_train, df_val, _ = split_two_dataframes([df_original_trainval, df_original_test], train_fract, seed = 42)                                                
+    assert(len(df_train) == 
+                round(train_fract * (len(df_train) + len(df_val))))
+
+
+@given(train_fract = st.floats(min_value = 0.01, max_value = 0.99))
+def test_dimension_valdf_from_twodfs_with_different_fract(train_fract):
+    '''
+    Test function for split_two_dataframes.
+    In this test function it's tested that the validation dataframe (df_val)
+    has the correct dimension, which is length of the original dataframe minus
+    the length of df_train. The train fraction to obtain df_train is generated
+    by a strategy with value between 0.01 and 0.99.
+
+    Given:
+    ======
+    train_frac: float
+                Train fraction number that will be used as train fraction
+                for the function.
+
+    df_train_valid, df_only_test: pd.DataFrame
+                                  Two dataframes that represent the data
+                                  and will be split by the function in 
+                                  three different dataframes (train, 
+                                  validation and test).
+
+    Tests:
+    =======
+            if the dimension of df_val (train dataframe) is correct 
+            (length of df_train_valid - length of df_val).
+    '''
+    df_original_trainval = pd.DataFrame({'text': ['a', 'b', 'c', 'd', 'e']})
+    df_original_test = pd.DataFrame({'text': ['f', 'g', 'h', 'i', 'l']})
+
+    df_train, df_val, _ = split_two_dataframes([df_original_trainval, df_original_test], train_fract, seed = 42)                                                
+    assert(len(df_val) == len(df_original_trainval) - len(df_train))
+
+
+def test_negative_fraction_twodfs():
+    '''
+    Test function for split_two_dataframes.
+    In this test function it's tested what's the result if 
+    the fraction passed as parameter to the function is negative.
+    We expect that a ValueError is raised.
+
+    Given:
+    ======
+    negative_fract: negative number
+                    Negative fraction number that will be used as fraction
+                    for the function.
+
+    df_train_valid, df_only_test: pd.DataFrame
+                                  Two dataframes that represent the data
+                                  and will be split by the function in 
+                                  three different dataframes (train, 
+                                  validation and test).
+
+    Tests:
+    ======
+            if it's raised a ValueError, since the user passed a negative
+            number as fraction.
+    '''
+    negative_fract = -0.2
+    df_original_trainval = pd.DataFrame({'text': ['a', 'b', 'c']})
+    df_original_test = pd.DataFrame({'text': ['f', 'g', 'h']})
+    with unittest.TestCase.assertRaises(unittest.TestCase,
+                                        expected_exception = ValueError):
+        dfs_error = split_two_dataframes([df_original_trainval, df_original_test], negative_fract,  seed = 42)
+
+
+def test_fraction_greather_than_one_twodfs():
+    '''
+    Test function for split_two_dataframes.
+    In this test function it's tested what's the result if 
+    the fraction passed as parameter to the function is greater than one.
+    We expect that a ValueError is raised.
+
+    Given:
+    ======
+    fract_greater_than_one: number greater than one
+                            Fraction number greater than one,
+                            that will be used as fraction for the function.
+
+    df_train_valid, df_only_test: pd.DataFrame
+                                  Two dataframes that represent the data
+                                  and will be split by the function in 
+                                  three different dataframes (train, 
+                                  validation and test).
+
+    Tests:
+    ======
+            if it's raised a ValueError, since the user passed a fraction number
+            greater than one.
+    '''
+    fraction_greather_than_one = 1.2
+    df_original_trainval = pd.DataFrame({'text': ['a', 'b', 'c']})
+    df_original_test = pd.DataFrame({'text': ['f', 'g', 'h']})
+    with unittest.TestCase.assertRaises(unittest.TestCase,
+                                        expected_exception = ValueError):
+        dfs_error = split_two_dataframes([df_original_trainval, df_original_test], fraction_greather_than_one,  seed = 42)
+
