@@ -54,10 +54,6 @@ def split_dataframe(dataframes_list: tuple[pd.DataFrame],
               Test dataframe after splitting operation.
     '''
 
-    if (np.array(fractions) >= 1).any() or (np.array(fractions) <= 0).any():
-        raise ValueError("Fractions have to be float number"
-                          "between 0 and 1")
-
     if len(dataframes_list) == 2:
         train_frac, *_ = fractions
         df_train, df_valid, df_test = split_two_dataframes(dataframes_list,
@@ -68,11 +64,6 @@ def split_dataframe(dataframes_list: tuple[pd.DataFrame],
         df_train, df_valid, df_test = split_single_dataframe(dataframes_list[0],
                                                             (train_frac, test_frac),
                                                              seed)
-
-    df_train = df_train.reset_index(drop = True)
-    df_valid = df_valid.reset_index(drop = True)
-    df_test = df_test.reset_index(drop = True)
-
     return df_train, df_valid, df_test
 
 
@@ -112,6 +103,9 @@ def split_single_dataframe(single_df: pd.DataFrame,
     df_test: pd.DataFrame
               Test dataframe after splitting operation.
     '''
+    if (np.array(fractions) >= 1).any() or (np.array(fractions) <= 0).any():
+      raise ValueError("Fractions have to be float number"
+                        "between 0 and 1")
     train_frac, test_frac = fractions
     df_test = single_df.sample(frac = test_frac, random_state = seed)
     df_train_val = single_df.drop(df_test.index)
@@ -166,6 +160,9 @@ def split_two_dataframes(dataframes: tuple[pd.DataFrame],
     df_test: pd.DataFrame
               Test dataframe after splitting operation.
     '''
+    if (train_frac >= 1) or (train_frac <= 0):
+      raise ValueError("Fractions have to be float number"
+                        "between 0 and 1")
     n_frac = round( len(dataframes[0]) * train_frac)
     df_train = dataframes[0].sample(n = n_frac, random_state = seed)
     df_valid = dataframes[0].drop(df_train.index)
