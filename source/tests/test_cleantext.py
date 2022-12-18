@@ -279,6 +279,27 @@ def test_remove_initial_tag():
     text_without_tag = remove_urls_tags(text_with_tag)
     assert(text_without_tag== ' Hello World')
 
+def test_remove_tag_and_url():
+    '''
+    This test function tests the behaviour of remove_url_tag function.
+    In particular, in this test function it's tested what's the result
+    if a string is composed only by a tag and a URL.
+
+    Given:
+    ======
+    text_with_tag_and_url: str
+                           Text composed only by a tag and an URL.
+
+    Tests:
+    =======
+            The output text should be an empty string composed only
+            by whitespaces.
+    '''
+    text_with_tag_and_url = '<TEXT> http://wikipedia.com'
+    text_without_tag_and_url = remove_urls_tags(text_with_tag_and_url)
+    assert(text_without_tag_and_url== ' ')
+
+
 def test_remove_final_tag():
     '''
     This test function tests the behaviour of remove_url_tag function.
@@ -404,7 +425,7 @@ def test_rm_specialchars():
     '''
     This test function tests the behaviour of remove_noalphanum function.
     In particular, this test function tests that special characters are eliminated 
-    from the initial text (special characters: #, @, -, _ etc...)
+    from the initial text (special characters: #, @ etc...)
 
     Given:
     ======
@@ -413,11 +434,31 @@ def test_rm_specialchars():
 
     Tests:
     ======
-          The output string should not contain any special characters.
+          The output string should not contain any special characters 
+          (instead of the special characters we will find whitespaces).
     '''
-    text_with_spec_chars = "special chars _-#@><-*+"
+    text_with_spec_chars = "special chars #@><-*+/"
     text_no_spec_chars = remove_noalphanum(text_with_spec_chars)
-    assert(text_no_spec_chars == "special chars          ")
+    assert(text_no_spec_chars == 'special chars         ')
+
+def test_rm_underscores():
+    '''
+    This test function tests the behaviour of remove_noalphanum function.
+    In particular, this test function tests that underscores are eliminated 
+    from the initial text.
+
+    Given:
+    ======
+    text_with_underscore: str
+                          Text string with underscores.
+
+    Tests:
+    ======
+          The output string should not contain any underscores.
+    '''
+    text_with_underscores = "test __"
+    text_no_underscores = remove_noalphanum(text_with_underscores)
+    assert(text_no_underscores == "test   ")
 
 def test_rm_quot_marks():
     '''
@@ -476,24 +517,6 @@ def test_clean_url():
     text_no_url = clean_text(text_with_url)
     assert(text_no_url == "wikipedia site")
 
-def test_clean_tag():
-    '''
-    Test function to test behaviour of clean_text function.
-    In this test function it is tested what's the result if 
-    inside the text there is a tag.
-
-    Given:
-    ======
-    text_with_tag: str
-                   Text with tag.
-    
-    Tests:
-    ======
-            The output string should be a text without tag.
-    '''
-    text_with_tag = "<NAME> flavio <NAME>"
-    text_no_tag = clean_text(text_with_tag)
-    assert(text_no_tag == "flavio")
     
 def test_clean_tag():
     '''
@@ -596,24 +619,25 @@ def test_clean_specialchars():
     assert(text_no_specialchars == "hello world my name is flavio")
 
 
-def test_clean_emoticons():
+def test_clean_emoticons_and_cap_letters():
     '''
     Test function to test behaviour of clean_text function.
     In this test function it is tested what's the results
-    if inside the text there are emoticons.
+    if inside the text there are emoticons and capital letters.
 
     Given:
     ======
-    text_with_emoticons: str
-                            Text with special characters.
+    text_with_emoticons_and_cap_letters: str
+                                         Text with emoticons and capital letters.
     
     Tests:
     ======
-            The output string should be a text without emoticons.
+            The output string should be a text without emoticons and 
+            wiht only lowercase letters.
     '''
-    text_with_emoticons = '\U0000274C this is a cross mark'
-    text_no_emoticons = clean_text(text_with_emoticons)
-    assert(text_no_emoticons == "this is a cross mark")
+    text_with_emoticons_and_cap_letters = '\U0000274C This is a Cross Mark'
+    text_no_emoticons_and_cap_letters = clean_text(text_with_emoticons_and_cap_letters)
+    assert(text_no_emoticons_and_cap_letters == "this is a cross mark")
 
 
 def test_stopword():
@@ -640,6 +664,62 @@ def test_stopword():
     text_no_stopword = stopword(text_with_stopwords)
     assert(text_no_stopword == 'random sentence see works')
 
+def test_no_stopwords_in_text():
+    '''
+    This test function tests the behaviour of stopword function.
+    The idea is to remove all the words present in the stop list 
+    for the english vocabulary, because they are meaningless.
+    The list of the all stop words can be seen with these lines of code.
+    import nltk
+    nltk.download('stopwords')
+    from nltk.corpus import stopwords
+    print(stopwords.words('english')) 
+
+    In this test function it's tested what's the result if within the 
+    input text there are no stop words.
+
+    Given:
+    ======
+    text_without_stopwords: str
+                            Text without stop words.
+    
+    Tests:
+    ======
+            The output string should be equal to the input text, since
+            it doesn't contain any stop word.
+    '''
+    text_without_stopwords = "random sentence without stop words"
+    text_no_stopword = stopword(text_without_stopwords)
+    assert(text_no_stopword == 'random sentence without stop words')
+
+
+def test_only_stopwords_in_text():
+    '''
+    This test function tests the behaviour of stopword function.
+    The idea is to remove all the words present in the stop list 
+    for the english vocabulary, because they are meaningless.
+    The list of the all stop words can be seen with these lines of code.
+    import nltk
+    nltk.download('stopwords')
+    from nltk.corpus import stopwords
+    print(stopwords.words('english')) 
+
+    In this test function it's tested what's the result if within the 
+    input text there are only stop words.
+
+    Given:
+    ======
+    text_with_only_stopwords: str
+                              Text composed by only stop words.
+    
+    Tests:
+    ======
+            The output string should be an empty string (""), since
+            the original string is composed only by stop words.
+    '''
+    text_with_only_stopwords = "how are you"
+    text_no_stopword = stopword(text_with_only_stopwords)
+    assert(text_no_stopword == '')
 
 def test_lemmatizer():
     '''
@@ -659,6 +739,28 @@ def test_lemmatizer():
     text_to_lemmatize = "the striped bats are hanging on their feet for best"
     lemmatized_text = lemmatizer(text_to_lemmatize)
     assert(lemmatized_text == 'the striped bat be hang on their foot for best')
+
+def test_lemmatizer_text_already_lemmatized():
+    '''
+    Test function to test the behaviour of lemmatizer function.
+    The lemmatizer function takes a text (string) as input and lemmatize the text.
+    This test function tests what's the result if the input text to lemmatizer 
+    is already lemmatized.    
+
+    Given:
+    ======
+    text_already_lemmatized: str
+                             Text string already lemmatized.
+    
+    Tests:
+    ======
+            The output text should be equal to the input text string
+            since the original string is already lemmatized.
+    '''
+    text_already_lemmatized = "I play basketball in my free time"
+    lemmatized_text = lemmatizer(text_already_lemmatized)
+    assert(lemmatized_text == "I play basketball in my free time")
+
 
 def test_get_wordnet_pos():
     '''
