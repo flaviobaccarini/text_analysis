@@ -14,53 +14,15 @@ from pathlib import Path
 import sys
 import configparser
 
-
-def find_initial_columns(analysis_name: str) -> tuple[str]:
-    '''
-    This function is used to get the original column names 
-    for text and labels in the initial dataset.
-    The possible analysis are three: "covid", "spam", "disaster".
-
-    Parameters:
-    ============
-    analysis_name: str
-                   Name of the analysis the user wants to do.
-    
-    Raise:
-    ======
-    ValueErorr: if the analysis_name is not "covid", "spam", "disaster"
-
-    Returns:
-    =========
-    column_names: tuple[str]
-                  Sequence that contains the column names (for text and labels)
-                  for the selected dataset to analyze.
-    '''
-    if analysis_name not in ("covid", "spam", "disaster"):
-        raise ValueError("Wrong analyis name."+
-                        f' Passed {analysis_name}'+
-                         ' but it has to be "covid", "spam" or "disaster".')
-    column_names_list = [{'analysis': 'covid',
-                          'text_column': 'tweet',
-                          'label_column': 'label'},
-                          {'analysis': 'spam',
-                           'text_column': 'original_message',
-                           'label_column': 'spam'},
-                           {'analysis': 'disaster',
-                            'text_column': 'text',
-                            'label_column': 'target'}]
-    analysis_index = next((index for (index, d) in enumerate(column_names_list)
-                                             if d["analysis"] == analysis_name), None)
-    column_names = (column_names_list[analysis_index]['text_column'],
-                    column_names_list[analysis_index]['label_column'])
-    return column_names
-
 def main():
     config_parse = configparser.ConfigParser()
     configuration = config_parse.read(sys.argv[1])
     
     analysis_folder = config_parse.get('ANALYSIS', 'folder_name')
+    text_col_name = config_parse.get('ANALYSIS', 'text_column_name')
+    label_col_name = config_parse.get('ANALYSIS', 'label_column_name')
     seed = int(config_parse.get('PREPROCESS', 'seed'))
+    
     dataset_folder = Path('../datasets') / analysis_folder
 
     dfs_raw = read_data(dataset_folder)
@@ -71,8 +33,6 @@ def main():
         fractions =    (float(config_parse.get('PREPROCESS', 'train_fraction')),
                         float(config_parse.get('PREPROCESS', 'test_fraction')))
         dfs_raw = split_dataframe(dfs_raw, fractions, seed)
-
-    text_col_name, label_col_name = find_initial_columns(analysis_folder)
 
     dfs_processed = []
     for df in dfs_raw:
