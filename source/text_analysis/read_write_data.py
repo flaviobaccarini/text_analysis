@@ -6,7 +6,6 @@ and the writing of the processed data after the preproccessing step.
 '''
 from pathlib import Path
 import pandas as pd
-import numpy as np
 
 def get_paths(filenames: list[str]) -> dict:
     '''
@@ -35,7 +34,7 @@ def get_paths(filenames: list[str]) -> dict:
                are only two files.
     '''
     path_dict = {'train': None, 'val': None, 'test': None}
-    filenames_remaining = filenames
+    filenames_remaining = filenames.copy()
 
     for phase in path_dict:
         path_dict[phase] = [csv_path for csv_path in filenames if phase in str(csv_path).lower()]
@@ -49,9 +48,10 @@ def get_paths(filenames: list[str]) -> dict:
             path_dict[phase] = path_dict[phase][0]
             filenames_remaining.remove(path_dict[phase])
 
-    # if in the filenames_remaining there is one element: initialize the  
-    # path_dict['test'] with this file name
-    if len(filenames_remaining) == 1:
+    # if in the filenames_remaining there is one element and 
+    # at the beginning there are two file inside the folder:
+    #  initialize the path_dict['test'] with this file name
+    if (len(filenames_remaining) == 1) and (len(filenames) == 2):
         path_dict['test'] = filenames_remaining[0]
 
     return path_dict
