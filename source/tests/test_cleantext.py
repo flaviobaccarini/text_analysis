@@ -5,8 +5,6 @@ import numpy as np
 import pandas as pd
 import nltk
 from nltk.tokenize import word_tokenize
-from hypothesis import strategies as st
-from hypothesis import given
 from text_analysis.cleantext import lower_strip, finalpreprocess
 from text_analysis.cleantext import remove_urls_tags, get_wordnet_pos
 from text_analysis.cleantext import remove_noalphanum, stopword
@@ -52,7 +50,7 @@ def test_lower_some_capital_letters():
     text_lower = lower_strip(capital_text)
     assert(text_lower == 'hello world')
 
-def test_lower_some_capital_letters():
+def test_lower_no_capital_letters():
     '''
     This test function tests the behaviour of lower_strip function.
     In particular, in this test function the lower part is tested 
@@ -111,7 +109,7 @@ def test_rm_middle_whitespaces():
     Tests:
     ======
          The output text should be the original text without the big
-         whitespace in the middle (only a single whitespace: ' ').
+         whitespace in the middle (replaced by only a single whitespace: ' ').
     '''
     text_with_whitespaces = 'hello         world' 
     text_no_whitespaces = lower_strip(text_with_whitespaces)
@@ -140,23 +138,6 @@ def test_rm_final_whitespaces():
     text_no_whitespaces = lower_strip(text_with_whitespaces)
     assert(text_no_whitespaces == 'hello world')
 
-# TODO: PROBABILMENTE DA ELIMINARE
-@given(text = st.text(min_size = 0, max_size = 20))
-def test_lower_strip(text):
-    '''
-    This test function tests the behaviour of the lower_strip function
-    with some random text given as input.
-    
-    @given:
-    ========
-    text: str
-          Random generated text.
-    '''
-    # 1) lower the text; 2) strip the text; 3) remove whitespaces
-    correct_text = " ".join(text.lower().split())
-    text_from_function = lower_strip(text)
-    assert(text_from_function == correct_text)
-
 def test_rm_final_url():
     '''
     This test function tests the behaviour of remove_url_tag function.
@@ -171,7 +152,7 @@ def test_rm_final_url():
     Tests:
     ======
          The final text after the function doesn't include the URL at
-         the end.
+         the end: it is replaced by a whitespace.
     '''
     text_with_url = 'This is wikipedia site: https://en.wikipedia.org/wiki'
     text_without_url =  remove_urls_tags(text_with_url)
@@ -191,7 +172,7 @@ def test_rm_initial_url():
     Tests:
     ======
          The final text after the function doesn't include the URL at
-         the beninning.
+         the beninning: it is replaced by a whitespace.
     '''
     text_with_url = 'https://en.wikipedia.org/wiki this is wikipedia site'
     text_without_url =  remove_urls_tags(text_with_url)
@@ -208,12 +189,12 @@ def test_rm_middle_url():
     Given:
     ======
     text_with_url: str
-                   Text with URL at the end of the text.
+                   Text with URL at the middle of the text.
     
     Tests:
     ======
-         The final text after the function doesn't include the URL at
-         the end.
+         The final text after the function doesn't include the URL within
+         the text, but it's replaced by a whitespace.
     '''
     text_with_url = 'The wikipedia site https://en.wikipedia.org/wiki is here'
     text_without_url =  remove_urls_tags(text_with_url)
@@ -223,7 +204,7 @@ def test_rm_middle_url():
 def test_rm_no_tags_or_url():
     '''
     This test function tests the behaviour of remove_url_tag function.
-    In this test function the text doesn't contain any tags or URLs,
+    In this test function the input text doesn't contain any tags or URLs,
     so it should not change after the function,
 
     Given:
@@ -233,8 +214,8 @@ def test_rm_no_tags_or_url():
     
     Tests:
     ======
-         The final text should be equal to the input text, since
-         it does not contain any URLs or tags.
+         The final output text should be equal to the input text, since
+         it doesn't contain any URLs or tags.
     '''
     text_no_tag_or_url = 'Hello World'
     text_without_url =  remove_urls_tags(text_no_tag_or_url)
@@ -243,7 +224,7 @@ def test_rm_no_tags_or_url():
 def test_rm_only_url():
     '''
     This test function tests the behaviour of remove_url_tag function.
-    In this test function the input text contains only a URL.
+    In this test function the input text contains only an URL.
 
     Given:
     ======
@@ -273,7 +254,7 @@ def test_remove_initial_tag():
     Tests:
     =======
             The output text should be the text without the
-            tag at the beginning.
+            tag at the beginning: it is replaced by a whitespace.
     '''
     text_with_tag = '<TEXT> Hello World'
     text_without_tag = remove_urls_tags(text_with_tag)
@@ -314,7 +295,7 @@ def test_remove_final_tag():
     Tests:
     =======
             The output text should be the text without the
-            tag at the end.
+            tag at the end: it is replaced by a whitespace.
     '''
     text_with_tag = 'Hello World <TEXT>'
     text_without_tag = remove_urls_tags(text_with_tag)
@@ -375,7 +356,7 @@ def test_remove_two_tags():
     Tests:
     =======
             The output string should be the initial text without the 
-            two tags..
+            two tags (so the text between the two tags).
     '''
     text_with_tags = '<TEXT> Hello World <TEXT>'
     text_without_tag = remove_urls_tags(text_with_tags)
@@ -384,17 +365,18 @@ def test_remove_two_tags():
 def test_rm_punctuations():
     '''
     This test function tests the behaviour of remove_noalphanum function.
-    In particular, this test function tests that all the punctuations are eliminated 
+    In particular, this test function tests that all the punctuation is eliminated 
     from the initial string.
 
     Given:
     ======
     text_with_punctuations: str
-                            Text string with punctuations.
+                            Text string with punctuation.
 
     Tests:
     ======
-          The output string should not contain any punctuations.
+          The output string should not contain any punctuation.
+          Punctuation is replaced by a whitespace.
     '''
     text_with_punctuations = "Hello world, some punctuations!?"
     text_no_punct = remove_noalphanum(text_with_punctuations)
@@ -414,7 +396,8 @@ def test_rm_emoticons():
 
     Tests:
     ======
-          The output string should not contain any emoticons.
+          The output string should not contain any emoticons (each emoticon 
+          is replaced by a whitespace).
     '''
     text_with_emoticons = "emoticons \U0000274C\U0001f600\U0001F436\U0001F534"
     text_no_emoticons = remove_noalphanum(text_with_emoticons)
@@ -468,12 +451,13 @@ def test_rm_quot_marks():
 
     Given:
     ======
-    text_with_quot_makrs: str
+    text_with_quot_marks: str
                           Text string with quotation marks.
 
     Tests:
     ======
-          The output string should not contain any quotation marks.
+          The output string should not contain any quotation marks
+          (replaced with whitespaces).
     '''
     text_with_quot_marks = 'try with "hello"'
     text_no_quot_marks = remove_noalphanum(text_with_quot_marks)
@@ -483,12 +467,12 @@ def test_rm_apostrophe():
     '''
     This test function tests the behaviour of remove_noalphanum function.
     In particular, this test function tests that apostrophes are eliminated 
-    from the initial text.
+    from the input text.
 
     Given:
     ======
     text_with_apostrophe: str
-                          Text string with apostrophe.
+                          Text string with apostrophes.
 
     Tests:
     ======
@@ -498,146 +482,127 @@ def test_rm_apostrophe():
     text_no_apostrophe = remove_noalphanum(text_with_aposrophe)
     assert(text_no_apostrophe == "i m flavio let s try")
 
-def test_clean_url():
+def test_clean_text_capital_letters_punctuation():
     '''
-    Test function to test behaviour of clean_text function.
-    In this test function it is tested  what's the result if
-    inside the text there is a URL.
+    Test function for clean_text.
+    In this test function it's tested if clean_text correctly removes
+    punctuation and make all the letters lowercase.
 
     Given:
     ======
-    text_with_url: str
-                   Text with url.
+    text_punctuation_capital_letters: str
+                                      Text with capital letters and punctuation.
     
     Tests:
     ======
-            The output string should be a text without URL.
+            if the output string doesn't contain punctuation and if it has all the
+            letters lowercase.
     '''
-    text_with_url = "wikipedia site https://en.wikipedia.org/wiki"
-    text_no_url = clean_text(text_with_url)
-    assert(text_no_url == "wikipedia site")
+    text_punctuation_capital_letters = 'Hello World, i am Flavio!'
+    text_no_punct_lowercase = clean_text(text_punctuation_capital_letters)
+    assert(text_no_punct_lowercase == 'hello world i am flavio')
 
-    
-def test_clean_tag():
+def test_clean_text_capital_letters_tag():
     '''
-    Test function to test behaviour of clean_text function.
-    In this test function it is tested what's the result 
-    if inside the text there is a tag.
+    Test function for clean_text.
+    In this test function it's tested if clean_text correctly removes
+    tags and make all the letters lowercase.
 
     Given:
     ======
-    text_with_tag: str
-                   Text with tag.
+    text_tags_capital_letters: str
+                               Text with capital letters and tags.
     
     Tests:
     ======
-            The output string should be a text without tag.
+            if the output string doesn't contain tags and if it has all the
+            letters lowercase.
     '''
-    text_with_tag = "<NAME> flavio <NAME>"
-    text_no_tag = clean_text(text_with_tag)
-    assert(text_no_tag == "flavio")
-    
-def test_clean_punct():
+    text_tags_capital_letters = '<TEXT> HELLO WORLD <TEXT>'
+    text_no_punct_lowercase = clean_text(text_tags_capital_letters)
+    assert(text_no_punct_lowercase == 'hello world')
+
+def test_clean_text_capital_letters_url():
     '''
-    Test function to test behaviour of clean_text function.
-    In this test function it is tested what's the results
-    if inside the text there are punctuations.
+    Test function for clean_text.
+    In this test function it's tested if clean_text correctly removes
+    URL and make all the letters lowercase.
 
     Given:
     ======
-    text_with_punct: str
-                     Text with punctuations.
+    text_url_capital_letters: str
+                              Text with capital letters and a URL.
     
     Tests:
     ======
-            The output string should be a text without punctuations.
+            if the output string doesn't contain the URL and if it has all the
+            letters lowercase.
     '''
-    text_with_punct = "hello, my name is flavio!"
-    text_no_punct = clean_text(text_with_punct)
-    assert(text_no_punct == "hello my name is flavio")
-    
-  
-def test_clean_whitespaces():
+    text_url_capital_letters = 'Visit the Wikipedia site http://wikipedia.com'
+    text_no_punct_lowercase = clean_text(text_url_capital_letters)
+    assert(text_no_punct_lowercase == 'visit the wikipedia site')
+
+def test_clean_text_whitespaces_punctuation():
     '''
-    Test function to test behaviour of clean_text function.
-    In this test function it is tested what's the results
-    if inside the text there are big whitespaces.
+    Test function for clean_text.
+    In this test function it's tested if clean_text correctly removes
+    big whitespaces within the text and also the punctuation.
 
     Given:
     ======
-    text_with_whitespaces: str
-                           Text with big whitespaces.
+    text_big_whitespace_punctuation: str
+                                     Text with a big whitespace within the text
+                                     and some punctuation.
     
     Tests:
     ======
-            The output string should be a text containing only
-            single whitespaces (only ' ').
+            if the output string doesn't contain the big whitespace (but only a single
+            character whitespace) and if it doesn't contain punctuation.
     '''
-    text_with_whitespaces = "hello    world  my   name    is    flavio"
-    text_no_whitespaces = clean_text(text_with_whitespaces)
-    assert(text_no_whitespaces == "hello world my name is flavio")
-    
-def test_clean_capital_letters():
+    text_url_capital_letters = 'hello world,      i     am   flavio!'
+    text_no_punct_lowercase = clean_text(text_url_capital_letters)
+    assert(text_no_punct_lowercase == 'hello world i am flavio')
+
+def test_clean_text_specialchars_url():
     '''
-    Test function to test behaviour of clean_text function.
-    In this test function it is tested what's the results
-    if inside the text there are big capital letters.
+    Test function for clean_text.
+    In this test function it's tested if clean_text correctly removes
+    special characters and URL from the input text.
 
     Given:
     ======
-    text_with_capitals: str
-                        Text with capital letters.
+    text_URL_specialchars_punctuation: str
+                                       Text with a URL and special characters.
     
     Tests:
     ======
-            The output string should be a text containing only
-            lowercase letters.
+            if the output string doesn't contain the URL and special characters.
     '''
-    text_with_capitals = "Hello World MY NAME is FLAviO "
-    text_no_capitals = clean_text(text_with_capitals)
-    assert(text_no_capitals == "hello world my name is flavio")
-    
+    text_url_capital_letters = 'visit the #wikipedia site http://wikipedia.com'
+    text_no_punct_lowercase = clean_text(text_url_capital_letters)
+    assert(text_no_punct_lowercase == 'visit the wikipedia site')
 
-def test_clean_specialchars():
+def test_clean_text_specialchars_cap_letters_emoticons():
     '''
-    Test function to test behaviour of clean_text function.
-    In this test function it is tested what's the results
-    if inside the text there are big special characters.
+    Test function for clean_text.
+    In this test function it's tested if clean_text correctly removes
+    special characters, emoticons and makes all the capital letters
+    as lowercase
 
     Given:
     ======
-    text_with_specialchars: str
-                            Text with special characters.
+    text_specialchars_capletters_emoticons: str
+                                            Text with special characters, capital letters
+                                            and emoticons.
     
     Tests:
     ======
-            The output string should be a text without special 
-            characters.
+            if the output string doesn't contain the special characters, emoticons and 
+            all the letters are lowercase.
     '''
-    text_with_specialchars = "#hello #world my name is @flavio"
-    text_no_specialchars = clean_text(text_with_specialchars)
-    assert(text_no_specialchars == "hello world my name is flavio")
-
-
-def test_clean_emoticons_and_cap_letters():
-    '''
-    Test function to test behaviour of clean_text function.
-    In this test function it is tested what's the results
-    if inside the text there are emoticons and capital letters.
-
-    Given:
-    ======
-    text_with_emoticons_and_cap_letters: str
-                                         Text with emoticons and capital letters.
-    
-    Tests:
-    ======
-            The output string should be a text without emoticons and 
-            wiht only lowercase letters.
-    '''
-    text_with_emoticons_and_cap_letters = '\U0000274C This is a Cross Mark'
-    text_no_emoticons_and_cap_letters = clean_text(text_with_emoticons_and_cap_letters)
-    assert(text_no_emoticons_and_cap_letters == "this is a cross mark")
+    text_url_capital_letters = 'Random emoticon \U00002666 only for #Testing purpose'
+    text_no_punct_lowercase = clean_text(text_url_capital_letters)
+    assert(text_no_punct_lowercase == 'random emoticon only for testing purpose')
 
 
 def test_stopword():
@@ -692,6 +657,34 @@ def test_no_stopwords_in_text():
     text_no_stopword = stopword(text_without_stopwords)
     assert(text_no_stopword == 'random sentence without stop words')
 
+def test_stopword_capital_letters():
+    '''
+    This test function tests the behaviour of stopword function.
+    The idea is to remove all the words present in the stop list 
+    for the english vocabulary, because they are meaningless.
+    The list of the all stop words can be seen with these lines of code.
+    import nltk
+    nltk.download('stopwords')
+    from nltk.corpus import stopwords
+    print(stopwords.words('english')) 
+
+    In this test function it's tested what's the result if within the 
+    input text there are stop words with capital letters.
+
+    Given:
+    ======
+    text_with_capital_stopwords: str
+                                 Text with stop words with capital letters.
+    
+    Tests:
+    ======
+            The output string should be equal to the input text, since
+            it the stop words present in nltk are all lowercase and so
+            it is not able to remove stop words with capital letters.
+    '''
+    text_with_stopwords = "A random sentence To see How It works"
+    text_no_stopword = stopword(text_with_stopwords)
+    assert(text_no_stopword == 'A random sentence To see How It works')
 
 def test_only_stopwords_in_text():
     '''
@@ -726,6 +719,8 @@ def test_lemmatizer():
     Test function to test the behaviour of lemmatizer function.
     The lemmatizer function takes a text (string) as input and lemmatize the text.
     The output is the lemmatized text.
+    In this test function it's tested what is a result for the lemmatization of some 
+    words.
 
     Given:
     ======
@@ -736,9 +731,31 @@ def test_lemmatizer():
     ======
             The output text should be the lemmatized text.
     '''
-    text_to_lemmatize = "the striped bats are hanging on their feet for best"
+    text_to_lemmatize = "i am playing cards"
     lemmatized_text = lemmatizer(text_to_lemmatize)
-    assert(lemmatized_text == 'the striped bat be hang on their foot for best')
+    assert(lemmatized_text == 'i be play card')
+
+def test_lemmatizer_capital_text():
+    '''
+    Test function to test the behaviour of lemmatizer function.
+    The lemmatizer function takes a text (string) as input and lemmatize the text.
+    This test function tests what's the result if the input text contains some 
+    words that need to be lemmatized, but with capital letters.
+
+    Given:
+    ======
+    text_to_lemmatize_with_capital: str
+                                    Text with words that need to be lemmatized with
+                                    capital letters.
+    
+    Tests:
+    ======
+            The output text should be equal to the input text string
+            since the lemmatization works only with lowercase words.
+    '''
+    text_to_lemmatize_with_capital = "I Am Playing Cards"
+    lemmatized_text = lemmatizer(text_to_lemmatize_with_capital)
+    assert(lemmatized_text == "I Am Playing Cards")
 
 def test_lemmatizer_text_already_lemmatized():
     '''
@@ -761,79 +778,97 @@ def test_lemmatizer_text_already_lemmatized():
     lemmatized_text = lemmatizer(text_already_lemmatized)
     assert(lemmatized_text == "I play basketball in my free time")
 
-
 def test_get_wordnet_pos():
     '''
     Test function to test the behaviour of get_wordnet_pos function.
-    The idea is to match all the words from the sentences with the wordnet tags,
-    in order to lemmatize correctly the words after this process.
-    In this way the lemmatizer understand if the word is a noun, verb, adverb
-    or adjective.
+    In this test function it's tested if the get_wordnet_pos well
+    recognize the words within a sentence.
 
     Given:
     ======
     text_for_tag: str
-                  Text to extrapolate wordnet tags.
+                  Text from which to extrapolate wordnet tags.
     
     Tests:
     ======
-            The output should be a string that represents if 
-            the word is a noun, verb, adjective or adverb.
-            Noun = 'n', verb = 'v', adverb = 'r', adjective = 'j'
+            if the get_wordnet_pos can well recognize if a word
+            is a noun, verb, adverb or adjective in a sentence.
     '''
     text_for_tag = "it is incredibly beautiful"
     tags = nltk.pos_tag(word_tokenize(text_for_tag))
     wordnet_pos = [get_wordnet_pos(tag[1]) for tag in tags]
     assert(wordnet_pos == ['n', 'v', 'r', 'a']) # NOUN, VERB, ADVERB, ADJECTIVE
 
-
-# TODO: scegliere cosa fare di questa funzione
-def test_final_preprocess():
+def test_finalpreprocess_capletters_stopword_lemmatization():
     '''
-    Test function to test the behaviour of finalpreprocess function.
-    finalpreprocess is the function that applies all the functions
-    for cleaning the text (clean_text, stopword and lemmatize)
-    The output of this function should be only some meaningful lemmatized words
-    for the text.
+    Test function for finalpreprocess.
+    In this test function it's tested if the function correctly
+    replace all the capital letters with lowercase letters, remove
+    the punctuation, stop words and lemmatize the text.
+
+    Given:
+    =======
+    sentence: str
+              Single sentence with capital letters, punctuation,
+              stop words and not lemmatized words.
+
+    Tests:
+    ======
+            if the finalpreprocess function correctly replace all the 
+            capital letters with lowercase letters, remove the punctuation,
+            stop words and lemmatize all the words. 
     '''
-    # some random text to preprocess
-    text_example = ['Some random text to use',
-                    'This year 2022 is fantastic',
-                    "I don't know what to do!",
-                    "this is a try with a tag: #TAG",
-                    '"Hello this is my website: https://wikipedia.org!"',
-                    "<TEXT> here there is some text <TEXT>",
-                    "This is my favorite astronaut \U0001F9D1!",
-                    "The parents are watching the TV",
-                    "How are you?",
-                    "@User_10 what are you doing?",
-                    "The rainbow \U0001F308 is very beautiful"]
+    sentence = 'I Am Playing Basketball'
+    preprocessed_sentence = finalpreprocess(sentence)
+    assert(preprocessed_sentence == 'play basketball')
 
-    text_processed = []
-    # preprocessed text
-    for text in text_example:
-        text_processed.append(finalpreprocess(text))
+def test_finalpreprocess_punctuation_specialchars_stopword_lemmatization():
+    '''
+    Test function for finalpreprocess.
+    In this test function it's tested if the function correctly
+    remove the punctuation, stop words, special characters
+    and lemmatize the text.
 
-    assert(text_processed[0] == 'random text use')
-    assert(text_processed[1] == 'year 2022 fantastic')
-    assert(text_processed[2] == 'know')
-    assert(text_processed[3] == 'try tag tag')
-    assert(text_processed[4] == 'hello website')
-    assert(text_processed[5] == 'text')
-    assert(text_processed[6] == 'favorite astronaut')
-    assert(text_processed[7] == 'parent watch tv')
-    assert(text_processed[8] == '')
-    assert(text_processed[9] == 'user 10')
-    assert(text_processed[10] == 'rainbow beautiful')
+    Given:
+    =======
+    sentence: str
+              Single sentence with punctuation, special characters,
+              stop words and not lemmatized words.
 
+    Tests:
+    ======
+            if the finalpreprocess function correctly remove the punctuation,
+            special characters, stop words and lemmatize all the words. 
+    '''
+    sentence = 'hi! i am playing #basketball!'
+    preprocessed_sentence = finalpreprocess(sentence)
+    assert(preprocessed_sentence == 'hi play basketball')
+
+def test_finalpreprocess_url_stopword():
+    '''
+    Test function for finalpreprocess.
+    In this test function it's tested if the function correctly
+    remove the URL and the stop words.
+
+    Given:
+    =======
+    sentence: str
+              Single sentence with an URL and stop words.
+
+    Tests:
+    ======
+            if the finalpreprocess function correctly remove the URL,
+            and stop words. 
+    '''
+    sentence = 'please take a look at this website http://wikipedia.com'
+    preprocessed_sentence = finalpreprocess(sentence)
+    assert(preprocessed_sentence == 'please take look website')
 
 def test_rename_columns():
     '''
     Test function to test the behaviour of rename_columns function.
-    The rename_columns function takes as input the dataframe that the user wants
-    to change the column names and the text's and labels' original column names. 
-    The output is a new dataframe composed by just two columns with the names:
-    "text", "label".
+    In this test function it's tested if the rename_columns function correctly
+    rename the columns' names.
 
     Given:
     =======
@@ -843,7 +878,7 @@ def test_rename_columns():
     Tests:
     ======
             This test function tests that in the output dataframe there are
-            the columns named: 'text', 'label'
+            the columns named: 'text', 'label'.
     '''
     dataframe_init_column = pd.DataFrame(columns=('original_text', 'original_target'))
     df_correct_col_names = rename_columns(dataframe_init_column,
@@ -855,10 +890,9 @@ def test_rename_columns():
 def test_rename_columns_number_of_columns():
     '''
     Test function to test the behaviour of rename_columns function.
-    The rename_columns function takes as input the dataframe that the user wants
-    to change the column names and the text's and labels' original column names. 
-    In this test function it is tested that there are only two columns in the 
-    output datafarme.
+    In this test function it's tested if the rename_columns function correctly
+    rename the columns' names in the case where the original dataframe contains
+    more than two columns.
 
     Given:
     =======
@@ -875,15 +909,13 @@ def test_rename_columns_number_of_columns():
     df_correct_col_names = rename_columns(dataframe_init_column,
                                           text_column_name = 'original_text', 
                                           label_column_name = 'original_target')
-    assert(len(df_correct_col_names.columns.values.tolist()) == 2) 
+    assert(df_correct_col_names.columns.values.tolist() == ['text', 'label']) 
     
 def test_rename_columns_inverted_order():
     '''
     Test function to test the behaviour of rename_columns function.
-    The rename_columns function takes as input the dataframe that the user wants
-    to change the column names and the text's and labels' original column names. 
     In this test function it is tested that the output dataframe contains two columns
-    ('label' and 'text') also if in the original dataframe there is first the label 
+    ('text' and 'label') also if in the original dataframe there is first the label 
     column than the text column.
 
     Given:
@@ -893,24 +925,22 @@ def test_rename_columns_inverted_order():
 
     Tests:
     ======
-            This test function tests that in the output dataframe there are
-            'text' and 'label' column also if in the original dataframe the 
-            order is first the label column, then the text column.
+            if the function doesn't depend on the order of the columns in the
+            original dataframe: it means that the output dataframe contains 
+            always two columns with name 'text' and 'label' that correctly corresponds
+            to the original text and label columns.
     '''  
-    dataframe_init_column = pd.DataFrame(columns=('original_text', 'original_target'))
+    dataframe_init_column = pd.DataFrame({'original_target': ['label'], 'original_text': ['text']})
     df_correct_col_names = rename_columns(dataframe_init_column,
                                           text_column_name = 'original_text', 
                                           label_column_name = 'original_target')
-    assert(df_correct_col_names.columns.values.tolist() == ['text', 'label']) 
+    assert(df_correct_col_names['text'][0] == 'text')
+    assert(df_correct_col_names['label'][0] == 'label') 
+
 
 def test_drop_empty_for_text():
     '''
     Test function to test the behaviour of drop_empty_rows function.
-    The initial dataset can be composed of NaN/None cells, or cells with
-    no text inside (only ''). This kind of data are not so meaningful,
-    so drop_empty_rows cares to remove these rows.
-    The final dataset contains only rows with text.
-
     In this test function it is tested that there are no empty cells 
     for the 'text' column, starting from a dataframe with '' cells in 
     the 'text' column.
@@ -933,11 +963,6 @@ def test_drop_empty_for_text():
 def test_drop_empty_for_label():
     '''
     Test function to test the behaviour of drop_empty_rows function.
-    The initial dataset can be composed of NaN/None cells, or cells with
-    no text inside (only ''). This kind of data are not so meaningful,
-    so drop_empty_rows cares to remove these rows.
-    The final dataset contains only rows with text.
-
     In this test function it is tested that there are no empty cells 
     for the 'label' column, starting from a dataframe with '' cells in 
     the 'label' column.
@@ -958,14 +983,9 @@ def test_drop_empty_for_label():
     assert( len(np.where(df_no_empty_cells_label.applymap(lambda x: x == ''))[1]) == 0 ) 
 
 
-def test_drop_nan_for_text():
+def test_drop_none_for_text():
     '''
     Test function to test the behaviour of drop_empty_rows function.
-    The initial dataset can be composed of empty cells, or cells with
-    no text inside (only ''). This kind of data are not so meaningful,
-    so drop_empty_rows cares to remove these rows.
-    The final dataset contains only rows with text.
-
     In this test function it is tested that there are no None cells 
     for the 'text' column, starting from a dataframe with None cells in 
     the 'text' column.
@@ -985,14 +1005,9 @@ def test_drop_nan_for_text():
     # no None cell for text:
     assert( len(np.where(pd.isnull(df_no_none_cells_text))[0]) == 0 ) 
 
-def test_drop_nan_for_label():
+def test_drop_none_for_label():
     '''
     Test function to test the behaviour of drop_empty_rows function.
-    The initial dataset can be composed of empty cells, or cells with
-    no text inside (only ''). This kind of data are not so meaningful,
-    so drop_empty_rows cares to remove these rows.
-    The final dataset contains only rows with text.
-
     In this test function it is tested that there are no None cells 
     for the 'label' column, starting from a dataframe with None cells in 
     the 'label' column.
