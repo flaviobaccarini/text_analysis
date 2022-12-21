@@ -76,7 +76,7 @@ The configuration file [config.ini](https://github.com/flaviobaccarini/text_anal
 1) ANALYSIS 
 2) PREPROCESS 
 3) PARAMETERS TRAIN \
-In the first section (ANALYSIS) the single variable defined in this section specifies the name of the sub-folder (inside the [datasets](https://github.com/flaviobaccarini/text_analysis/tree/main/datasets) folder) where the data are stored. 
+In the first section (ANALYSIS) the variable folder_name defined in this section specifies the name of the sub-folder (inside the [datasets](https://github.com/flaviobaccarini/text_analysis/tree/main/datasets) folder) where the data are stored. 
 It is assumed that the folder structure is something like this:
 ```
 text_analysis
@@ -102,7 +102,10 @@ text_analysis
        │...
 
 ```
-This means that the csv files (containing the data) need to be stored inside a sub-folder called as the analysis (for more details on the data format see the [prerequisites for the data](#data-prerequisites) section). The variable (folder_name) inside the ANALYSIS section of the configuration file has to be initialized with the name of the analysis the user wants to perform (at this moment 3 possible options: "covid", "spam", "disaster").
+This means that the csv files (containing the data) need to be stored inside a sub-folder called as the analysis (for more details on the data format see the [prerequisites for the data](#data-prerequisites) section). The variable called folder_name inside the ANALYSIS section of the configuration file has to be initialized with the name of the analysis the user wants to perform (at this moment 3 possible options: "covid", "spam", "disaster").
+Then we find, always in the ANALYSIS section, two other variables:
+1) text_column_name: it is the text column name inside the original dataframe (for example, for spam dataset it is equal to original_message)
+2) label_column_name: it is the label column name inside the original dataframe (for example, for spam dataset it is equal to spam)
 
 Then, the second section of the configuration file is called PREPROCCESED. In this section the fraction numbers for splitting the dataset (if necessary) are initializated. A random seed is also set in order to have reproducibility.
 
