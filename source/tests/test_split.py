@@ -9,11 +9,12 @@ from hypothesis import strategies as st
 from hypothesis import given
 import unittest
 
-@given(singledataframe = data_frames([column('label', dtype = str), column('text', dtype = 'str')]))
+@given(singledataframe = data_frames([column('col', dtype = str)]))
 def test_split_df_single_dataset(singledataframe):
     '''
     Test function to test the behaviour of split_single_dataframe function.
-    In this test function is tested that the function returns three elements.
+    In this test function is tested that the function returns three elements
+    starting from a generic pandas DataFrame.
 
     Given:
     =======
@@ -37,7 +38,7 @@ def test_split_df_single_dataset(singledataframe):
     assert(len(df_split) == 3) 
 
 
-@given(singledataframe = data_frames([column('label', dtype = str), column('text', dtype = 'str')]))
+@given(singledataframe = data_frames([column('col', dtype = str)]))
 def test_split_df_single_dataset_dimension_train_df(singledataframe):
     '''
     Test function to test the behaviour of split_single_dataframe function.
@@ -66,7 +67,7 @@ def test_split_df_single_dataset_dimension_train_df(singledataframe):
     assert(len(df_train) == 
                 round(train_frac * (len(df_train) + len(df_val) + len(df_test))))
 
-@given(singledataframe = data_frames([column('label', dtype = str), column('text', dtype = 'str')]))
+@given(singledataframe = data_frames([column('col', dtype = str)]))
 def test_split_df_single_dataset_dimension_test_df(singledataframe):
     '''
     Test function to test the behaviour of split_single_dataframe function.
@@ -95,12 +96,13 @@ def test_split_df_single_dataset_dimension_test_df(singledataframe):
     assert(len(df_test) == 
                 round(test_frac * (len(df_train) + len(df_val) + len(df_test))))
 
-@given(singledataframe = data_frames([column('label', dtype = str), column('text', dtype = 'str')]))
+@given(singledataframe = data_frames([column('col', dtype = str)]))
 def test_split_df_single_dataset_dimension_val_df(singledataframe):
     '''
     Test function to test the behaviour of split_single_dataframe function.
     In this test function is tested that the df_val has the correct 
-    dimension.
+    dimension. The dimension is given by the length of the original dataframe
+    minus the length of the train and test dataframe.
 
     Given:
     =======
@@ -129,7 +131,8 @@ def test_intersection_split_singldf_train_test():
     '''
     Test function to test the behaviour of split_single_dataframe.
     In particular, in this test function the empty intersection between split dataframes
-    is checked. We expect that the intersection between train and test dataframe is empty.
+    is checked.
+    We expect that the intersection between train and test dataframe is empty.
 
     Given:
     =======
@@ -155,7 +158,8 @@ def test_intersection_split_singldf_train_val():
     '''
     Test function to test the behaviour of split_single_dataframe.
     In particular, in this test function the empty intersection between split dataframes
-    is checked. We expect that the intersection between train and validation dataframe is empty.
+    is checked. 
+    We expect that the intersection between train and validation dataframe is empty.
 
     Given:
     =======
@@ -206,9 +210,8 @@ def test_intersection_split_singldf_test_val():
 def test_union_train_val_test_equal_singledf():
     '''
     Test function to test the behaviour of split_single_dataframe.
-    In particular, in this test function the empty intersection between split dataframes
-    is checked. We expect that the union of the split dataframes
-    need to be equal to the initial dataframe.
+    In this test function it's tested that the union of all the split
+    dataframes are equal to the first original dataframe.
 
     Given:
     =======
@@ -234,14 +237,13 @@ def test_union_train_val_test_equal_singledf():
     singledataframe = singledataframe.sort_values(by=singledataframe.columns.tolist()).reset_index(drop=True)
     assert(df_all.equals(singledataframe))
 
-@given(train_fract = st.floats(min_value = 0.01, max_value = 0.40),
-       test_fract = st.floats(min_value = 0.01, max_value = 0.49))
-def test_dimension_traindf_from_singledf_with_different_fract(train_fract, test_fract):
+@given(train_fract = st.floats(min_value = 0.01, max_value = 0.99))
+def test_dimension_traindf_from_singledf_with_different_fract(train_fract):
     '''
     Test function for split_single_dataframe. 
     In this test function it's tested if the dimension of df_train
-    (train dataframe) is correct testing different values for the fractions
-    (the train and test fractions can vary from 0.01 to 0.49).
+    (train dataframe) is correct testing different values for the 
+    train fraction.
 
     Given:
     =======
@@ -256,22 +258,23 @@ def test_dimension_traindf_from_singledf_with_different_fract(train_fract, test_
     Tests:
     ======
             if the df_train (train dataframe) has the correct dimension
-            given by train fraction with different fraction values.
+            given by train fraction changing every time the fraction value.
     '''
     singledataframe = pd.DataFrame({'text': ['a', 'b', 'c', 'd', 'e',
                                              'f', 'g', 'h', 'i', 'l']})
+    test_fract = 1 - train_fract
     df_train, df_val, df_test = split_single_dataframe(singledataframe, (train_fract, test_fract), seed = 42)                                                
     assert(len(df_train) == 
                 round(train_fract * (len(df_train) + len(df_val) + len(df_test))))
 
-@given(train_fract = st.floats(min_value = 0.01, max_value = 0.49),
-       test_fract = st.floats(min_value = 0.01, max_value = 0.49))
-def test_dimension_testdf_from_singledf_with_different_fract(train_fract, test_fract):
+
+@given(test_fract = st.floats(min_value = 0.01, max_value = 0.99))
+def test_dimension_testdf_from_singledf_with_different_fract(test_fract):
     '''
     Test function for split_single_dataframe. 
     In this test function it's tested if the dimension of df_test
-    (test dataframe) is correct testing different values for the fractions
-    (the train and test fractions can vary from 0.01 to 0.49).
+    (test dataframe) is correct testing different values for the test
+    fraction.
 
     Given:
     =======
@@ -290,6 +293,7 @@ def test_dimension_testdf_from_singledf_with_different_fract(train_fract, test_f
     '''
     singledataframe = pd.DataFrame({'text': ['a', 'b', 'c', 'd', 'e',
                                              'f', 'g', 'h', 'i', 'l']})
+    train_fract = 1 - test_fract
     df_train, df_val, df_test = split_single_dataframe(singledataframe, (train_fract, test_fract), seed = 42)                                                
     assert(len(df_test) == 
                 round(test_fract * (len(df_train) + len(df_val) + len(df_test))))
@@ -300,8 +304,9 @@ def test_dimension_valdf_from_singledf_with_different_fract(train_fract, test_fr
     '''
     Test function for split_single_dataframe. 
     In this test function it's tested if the dimension of df_val
-    (validation dataframe) is correct testing different values for the fractions
-    (the train and test fractions can vary from 0.01 to 0.49).
+    (validation dataframe) is correct if we use different values for
+    train and test fraction (the train and test fractions can vary
+    from 0.01 to 0.49).
 
     Given:
     =======
@@ -388,7 +393,7 @@ def test_split_two_datasets_in_three(df_train_valid, df_only_test):
     '''
     Test function for split_two_dataframes.
     In this test function it's tested that the output of the function
-    is composed by three elements.
+    is composed by three elements starting from two generic dataframes.
 
     Given:
     ======
@@ -485,7 +490,7 @@ def test_dimension_valdf_splitting_two_datasets(df_train_valid, df_original_test
     Test function for split_two_dataframes.
     In this test function it's tested that the validation dataframe
     df_val has the correct dimension, which is the length of the 
-    first dataframe minus the length of the train dataframe (df_train).
+    first original dataframe minus the length of the train dataframe (df_train).
 
     Given:
     ======
@@ -515,8 +520,7 @@ def test_intersection_split_twodfs_train_test():
     '''
     Test function for split_two_dataframes.
     In this test function it's tested that the intersection, 
-    after the splitting, of the datasets between train and test 
-    dataframe is empty.
+    after the splitting, between the train and test dataframe is empty.
 
     Given:
     ======
@@ -547,7 +551,7 @@ def test_intersection_split_twodfs_train_val():
     '''
     Test function for split_two_dataframes.
     In this test function it's tested that the intersection, 
-    after the splitting, of the datasets between train and validation 
+    after the splitting, between the train and validation 
     dataframe is empty.
 
     Given:
@@ -579,7 +583,7 @@ def test_intersection_split_twodfs_val_test():
     '''
     Test function for split_two_dataframes.
     In this test function it's tested that the intersection, 
-    after the splitting, of the datasets between test and validation 
+    after the splitting, between the test and validation 
     dataframe is empty.
 
     Given:
@@ -701,7 +705,7 @@ def test_dimension_valdf_from_twodfs_with_different_fract(train_fract):
     Tests:
     =======
             if the dimension of df_val (train dataframe) is correct 
-            (length of df_train_valid - length of df_val).
+            (length of df_train_valid - length of df_train).
     '''
     df_original_trainval = pd.DataFrame({'text': ['a', 'b', 'c', 'd', 'e']})
     df_original_test = pd.DataFrame({'text': ['f', 'g', 'h', 'i', 'l']})

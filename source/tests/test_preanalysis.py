@@ -25,7 +25,7 @@ def test_word_count_number_of_sentences():
             initial list (test_strings).                
     '''
 
-    test_strings = ['Hello, this is a test string', 'My name is FLavio']
+    test_strings = ['Hello, this is a test string', 'My name is FLavio'] # two sentences
     number_of_words = word_count_text(test_strings)
     assert(len(number_of_words) == 2) # two sentences
 
@@ -46,9 +46,9 @@ def test_word_count():
             initial string (test_string).                
     '''
 
-    test_string = ['Hello, this is a test string']
+    test_string = ['Hello world'] # two words sentence
     number_of_words = word_count_text(test_string)
-    assert(number_of_words[0] == 6) # 6 words
+    assert(number_of_words[0] == 2) # 2 words
 
 def test_word_count_tuple_input():
     '''
@@ -66,9 +66,9 @@ def test_word_count_tuple_input():
             If the word_count_text can work with
             tuple as input.           
     '''
-    test_string = ('Test string',)
+    test_string = ('',)
     number_of_words = word_count_text(test_string)
-    assert(number_of_words[0] == 2)
+    assert(number_of_words[0] == 0)
 
 def test_word_count_series_input():
     '''
@@ -87,9 +87,9 @@ def test_word_count_series_input():
             pd.Series as input.           
     '''
 
-    test_string = pd.Series(['Test string'])
+    test_string = pd.Series([''])
     number_of_words = word_count_text(test_string)
-    assert(number_of_words[0] == 2)
+    assert(number_of_words[0] == 0)
     
 def test_word_count_nparray_input():
     '''
@@ -108,9 +108,9 @@ def test_word_count_nparray_input():
             np.array as input.           
     '''
 
-    test_string = np.array(['Test string'])
+    test_string = np.array([''])
     number_of_words = word_count_text(test_string)
-    assert(number_of_words[0] == 2)
+    assert(number_of_words[0] == 0)
 
 def test_char_count_number_of_sentences():
     '''
@@ -128,9 +128,9 @@ def test_char_count_number_of_sentences():
             How many sentences there are inside the 
             initial list (test_strings).                
     '''
-    test_string = ['Hello, this is a test string',
+    test_string = ['Hello, test string',
                    'Hello world',
-                   'Another string']
+                   'Another string'] # three sentences
     number_of_chars = char_count_text(test_string)
     assert(len(number_of_chars) == 3) # three sentences
  
@@ -150,9 +150,9 @@ def test_char_count():
             How many characters there are inside the 
             initial input string (test_string).                
     '''
-    test_string = ['Hello world!']
+    test_string = ['Hello!'] # Hello! is composed by 6 chars
     number_of_chars = char_count_text(test_string)
-    assert(number_of_chars[0] == 12) # 12 characters
+    assert(number_of_chars[0] == 6) 
 
 def test_char_count_tuple_input():
     '''
@@ -170,9 +170,9 @@ def test_char_count_tuple_input():
             if the char_count_text can work with tuple
             of string as input.
     '''
-    test_string = ('#testing',)
+    test_string = ('',)
     number_of_chars = char_count_text(test_string)
-    assert(number_of_chars[0] == 8)
+    assert(number_of_chars[0] == 0)
 
 def test_char_count_series_input():
     '''
@@ -190,9 +190,9 @@ def test_char_count_series_input():
             if the char_count_text can work with pandas
             Series of string as input.
     '''
-    test_string = pd.Series(['#testing'])
+    test_string = pd.Series([''])
     number_of_chars = char_count_text(test_string)
-    assert(number_of_chars[0] == 8)
+    assert(number_of_chars[0] == 0)
 
 def test_char_count_nparray_input():
     '''
@@ -210,9 +210,9 @@ def test_char_count_nparray_input():
             if the char_count_text can work with numpy
             array of string as input.
     '''
-    test_string = np.array(['#testing'])
+    test_string = np.array([''])
     number_of_chars = char_count_text(test_string)
-    assert(number_of_chars[0] == 8)
+    assert(number_of_chars[0] == 0)
 
 def test_char_count_empty_list():
     '''
@@ -235,7 +235,7 @@ def test_char_count_empty_list():
                                             expected_exception = ValueError):
             chars_count = char_count_text(empty_list_string)
 
-def test_char_count_empty_list():
+def test_word_count_empty_list():
     '''
     This function tests the correct working of the counting function 
     for words (word_count_text), when an empty list
@@ -259,7 +259,7 @@ def test_char_count_empty_list():
 def test_avg_word_single_label():
     '''
     This function test the correct working of the 
-    average function for two string labels (average_word_or_chars).
+    average function for a single string label (average_word_or_chars).
     average_word_or_chars takes as input the labels and the counts
     and the output is a dict with keys mapped to the average counts
     for each single label. 
@@ -315,7 +315,7 @@ def test_avg_word_twolabels():
 def test_avg_word_threelabels():
     '''
     This function test the correct working of the 
-    average function for two string labels (average_word_or_chars).
+    average function for three string labels (average_word_or_chars).
     average_word_or_chars takes as input the labels and the counts
     and the output is a dict with keys mapped to the average counts
     for each single label. 
@@ -345,7 +345,7 @@ def test_avg_word_threelabels():
 def test_avg_floats():
     '''
     This function test the correct working of the 
-    average function for two string labels (average_word_or_chars).
+    average function for a single label (average_word_or_chars).
     average_word_or_chars takes as input the labels and the counts
     and the output is a dict with keys mapped to the average counts
     for each single label. 

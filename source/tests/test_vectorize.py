@@ -18,15 +18,15 @@ def test_number_of_sentences_from_vocabulary():
 
     Given:
     ======
-    sentences: list[str]
-               Input sentences from which to extrapolate the vocabulary.
+    two_sentences: list[str]
+                   Two sentences from which to extrapolate the vocabulary.
     
     Tests:
     ======
-            if the number of tokenized sentences is correct.
+            if the number of tokenized sentences is correct (equal to 2).
     '''
-    sentences = ['hello world', 'what a beautiful day']
-    sentences_tokenized = get_vocabulary(sentences)
+    two_sentences = ['hello world', 'what a beautiful day']
+    sentences_tokenized = get_vocabulary(two_sentences)
     assert(len(sentences_tokenized) == 2) 
 
 def test_number_of_tokens_from_vocabulary():
@@ -37,15 +37,16 @@ def test_number_of_tokens_from_vocabulary():
 
     Given:
     ======
-    sentences: list[str]
-               Input sentences from which to extrapolate the vocabulary.
+    sentence_two_words: list[str]
+                        Input sentence with two words 
+                        from which to extrapolate the vocabulary.
     
     Tests:
     ======
-            if the number of tokens from the sentence is correct.
+            if the number of tokens from the sentence is correct (two words).
     '''
-    sentences = ['hello world']
-    sentences_tokenized = get_vocabulary(sentences)
+    sentence_two_words = ['hello world']
+    sentences_tokenized = get_vocabulary(sentence_two_words)
     assert(len(sentences_tokenized[0]) == 2)
 
 
@@ -59,7 +60,7 @@ def test_vocabulary_no_multiple_occurencies_single_sentence():
     Given:
     ======
     sentences: list[str]
-               Input sentences from which to extrapolate the vocabulary.
+               Input sentence from which to extrapolate the vocabulary.
     
     Tests:
     ======
@@ -123,8 +124,9 @@ def test_vocabulary_if_multiple_occurencies_in_same_sentences():
     
     Given:
     ======
-    sentences: list[str]
-               Input sentences from which to extrapolate the vocabulary.
+    sentence_with_repeated_words: list[str]
+                                  Input sentence with repeated words 
+                                  from which to extrapolate the vocabulary.
     
     Tests:
     ======
@@ -148,7 +150,7 @@ def test_get_vocabulary_with_empty_string():
     
     Tests:
     ======
-            if the vocabulary is composed by a empty list, since
+            if the vocabulary is composed by an empty list, since
             it is not passed any words.
     '''
     sentences_with_empty_string = ['']
@@ -278,9 +280,10 @@ def test_max_len():
 
     Tests:
     ======
-            if sentences is composed by a 1, 2 and 3 long
-            sentences: maximum_length should be equal to 4, since
-            average is 2 and std is 1.
+            if sentences is composed by 1, 2 and 3 words:
+            maximum_length should be equal to 4, since
+            average number of words is 2 and std of number
+            of words is 1.
     '''
     sentences = ['two words', 'word', 'i am flavio']
     maximum_length = calculate_max_len(sentences)
@@ -300,7 +303,7 @@ def test_single_label():
     Tests:
     ======
             if all the categorical encoded labels are 
-            equal to 0 (only single label class).
+            equal to 0 (only a single label class).
     '''
     labels = ['a', 'a', 'a']
     y_categorical = tocat_encode_labels(labels)
@@ -310,7 +313,7 @@ def test_two_labels():
     '''
     Test function to test the behaviour of tocat_encode_labels function.
     In this test function it's tested what's the result if two 
-    class labeles are passed to the function.
+    class labels are passed to the function.
 
     Given:
     ======
@@ -322,7 +325,7 @@ def test_two_labels():
             if the categorical encoded labels are 
             equal to 0 or 1 (two classes).
     '''
-    labels = ['a', 'b']
+    labels = ['a', 'b', 'b', 'a']
     y_categorical = tocat_encode_labels(labels)
     assert(set(y_categorical) == {0, 1})
 
@@ -342,7 +345,7 @@ def test_three_labels():
             if the categorical encoded labels are 
             equal to 0, 1 or 2 (three classes).
     '''
-    labels = ['a', 'b', 'c']
+    labels = ['a', 'b', 'c', 'b', 'a']
     y_categorical = tocat_encode_labels(labels)
     assert(set(y_categorical) == {0, 1, 2})
 
@@ -367,28 +370,8 @@ def test_index_two_labels():
     y_categorical = tocat_encode_labels(labels)
     assert(list(y_categorical) == [0, 0, 1, 0, 1])
 
-@given(labels = st.lists(st.text(), min_size = 1, max_size = 1))
-def test_string_as_labels(labels):
-    '''
-    Test function to test the behaviour of tocat_encode_labels function.
-    In this test function it's tested if a string label can fit the 
-    function as parameter.
-
-    Given:
-    ======
-    labels: list[str]
-            List of all the labels: string labels in this test case.
-    
-    Tests:
-    ======
-            if the function tocat_encode_labels can work with 
-            string labels as input. 
-    '''
-    y_categorical = tocat_encode_labels(labels)
-    assert(set(y_categorical) == {0})
-
 @given(labels = st.lists(st.floats(), min_size = 1, max_size = 1))
-def test_string_as_labels(labels):
+def test_floats_as_input_labels(labels):
     '''
     Test function to test the behaviour of tocat_encode_labels function.
     In this test function it's tested if a float label can fit the 
@@ -408,7 +391,7 @@ def test_string_as_labels(labels):
     assert(set(y_categorical) == {0})
 
 @given(labels = st.lists(st.integers(), min_size = 1, max_size = 1))
-def test_string_as_labels(labels):
+def test_integers_as_input_labels(labels):
     '''
     Test function to test the behaviour of tocat_encode_labels function.
     In this test function it's tested if an integer label can fit the 
@@ -432,7 +415,7 @@ def test_classes_single_label():
     Test function to test the behaviour of tocat_encode_labels function.
     In this test function it's tested what's the classes value
     if only a single class label are passed as input parameter.
-    We expect to have only the single class.
+    We expect to have only the original single class.
 
     Given:
     ======
@@ -454,7 +437,7 @@ def test_classes_two_labels():
     In this test function it's tested what's the classes value
     if only two class labels are passed as input parameter. 
     We expect to have only two different classes (the same as the 
-    class labels).
+    original class labels).
 
     Given:
     ======
@@ -476,7 +459,7 @@ def test_classes_three_labels():
     In this test function it's tested what's the classes value
     if only three class labels are passed as input parameter. 
     We expect to have only three different classes (the same as the 
-    class labels).
+    original class labels).
 
     Given:
     ======
@@ -560,7 +543,8 @@ def test_shape_mean_embedding_vectorizer_single_sentence_with_vocabulary():
     Tests:
     ======
             if the vectorized text has a shape consistent with a single
-            sentence passed.
+            sentence passed (the output shape should be equal to (1,2), since 
+            we pass a single sentence and we use an embedding vector size equal to 2).
     '''
     tokenized_sentences = [['hello', 'world']]
     dictionary_mapping_word_to_vec = {'hello': [0, 1], 'world': [1, 0]} # embedding vector size equal to two
@@ -589,7 +573,7 @@ def test_shape_mean_embedding_vectorizer_three_sentences_with_vocabulary():
     Tests:
     ======
             if the vectorized text has a shape consistent with a three
-            sentences passed (in this case the output shape is equal to (3, 2), since
+            sentences passed (in this case the output shape should be equal to (3, 2), since
             we use three sentences and an embedding vector size equal to two).
     '''
     tokenized_sentences = [['hello', 'world'], ['i', 'am', 'flavio'], ['how', 'are', 'you', '?']]
@@ -634,13 +618,15 @@ def test_value_mean_embedding_vectorizer_with_no_mapping_in_vocabulary():
     In this test function it's tested what's the result if we pass to the
     transform function a sentence composed only by words without mapping
     in the vocabulary. The output should be a vector of length equal to
-    the vector size of all zeros.
+    the vector size composed only by zeros.
 
     Given:
     ======
     tokenized_sentences: list[list[str]]
                          The list contains the tokenized sentences (list of strings).
-                         In this case only it is used only a single sentence.
+                         In this case it is used only a single sentence without
+                         mapping between words from sentences and words in the
+                         vocabulary.
 
     dictionary_mapping_word_to_vec: dict
                                     Dictionary that maps each single word to a vector
@@ -652,7 +638,7 @@ def test_value_mean_embedding_vectorizer_with_no_mapping_in_vocabulary():
             composed by only zeros value.
     '''
     tokenized_sentences = [['hello', 'world']]
-    dictionary_mapping_word_to_vec = {'': [0, 0, 1]}
+    dictionary_mapping_word_to_vec = {'': [0, 0, 1]} # embedding vector size is equal to three
     mean_emb_vect = MeanEmbeddingVectorizer(dictionary_mapping_word_to_vec)
     X_vectors_w2v = mean_emb_vect.transform(tokenized_sentences)
     assert(list(X_vectors_w2v[0]) == [0, 0, 0])
@@ -663,13 +649,15 @@ def test_value_mean_embedding_vectorizer_with_complete_mapping_in_vocabulary():
     In this test function it's tested what's the result if we pass to the
     transform function a sentence composed only by words with complete mapping
     in the vocabulary. The output should be a vector of length equal to
-    the vector size, composed by the average of the word vectors.
+    the embedding vector size, composed by the average of the word vectors.
 
     Given:
     ======
     tokenized_sentences: list[list[str]]
                          The list contains the tokenized sentences (list of strings).
-                         In this case only it is used only a single sentence.
+                         In this case only it is used only a single sentence with
+                         complete mapping between words from sentence and words in the
+                         vocabulary.
 
     dictionary_mapping_word_to_vec: dict
                                     Dictionary that maps each single word to a vector
@@ -678,8 +666,7 @@ def test_value_mean_embedding_vectorizer_with_complete_mapping_in_vocabulary():
     Tests:
     ======
             if the result is an array of dimension 2 (vector size is equal to two)
-            composed by the average value of the word vectors (in this case 'hello' 
-            and 'world').
+            composed by the average value of the word vectors.
     '''
     tokenized_sentences = [['hello', 'world']]
     dictionary_mapping_word_to_vec = {'hello': [0, 1], 'world': [1, 0]}
@@ -700,7 +687,9 @@ def test_value_mean_embedding_vectorizer_with_partial_mapping_in_vocabulary():
     ======
     tokenized_sentences: list[list[str]]
                          The list contains the tokenized sentences (list of strings).
-                         In this case only it is used only a single sentence.
+                         In this case it is used only a single sentence with partial
+                         mapping between words from sentence and words in the 
+                         vocabulary.
 
     dictionary_mapping_word_to_vec: dict
                                     Dictionary that maps each single word to a vector
@@ -724,7 +713,7 @@ def test_value_mean_embedding_vectorizer_multiple_sentences():
     '''
     Test function to test the behaviour of MeanEmbeddingVectorizer class.
     This test function tests that if we pass to the transform function two
-    sentences, the vectors that represent them are indipendent:
+    sentences, the output vectors that represent them are indipendent:
     we expect that the vector of the first sentence is made by the 
     average values for the words present only in the first sentence, while
     the vector of the second sentence is made by the average values for the
@@ -742,7 +731,7 @@ def test_value_mean_embedding_vectorizer_multiple_sentences():
     
     Tests:
     ======
-            if the two vector sentences are indipendent: the first vector sentence
+            if the two vector sentences are indipendent: the first number vector
             is composed by the average value of the vector words present in the first
             sentence, while the second vector sentence is composed by the average value 
             of the vector words present in the second sentence.
@@ -753,34 +742,12 @@ def test_value_mean_embedding_vectorizer_multiple_sentences():
     X_vectors_w2v = mean_emb_vect.transform(tokenized_sentences)
     assert((X_vectors_w2v == np.array([[0, 1.5, 1.5], [1, 1, 1]])).all())
 
-def test_vocabulary_no_special_chars_vector_layer():
-    '''
-    Test function to test the behaviour of init_vector_layer function.
-    In this test function we test if the vocabulary that we pass to the
-    function is correctly assigned to the vector layer without 
-    special tokens.
-
-    Given:
-    ======
-    vocabulary: list[str]
-                List of tokens, that represents the vocabulary.
-    
-    Tests:
-    ======
-            if the initialized vector layer has the correct 
-            vocabulary without special tokens.
-    '''
-    vocabulary = ['hello', 'world']
-    vector_layer = init_vector_layer(2, vocabulary)
-    vocabulary_without_special_tokens = list(vector_layer.get_vocabulary(include_special_tokens = False))
-    assert(vocabulary_without_special_tokens == ['hello', 'world'])
-
 def test_vocabulary_include_special_chars_vector_layer():
     '''
     Test function to test the behaviour of init_vector_layer function.
     In this test function we test if the vocabulary that we pass to the
     function is correctly assigned to the vector layer with 
-    special tokens ('' and  '[UNK]'). '[UNK]' stands for the unknown words.
+    special tokens ('' and  '[UNK]'); '[UNK]' stands for the unknown words).
 
     Given:
     ======
@@ -814,7 +781,8 @@ def test_shape_vectorize_vector_layer_vector_length_variable(vector_length):
 
     vector_length: int
                    It's the vector size that we want to give to
-                   the output vector. 
+                   the output vector. In this test case vector_length
+                   is chosen by a strategy.
 
     Tests:
     =======
@@ -822,7 +790,6 @@ def test_shape_vectorize_vector_layer_vector_length_variable(vector_length):
             we pass a single sentence and the embedding vector size 
             is given by vector_length.
     '''
-    vocabulary = ['hello', 'world']
     sentence = ['']
     vector_layer = init_vector_layer(vector_length,  uniq_vocabulary = ['hello'])
     vector = vectorize_X_data_tf(sentence, vector_layer)
@@ -885,8 +852,8 @@ def test_value_vectorization_all_words_in_vocabulary():
     
     sentences: list[str]
                Sentences that we want to vectorize. 
-               In this test case the words from the sentence are 
-               also present in the vocabulary.
+               In this test case all the words from the sentence 
+               are also present in the vocabulary.
     
     Tests:
     ======
@@ -1007,14 +974,15 @@ def test_truncation():
     Tests:
     ======
             if the final vector is composed by the integer indexes
-            of the first two words, since there is a truncation operation.
+            of the first two words, because of the truncation operation.
     '''
     vocabulary = ['hello', 'world']
     sentences = ['hello beautiful world']
     vector_length = 2
     vector_layer = init_vector_layer(vector_length, vocabulary)
     vector = vectorize_X_data_tf(sentences, vector_layer)
-    assert(vector.numpy().tolist() == [[2, 1]])
+    # hello beautiful is vectorized in [2, 1]
+    assert(vector.numpy().tolist() == [[2, 1]]) 
 
 def test_padding():
     '''
@@ -1092,9 +1060,56 @@ def test_value_vectorization_partial_mapping():
             (the integer number corresponds to the index number inside the 
             layer vocabulary).
     '''
-    vocabulary = ['flavio', 'hello', 'world']
+    vocabulary = ['hello', 'world', 'flavio']
     sentences = ['hello world i am flavio']
     vector_length = 5
     vector_layer = init_vector_layer(vector_length, vocabulary)
     vector = vectorize_X_data_tf(sentences, vector_layer)
-    assert(vector.numpy().tolist() == [[3, 4, 1, 1, 2]])
+    assert(vector.numpy().tolist() == [[2, 3, 1, 1, 4]])
+
+def test_value_vectorization_layer_two_sentences():
+    '''
+    Test function for vectorize_X_data_tf.
+    In this test function it's tested what's the 
+    value result if two sentences are passed to the
+    function.
+    The first sentence is 2 words long and the 
+    vector length is equel to three: we expect
+    to pad the sequence.
+    The second sentence is 3 words long, but the 
+    first two words are not present in the vocabulary:
+    we expect to have two 1 values in the second vector.
+
+    Given:
+    ======
+    vocabulary: list[str]
+                List composed by the words that correspond to the
+                vocabulary.
+    
+    sentences: list[str]
+               Sentences that we want to vectorize. 
+               In this test case we use two sentences: the first
+               one must be padded (since it is 2 words long and the
+               vector length is equal to 3), while in the second
+               sequence will contain some 1, because in the second
+               sentence there are some unknown words.
+    
+    vector_length: int
+                   Vector size for the output vector.
+                   In this test case it is equal to three.
+
+    Tests:
+    ======
+           if the output vector is equal to [[2, 3,0], [1, 1, 4]]:
+           since the first sentence ([2, 3, 0]) is two words long and
+           it must be padded with a final zero, while the second 
+           sentence ([1, 1, 4]) contains two unknown words, that are
+           vectorized with 1.
+    '''
+    vocabulary = ['hello', 'world', 'flavio']
+    sentences = ['hello world', 'i am flavio']
+    vector_length = 3
+    vector_layer = init_vector_layer(vector_length, vocabulary)
+    vector = vectorize_X_data_tf(sentences, vector_layer)
+    print(vector)
+    assert(vector.numpy().tolist() == [[2, 3, 0],  [1, 1, 4]])
