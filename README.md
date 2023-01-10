@@ -5,7 +5,7 @@ The aim of this project is to build a little library for text analysis: in parti
 * In the folder [library](https://github.com/flaviobaccarini/text_analysis/tree/main/source) the library can be found with all the test functions.
 * In the folder [datasets](https://github.com/flaviobaccarini/text_analysis/tree/main/datasets) the user can find the three datasets that have been analyzed until now.
 * In the folder [scripts](https://github.com/flaviobaccarini/text_analysis/tree/main/scripts) the user can find the scripts used for the text analysis.
-* In the folder [tutorials](https://github.com/flaviobaccarini/text_analysis/tree/main/tutorials) the user can find two tutorials about the text analysis with this library.
+* In the folder [notebooks](https://github.com/flaviobaccarini/text_analysis/tree/main/notebooks) the user can find some explanations about the scripts and a tutorial for the execution of the scripts.
 
 Two main models have been evaluated for all the datasets: logistic regressor with a Word2Vec model (to vectorize the text) and a Bidirectional LSTM neural network.
 
