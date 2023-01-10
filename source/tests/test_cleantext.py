@@ -796,6 +796,7 @@ def test_get_wordnet_pos():
     '''
     text_for_tag = "it is incredibly beautiful"
     tags = nltk.pos_tag(word_tokenize(text_for_tag))
+    # tags == [('it', 'PRP'), ('is', 'VBZ'), ('incredibly', 'RB'), ('beautiful', 'JJ')]
     wordnet_pos = [get_wordnet_pos(tag[1]) for tag in tags]
     assert(wordnet_pos == ['n', 'v', 'r', 'a']) # NOUN, VERB, ADVERB, ADJECTIVE
 
@@ -804,18 +805,18 @@ def test_finalpreprocess_capletters_stopword_lemmatization():
     Test function for finalpreprocess.
     In this test function it's tested if the function correctly
     replace all the capital letters with lowercase letters, remove
-    the punctuation, stop words and lemmatize the text.
+    stop words and lemmatize the text.
 
     Given:
     =======
     sentence: str
-              Single sentence with capital letters, punctuation,
+              Single sentence with capital letters,
               stop words and not lemmatized words.
 
     Tests:
     ======
             if the finalpreprocess function correctly replace all the 
-            capital letters with lowercase letters, remove the punctuation,
+            capital letters with lowercase letters, remove 
             stop words and lemmatize all the words. 
     '''
     sentence = 'I Am Playing Basketball'

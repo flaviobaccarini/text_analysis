@@ -2,11 +2,11 @@
 Test functions for the reading and writing functions.
 '''
 from text_analysis.read_write_data import handle_multiple_occurencies
-from text_analysis.read_write_data import get_paths, remove_none_from_dict
+from text_analysis.read_write_data import get_filenames, remove_none_from_dict
 
 def test_train_name():
     '''
-    Test function for the function get_paths.
+    Test function for the function get_filenames.
     In this test function it is tested that
     file name for 'train' is correctly matched
     with the value for the key 'train' in the
@@ -25,12 +25,12 @@ def test_train_name():
     filenames = ['random_train.csv',
                  'random_val.csv',
                  'random_test.csv']
-    dict_file_name = get_paths(filenames)
+    dict_file_name = get_filenames(filenames)
     assert(dict_file_name['train'] == 'random_train.csv')
 
 def test_val_name():
     '''
-    Test function for the function get_paths.
+    Test function for the function get_filenames.
     In this test function it is tested that
     file name for 'val' is correctly matched
     with the value for the key 'val' in the
@@ -49,12 +49,12 @@ def test_val_name():
     filenames = ['random_train.csv',
                  'random_val.csv',
                  'random_test.csv']
-    dict_file_name = get_paths(filenames)
+    dict_file_name = get_filenames(filenames)
     assert(dict_file_name['val'] == 'random_val.csv')
 
 def test_test_name():
     '''
-    Test function for the function get_paths.
+    Test function for the function get_filenames.
     In this test function it is tested that
     file name for 'test' is correctly matched
     with the value for the key 'test' in the
@@ -73,12 +73,12 @@ def test_test_name():
     filenames = ['random_train.csv',
                  'random_val.csv',
                  'random_test.csv']
-    dict_file_name = get_paths(filenames)
+    dict_file_name = get_filenames(filenames)
     assert(dict_file_name['test'] == 'random_test.csv')
 
 def test_no_match_train():
     '''
-    Test function for the function get_paths.
+    Test function for the function get_filenames.
     In this test function it is tested what's 
     happening when there is no match between
     file names and "special" words ('train', 'test',
@@ -101,12 +101,12 @@ def test_no_match_train():
     filenames = ['random.csv',
                  'random1.csv',
                  'random2.csv']
-    dict_file_name = get_paths(filenames)
+    dict_file_name = get_filenames(filenames)
     assert(dict_file_name['train'] == [])
 
 def test_no_match_val():
     '''
-    Test function for the function get_paths.
+    Test function for the function get_filenames.
     In this test function it is tested what's 
     happening when there is no match between
     file names and "special" words ('train', 'test',
@@ -129,12 +129,12 @@ def test_no_match_val():
     filenames = ['random.csv',
                  'random1.csv',
                  'random2.csv']
-    dict_file_name = get_paths(filenames)
+    dict_file_name = get_filenames(filenames)
     assert(dict_file_name['val'] == [])
 
-def test_no_match_train():
+def test_no_match_test():
     '''
-    Test function for the function get_paths.
+    Test function for the function get_filenames.
     In this test function it is tested what's 
     happening when there is no match between
     file names and "special" words ('train', 'test',
@@ -157,12 +157,12 @@ def test_no_match_train():
     filenames = ['random.csv',
                  'random1.csv',
                  'random2.csv']
-    dict_file_name = get_paths(filenames)
+    dict_file_name = get_filenames(filenames)
     assert(dict_file_name['test'] == [])
 
 def test_train_name_twofilenames():
     '''
-    Test function for the function get_paths.
+    Test function for the function get_filenames.
     In this test function it is tested what's
     the result if a list of two file names is passed.
     In one file name there is 'train' string, while in the 
@@ -178,16 +178,18 @@ def test_train_name_twofilenames():
 
     Tests:
     ======
-            if the 'train' file is correctly matched.
+            if the 'train' key in dictionary
+            is correctly matched with the correct
+            'train' file.
     '''
     filenames = ['random_train.csv',
                  'random.csv']
-    dict_file_name=get_paths(filenames)
+    dict_file_name = get_filenames(filenames)
     assert(dict_file_name['train'] == 'random_train.csv')
 
 def test_test_name_twofilenames():
     '''
-    Test function for the function get_paths.
+    Test function for the function get_filenames.
     In this test function it is tested what's
     the result if a list of two file names is passed.
     In one file name there is 'train' string, while in the 
@@ -203,19 +205,19 @@ def test_test_name_twofilenames():
 
     Tests:
     ======
-            if the 'test' file is correctly matched with the 
+            if the 'test' key is correctly matched with the 
             file that has not special word in its name.
     '''
     filenames = ['random_train.csv',
                  'random.csv']
-    dict_file_name=get_paths(filenames)
+    dict_file_name=get_filenames(filenames)
     assert(dict_file_name['test'] == 'random.csv')
 
 def test_train_name_capital_letter():
     '''
-    Test function for the function get_paths.
+    Test function for the function get_filenames.
     In this test function  it's tested if the
-    get_paths function is indipendent from the
+    get_filenames function is indipendent from the
     presence of capital letters inside "special" 
     words ('train', 'val' and 'test').
     Case for 'train' key.
@@ -235,14 +237,14 @@ def test_train_name_capital_letter():
     filenames = ['random_TrAiN.csv',
                  'random_val.csv',
                  'random_test.csv']
-    dict_file_name = get_paths(filenames)
+    dict_file_name = get_filenames(filenames)
     assert(dict_file_name['train'] == 'random_TrAiN.csv')
 
 def test_val_name_capital_letter():
     '''
-    Test function for the function get_paths.
+    Test function for the function get_filenames.
     In this test function  it's tested if the
-    get_paths function is indipendent from the
+    get_filenames function is indipendent from the
     presence of capital letters inside "special" 
     words ('train', 'val' and 'test').
     Case for 'val' key.
@@ -263,14 +265,14 @@ def test_val_name_capital_letter():
     filenames = ['random_train.csv',
                  'random_VaL.csv',
                  'random_test.csv']
-    dict_file_name = get_paths(filenames)
+    dict_file_name = get_filenames(filenames)
     assert(dict_file_name['val'] == 'random_VaL.csv')
 
 def test_test_name_capital_letter():
     '''
-    Test function for the function get_paths.
+    Test function for the function get_filenames.
     In this test function  it's tested if the
-    get_paths function is indipendent from the
+    get_filenames function is indipendent from the
     presence of capital letters inside "special" 
     words ('train', 'val' and 'test').
     Case for 'test' key.
@@ -291,7 +293,7 @@ def test_test_name_capital_letter():
     filenames = ['random_train.csv',
                  'random_val.csv',
                  'random_TeST.csv']
-    dict_file_name = get_paths(filenames)
+    dict_file_name = get_filenames(filenames)
     assert(dict_file_name['test'] == 'random_TeST.csv')
 
 def test_remove_emptylist_from_dict():
@@ -303,7 +305,7 @@ def test_remove_emptylist_from_dict():
     Given:
     =======
     dict_with_empty_list: dict
-                          Dictionary with empty a list.
+                          Dictionary with an empty list.
 
     Tests:
     =======
@@ -366,7 +368,7 @@ def test_train_multiple_occurencies():
     Given:
     ======
     multiple_matches: list[str]
-                      Sequence of string that contains at least
+                      Sequence of strings that contain at least
                       one time the 'train' word within the string.
     
     Tests:
@@ -449,7 +451,7 @@ def test_train_multiple_occurencies_cap_letters():
     Tests:
     ======
             The output of the function should be the string with the
-            maximum number of 'train' (no matter the lowercase or 
+            maximum number of 'train' (no matter if lowercase or 
             capital letters) within the string.
     '''
     multiple_matches = ['consTrain_train',
@@ -478,7 +480,8 @@ def test_val_multiple_occurencies_cap_letters():
     Tests:
     ======
             The output of the function should be the string with the
-            maximum number of 'val' within the string.
+            maximum number of 'val' (no matter if lowercase or 
+            capital letters) within the string.
     '''
     multiple_matches = ['eigenValue_train',
                         'eigenValue_val',
@@ -505,7 +508,8 @@ def test_val_multiple_occurencies_cap_letters():
     Tests:
     ======
             The output of the function should be the string with the
-            maximum number of 'test' within the string.
+            maximum number of 'test' (no matter if lowercase or 
+            capital letters) within the string.
     '''
     multiple_matches = ['proTest_train',
                         'proTest_val',

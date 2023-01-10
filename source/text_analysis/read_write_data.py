@@ -7,7 +7,7 @@ and the writing of the processed data after the preproccessing step.
 from pathlib import Path
 import pandas as pd
 
-def get_paths(filenames: list[str]) -> dict:
+def get_filenames(filenames: list[str]) -> dict:
     '''
     Function for getting the correcting file names match if
     in the input folder there are two or three files. 
@@ -132,7 +132,7 @@ def read_data(input_folder: str) -> tuple[pd.DataFrame]:
         return complete_dataframe,
 
     else:
-        path_dict = get_paths(filenames)
+        path_dict = get_filenames(filenames)
         correct_path_dict = remove_none_from_dict(path_dict)
         dataframes = []
         for phase, filename in correct_path_dict.items():
