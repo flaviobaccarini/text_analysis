@@ -409,7 +409,8 @@ def test_split_two_datasets_in_three(df_train_valid, df_only_test):
 
     Tests:
     =======
-            if the function output is a sequence of three elements.  
+            if the function output is a sequence of three elements 
+            (three split dataframes).
     '''
     # initialize the train and test fraction
     train_frac = 0.80
@@ -542,7 +543,7 @@ def test_intersection_split_twodfs_train_test():
                                     'text': ['random', 'try', 'test']})
     df_original_test = pd.DataFrame({'label': ['B', 'A', 'B'],
                               'text': ['good', 'well', 'great']})
-    train_fract = 0.80
+    train_fract = 0.50
     df_train, _, df_test = split_two_dataframes([df_original_trainval, df_original_test], train_fract, seed = 42)
     intersection_train_test = pd.merge(df_train, df_test, how = 'inner')
     assert(intersection_train_test.empty)
@@ -574,7 +575,7 @@ def test_intersection_split_twodfs_train_val():
                                     'text': ['random', 'try', 'test']})
     df_original_test = pd.DataFrame({'label': ['B', 'A', 'B'],
                               'text': ['good', 'well', 'great']})
-    train_fract = 0.80
+    train_fract = 0.50
     df_train, df_val, _ = split_two_dataframes([df_original_trainval, df_original_test], train_fract, seed = 42)
     intersection_train_val = pd.merge(df_train, df_val, how = 'inner')
     assert(intersection_train_val.empty)

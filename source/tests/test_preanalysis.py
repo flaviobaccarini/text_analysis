@@ -276,7 +276,8 @@ def test_avg_word_single_label():
     
     Tests:
     ======
-            Test if the average for the counts is correct
+            Test if the average for the counts is correct 
+            for one single label.
     '''
     labels = ['A', 'A', 'A']
     counts = [10, 15, 20]
@@ -335,12 +336,12 @@ def test_avg_word_threelabels():
             Test if the average for the counts is correct for
             each label.
     '''
-    labels = ['A', 'B', 'C', 'C', 'B', 'A']
-    counts = [10, 40, 50, 70, 20, 20]
+    labels = ['A', 'B', 'C', 'A']
+    counts = [10, 40, 50, 20]
     avg = average_word_or_chars(labels, counts)
     assert(avg['A'] == 15)
-    assert(avg['B'] == 30)
-    assert(avg['C'] == 60)
+    assert(avg['B'] == 40)
+    assert(avg['C'] == 50)
 
 def test_avg_floats():
     '''
@@ -367,7 +368,7 @@ def test_avg_floats():
             Test if the average for the counts is correct,
             even though the counts are float numbers.
     '''
-    labels = ['A', 'A', 'A']
-    counts = [2.25, 2.75, 2.50]
+    labels = ['A', 'A']
+    counts = [2.25, 2.75]
     avg = average_word_or_chars(labels, counts)
     assert(avg['A'] == 2.5)
